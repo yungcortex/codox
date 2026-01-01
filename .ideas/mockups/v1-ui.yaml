@@ -1,0 +1,990 @@
+# Codox UI Mockup v1
+# Advanced Wavetable Synthesizer
+# Window: 1200x800px
+# Style: Warm analog aesthetic
+# Generated: 2026-01-01
+
+window:
+  width: 1200
+  height: 800
+  resizable: true
+
+colors:
+  background: "#1a1612"
+  panel_dark: "#231e18"
+  panel_medium: "#2d2620"
+  accent_warm: "#e8a055"
+  accent_secondary: "#c9b89a"
+  text_primary: "#f5ead6"
+  text_secondary: "#9a8f7e"
+  border: "#3a332a"
+  visualizer_bg: "#0f0d0a"
+
+typography:
+  header: "Arial, Helvetica, sans-serif"
+  body: "Arial, Helvetica, sans-serif"
+  mono: "Courier New, monospace"
+  size:
+    large: "16px"
+    medium: "13px"
+    small: "11px"
+    tiny: "9px"
+
+# Header bar section (y: 0-50)
+header:
+  - id: logo
+    type: label
+    text: "CODOX"
+    position: {x: 20, y: 12}
+    size: {width: 120, height: 26}
+    font_size: 22
+    font_weight: bold
+    color: "#e8a055"
+    layer: header
+
+  - id: preset_browser
+    type: combo
+    label: ""
+    parameter: "preset_browser"
+    choices: ["Init", "Bass - Reese", "Lead - Screamer", "Pad - Evolve"]
+    default: 0
+    position: {x: 450, y: 12}
+    size: {width: 300, height: 26}
+
+  - id: randomize_button
+    type: button
+    label: "RANDOMIZE"
+    parameter: "randomize"
+    parameter_type: bool
+    position: {x: 800, y: 8}
+    size: {width: 140, height: 34}
+    style: prominent
+    color: "#e8a055"
+
+  - id: macro1
+    type: knob
+    label: "Macro 1"
+    parameter: "macro1"
+    range: [0.0, 1.0]
+    default: 0.5
+    position: {x: 960, y: 5}
+    size: {diameter: 40}
+
+  - id: macro2
+    type: knob
+    label: "Macro 2"
+    parameter: "macro2"
+    range: [0.0, 1.0]
+    default: 0.5
+    position: {x: 1010, y: 5}
+    size: {diameter: 40}
+
+  - id: macro3
+    type: knob
+    label: "Macro 3"
+    parameter: "macro3"
+    range: [0.0, 1.0]
+    default: 0.5
+    position: {x: 1060, y: 5}
+    size: {diameter: 40}
+
+  - id: macro4
+    type: knob
+    label: "Macro 4"
+    parameter: "macro4"
+    range: [0.0, 1.0]
+    default: 0.5
+    position: {x: 1110, y: 5}
+    size: {diameter: 40}
+
+  - id: master_volume
+    type: knob
+    label: "Master"
+    parameter: "master_volume"
+    range: [-60.0, 6.0]
+    unit: "dB"
+    default: 0.0
+    decimals: 1
+    position: {x: 1160, y: 5}
+    size: {diameter: 40}
+
+# TOP SECTION: Oscillators + Filter (y: 60-400)
+
+# OSC A Section (y: 70-350)
+osc_a:
+  - id: osc_a_label
+    type: label
+    text: "OSC A"
+    position: {x: 20, y: 70}
+    size: {width: 80, height: 20}
+    font_size: 14
+    font_weight: bold
+    layer: label
+
+  - id: osc_a_visualizer
+    type: special
+    subtype: wavetable_3d
+    data_source: "osc_a_wavetable"
+    position: {x: 20, y: 95}
+    size: {width: 220, height: 160}
+    background: "#0f0d0a"
+
+  - id: osc_a_wavetable_select
+    type: combo
+    label: "Wavetable"
+    parameter: "osc_a_wavetable"
+    choices: ["Basic Saw", "Analog Stack", "Digital Formant", "Vocal Morph"]
+    default: 0
+    position: {x: 20, y: 265}
+    size: {width: 220, height: 24}
+
+  - id: osc_a_position
+    type: knob
+    label: "Position"
+    parameter: "osc_a_position"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 260, y: 95}
+    size: {diameter: 60}
+
+  - id: osc_a_warp_mode
+    type: combo
+    label: "Warp Mode"
+    parameter: "osc_a_warp_mode"
+    choices: ["Sync", "Bend+", "Bend-", "FM (from B)", "AM (from B)", "RM (from B)", "PWM", "Quantize"]
+    default: 0
+    position: {x: 20, y: 300}
+    size: {width: 140, height: 24}
+
+  - id: osc_a_warp_amount
+    type: knob
+    label: "Warp Amt"
+    parameter: "osc_a_warp_amount"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 170, y: 295}
+    size: {diameter: 50}
+
+  - id: osc_a_level
+    type: knob
+    label: "Level"
+    parameter: "osc_a_level"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 100.0
+    decimals: 1
+    position: {x: 330, y: 95}
+    size: {diameter: 60}
+
+  - id: osc_a_pan
+    type: knob
+    label: "Pan"
+    parameter: "osc_a_pan"
+    range: [-100.0, 100.0]
+    default: 0.0
+    decimals: 0
+    position: {x: 400, y: 95}
+    size: {diameter: 60}
+
+  - id: osc_a_octave
+    type: knob
+    label: "Octave"
+    parameter: "osc_a_octave"
+    range: [-4, 4]
+    default: 0
+    decimals: 0
+    position: {x: 260, y: 170}
+    size: {diameter: 50}
+
+  - id: osc_a_semi
+    type: knob
+    label: "Semi"
+    parameter: "osc_a_semi"
+    range: [-12, 12]
+    default: 0
+    decimals: 0
+    position: {x: 320, y: 170}
+    size: {diameter: 50}
+
+  - id: osc_a_fine
+    type: knob
+    label: "Fine"
+    parameter: "osc_a_fine"
+    range: [-100, 100]
+    unit: "cents"
+    default: 0
+    decimals: 0
+    position: {x: 380, y: 170}
+    size: {diameter: 50}
+
+  - id: osc_a_power
+    type: toggle
+    label: "Power"
+    parameter: "osc_a_power"
+    parameter_type: bool
+    default: true
+    position: {x: 440, y: 180}
+    size: {width: 40, height: 24}
+
+# OSC B Section (y: 70-350) - mirrored layout
+osc_b:
+  - id: osc_b_label
+    type: label
+    text: "OSC B"
+    position: {x: 500, y: 70}
+    size: {width: 80, height: 20}
+    font_size: 14
+    font_weight: bold
+    layer: label
+
+  - id: osc_b_visualizer
+    type: special
+    subtype: wavetable_3d
+    data_source: "osc_b_wavetable"
+    position: {x: 500, y: 95}
+    size: {width: 220, height: 160}
+    background: "#0f0d0a"
+
+  - id: osc_b_wavetable_select
+    type: combo
+    label: "Wavetable"
+    parameter: "osc_b_wavetable"
+    choices: ["Basic Saw", "Analog Stack", "Digital Formant", "Vocal Morph"]
+    default: 0
+    position: {x: 500, y: 265}
+    size: {width: 220, height: 24}
+
+  - id: osc_b_position
+    type: knob
+    label: "Position"
+    parameter: "osc_b_position"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 740, y: 95}
+    size: {diameter: 60}
+
+  - id: osc_b_warp_mode
+    type: combo
+    label: "Warp Mode"
+    parameter: "osc_b_warp_mode"
+    choices: ["Sync", "Bend+", "Bend-", "FM (from A)", "AM (from A)", "RM (from A)", "PWM", "Quantize"]
+    default: 0
+    position: {x: 500, y: 300}
+    size: {width: 140, height: 24}
+
+  - id: osc_b_warp_amount
+    type: knob
+    label: "Warp Amt"
+    parameter: "osc_b_warp_amount"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 650, y: 295}
+    size: {diameter: 50}
+
+  - id: osc_b_level
+    type: knob
+    label: "Level"
+    parameter: "osc_b_level"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 100.0
+    decimals: 1
+    position: {x: 810, y: 95}
+    size: {diameter: 60}
+
+  - id: osc_b_pan
+    type: knob
+    label: "Pan"
+    parameter: "osc_b_pan"
+    range: [-100.0, 100.0]
+    default: 0.0
+    decimals: 0
+    position: {x: 880, y: 95}
+    size: {diameter: 60}
+
+  - id: osc_b_octave
+    type: knob
+    label: "Octave"
+    parameter: "osc_b_octave"
+    range: [-4, 4]
+    default: 0
+    decimals: 0
+    position: {x: 740, y: 170}
+    size: {diameter: 50}
+
+  - id: osc_b_semi
+    type: knob
+    label: "Semi"
+    parameter: "osc_b_semi"
+    range: [-12, 12]
+    default: 0
+    decimals: 0
+    position: {x: 800, y: 170}
+    size: {diameter: 50}
+
+  - id: osc_b_fine
+    type: knob
+    label: "Fine"
+    parameter: "osc_b_fine"
+    range: [-100, 100]
+    unit: "cents"
+    default: 0
+    decimals: 0
+    position: {x: 860, y: 170}
+    size: {diameter: 50}
+
+  - id: osc_b_power
+    type: toggle
+    label: "Power"
+    parameter: "osc_b_power"
+    parameter_type: bool
+    default: true
+    position: {x: 920, y: 180}
+    size: {width: 40, height: 24}
+
+# Sub & Noise Oscillators (y: 70-200)
+sub_noise:
+  - id: sub_label
+    type: label
+    text: "SUB"
+    position: {x: 970, y: 70}
+    size: {width: 50, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: sub_shape
+    type: combo
+    label: "Shape"
+    parameter: "sub_shape"
+    choices: ["Sine", "Triangle", "Square"]
+    default: 0
+    position: {x: 970, y: 95}
+    size: {width: 100, height: 24}
+
+  - id: sub_level
+    type: knob
+    label: "Level"
+    parameter: "sub_level"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 1080, y: 85}
+    size: {diameter: 50}
+
+  - id: sub_octave
+    type: combo
+    label: "Octave"
+    parameter: "sub_octave"
+    choices: ["-2", "-1", "0"]
+    default: 1
+    position: {x: 970, y: 130}
+    size: {width: 100, height: 24}
+
+  - id: noise_label
+    type: label
+    text: "NOISE"
+    position: {x: 970, y: 170}
+    size: {width: 60, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: noise_type
+    type: combo
+    label: "Type"
+    parameter: "noise_type"
+    choices: ["White", "Pink", "Digital", "Filtered"]
+    default: 0
+    position: {x: 970, y: 195}
+    size: {width: 100, height: 24}
+
+  - id: noise_level
+    type: knob
+    label: "Level"
+    parameter: "noise_level"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 1080, y: 185}
+    size: {diameter: 50}
+
+# Filter Section (y: 240-350)
+filter:
+  - id: filter_label
+    type: label
+    text: "FILTER"
+    position: {x: 970, y: 240}
+    size: {width: 80, height: 18}
+    font_size: 14
+    font_weight: bold
+    layer: label
+
+  - id: filter_type
+    type: combo
+    label: "Type"
+    parameter: "filter_type"
+    choices: ["LP 12dB", "LP 24dB", "LP Ladder", "HP 12dB", "HP 24dB", "BP 12", "Notch 12", "Comb+", "Formant I"]
+    default: 1
+    position: {x: 970, y: 265}
+    size: {width: 200, height: 24}
+
+  - id: filter_cutoff
+    type: knob
+    label: "Cutoff"
+    parameter: "filter_cutoff"
+    range: [20.0, 20000.0]
+    unit: "Hz"
+    default: 20000.0
+    decimals: 0
+    skew: 0.3
+    position: {x: 970, y: 295}
+    size: {diameter: 60}
+
+  - id: filter_resonance
+    type: knob
+    label: "Resonance"
+    parameter: "filter_resonance"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 1040, y: 295}
+    size: {diameter: 60}
+
+  - id: filter_drive
+    type: knob
+    label: "Drive"
+    parameter: "filter_drive"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 1110, y: 295}
+    size: {diameter: 60}
+
+# BOTTOM SECTION: Envelopes, LFOs, Mod Matrix, Effects (y: 370-780)
+
+# Envelope Section (y: 380-550)
+envelopes:
+  - id: env_amp_label
+    type: label
+    text: "AMP ENVELOPE"
+    position: {x: 20, y: 380}
+    size: {width: 140, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: env_amp_display
+    type: special
+    subtype: adsr_curve
+    data_source: "env_amp"
+    position: {x: 20, y: 400}
+    size: {width: 200, height: 80}
+    background: "#0f0d0a"
+
+  - id: env_amp_attack
+    type: knob
+    label: "Attack"
+    parameter: "env_amp_attack"
+    range: [0.001, 10.0]
+    unit: "s"
+    default: 0.01
+    decimals: 3
+    skew: 0.3
+    position: {x: 20, y: 490}
+    size: {diameter: 45}
+
+  - id: env_amp_decay
+    type: knob
+    label: "Decay"
+    parameter: "env_amp_decay"
+    range: [0.001, 10.0]
+    unit: "s"
+    default: 0.1
+    decimals: 3
+    skew: 0.3
+    position: {x: 75, y: 490}
+    size: {diameter: 45}
+
+  - id: env_amp_sustain
+    type: knob
+    label: "Sustain"
+    parameter: "env_amp_sustain"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 100.0
+    decimals: 1
+    position: {x: 130, y: 490}
+    size: {diameter: 45}
+
+  - id: env_amp_release
+    type: knob
+    label: "Release"
+    parameter: "env_amp_release"
+    range: [0.001, 10.0]
+    unit: "s"
+    default: 0.2
+    decimals: 3
+    skew: 0.3
+    position: {x: 185, y: 490}
+    size: {diameter: 45}
+
+  - id: env_filter_label
+    type: label
+    text: "FILTER ENVELOPE"
+    position: {x: 250, y: 380}
+    size: {width: 150, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: env_filter_display
+    type: special
+    subtype: adsr_curve
+    data_source: "env_filter"
+    position: {x: 250, y: 400}
+    size: {width: 200, height: 80}
+    background: "#0f0d0a"
+
+  - id: env_filter_attack
+    type: knob
+    label: "Attack"
+    parameter: "env_filter_attack"
+    range: [0.001, 10.0]
+    unit: "s"
+    default: 0.01
+    decimals: 3
+    skew: 0.3
+    position: {x: 250, y: 490}
+    size: {diameter: 45}
+
+  - id: env_filter_decay
+    type: knob
+    label: "Decay"
+    parameter: "env_filter_decay"
+    range: [0.001, 10.0]
+    unit: "s"
+    default: 0.1
+    decimals: 3
+    skew: 0.3
+    position: {x: 305, y: 490}
+    size: {diameter: 45}
+
+  - id: env_filter_sustain
+    type: knob
+    label: "Sustain"
+    parameter: "env_filter_sustain"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 50.0
+    decimals: 1
+    position: {x: 360, y: 490}
+    size: {diameter: 45}
+
+  - id: env_filter_release
+    type: knob
+    label: "Release"
+    parameter: "env_filter_release"
+    range: [0.001, 10.0]
+    unit: "s"
+    default: 0.2
+    decimals: 3
+    skew: 0.3
+    position: {x: 415, y: 490}
+    size: {diameter: 45}
+
+  - id: filter_env_depth
+    type: knob
+    label: "Env→Cutoff"
+    parameter: "filter_env_depth"
+    range: [-100.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 470, y: 490}
+    size: {diameter: 45}
+
+  - id: filter_keytrack
+    type: knob
+    label: "Keytrack"
+    parameter: "filter_keytrack"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 0.0
+    decimals: 1
+    position: {x: 525, y: 490}
+    size: {diameter: 45}
+
+# LFO Section (y: 380-550)
+lfos:
+  - id: lfo_label
+    type: label
+    text: "LFOs"
+    position: {x: 600, y: 380}
+    size: {width: 60, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: lfo1_shape
+    type: combo
+    label: "LFO 1 Shape"
+    parameter: "lfo1_shape"
+    choices: ["Sine", "Triangle", "Saw Up", "Saw Down", "Square", "S&H"]
+    default: 0
+    position: {x: 600, y: 405}
+    size: {width: 120, height: 24}
+
+  - id: lfo1_rate
+    type: knob
+    label: "Rate"
+    parameter: "lfo1_rate"
+    range: [0.01, 100.0]
+    unit: "Hz"
+    default: 1.0
+    decimals: 2
+    skew: 0.3
+    position: {x: 730, y: 395}
+    size: {diameter: 45}
+
+  - id: lfo1_sync
+    type: toggle
+    label: "Sync"
+    parameter: "lfo1_sync"
+    parameter_type: bool
+    default: false
+    position: {x: 785, y: 410}
+    size: {width: 40, height: 24}
+
+  - id: lfo2_shape
+    type: combo
+    label: "LFO 2 Shape"
+    parameter: "lfo2_shape"
+    choices: ["Sine", "Triangle", "Saw Up", "Saw Down", "Square", "S&H"]
+    default: 0
+    position: {x: 600, y: 445}
+    size: {width: 120, height: 24}
+
+  - id: lfo2_rate
+    type: knob
+    label: "Rate"
+    parameter: "lfo2_rate"
+    range: [0.01, 100.0]
+    unit: "Hz"
+    default: 2.0
+    decimals: 2
+    skew: 0.3
+    position: {x: 730, y: 435}
+    size: {diameter: 45}
+
+  - id: lfo2_sync
+    type: toggle
+    label: "Sync"
+    parameter: "lfo2_sync"
+    parameter_type: bool
+    default: false
+    position: {x: 785, y: 450}
+    size: {width: 40, height: 24}
+
+  - id: lfo3_shape
+    type: combo
+    label: "LFO 3 Shape"
+    parameter: "lfo3_shape"
+    choices: ["Sine", "Triangle", "Saw Up", "Saw Down", "Square", "S&H"]
+    default: 0
+    position: {x: 600, y: 485}
+    size: {width: 120, height: 24}
+
+  - id: lfo3_rate
+    type: knob
+    label: "Rate"
+    parameter: "lfo3_rate"
+    range: [0.01, 100.0]
+    unit: "Hz"
+    default: 0.5
+    decimals: 2
+    skew: 0.3
+    position: {x: 730, y: 475}
+    size: {diameter: 45}
+
+  - id: lfo3_sync
+    type: toggle
+    label: "Sync"
+    parameter: "lfo3_sync"
+    parameter_type: bool
+    default: false
+    position: {x: 785, y: 490}
+    size: {width: 40, height: 24}
+
+# Mod Matrix (y: 380-550)
+mod_matrix:
+  - id: mod_matrix_label
+    type: label
+    text: "MODULATION MATRIX"
+    position: {x: 850, y: 380}
+    size: {width: 200, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: mod_matrix_display
+    type: special
+    subtype: mod_matrix_grid
+    data_source: "mod_routing"
+    position: {x: 850, y: 405}
+    size: {width: 330, height: 140}
+    background: "#0f0d0a"
+    description: "Click cells to route modulation sources to destinations"
+
+# Voice Settings (y: 570-650)
+voice_settings:
+  - id: voice_label
+    type: label
+    text: "VOICE SETTINGS"
+    position: {x: 20, y: 570}
+    size: {width: 150, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  - id: voice_polyphony
+    type: combo
+    label: "Polyphony"
+    parameter: "voice_polyphony"
+    choices: ["1", "2", "4", "8", "16"]
+    default: 4
+    position: {x: 20, y: 595}
+    size: {width: 100, height: 24}
+
+  - id: unison_voices
+    type: combo
+    label: "Unison"
+    parameter: "unison_voices"
+    choices: ["1", "2", "4", "8", "16"]
+    default: 0
+    position: {x: 130, y: 595}
+    size: {width: 100, height: 24}
+
+  - id: unison_detune
+    type: knob
+    label: "Detune"
+    parameter: "unison_detune"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 25.0
+    decimals: 1
+    position: {x: 240, y: 585}
+    size: {diameter: 45}
+
+  - id: unison_blend
+    type: knob
+    label: "Blend"
+    parameter: "unison_blend"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 50.0
+    decimals: 1
+    position: {x: 295, y: 585}
+    size: {diameter: 45}
+
+  - id: glide_mode
+    type: combo
+    label: "Glide Mode"
+    parameter: "glide_mode"
+    choices: ["Off", "Always", "Legato"]
+    default: 0
+    position: {x: 350, y: 595}
+    size: {width: 100, height: 24}
+
+  - id: glide_time
+    type: knob
+    label: "Glide Time"
+    parameter: "glide_time"
+    range: [0.0, 10.0]
+    unit: "s"
+    default: 0.0
+    decimals: 3
+    skew: 0.3
+    position: {x: 460, y: 585}
+    size: {diameter: 45}
+
+# Effects Rack (y: 670-760)
+effects_rack:
+  - id: effects_label
+    type: label
+    text: "EFFECTS RACK"
+    position: {x: 20, y: 670}
+    size: {width: 150, height: 16}
+    font_size: 12
+    font_weight: bold
+    layer: label
+
+  # Effect slot 1: Distortion
+  - id: fx1_bypass
+    type: toggle
+    label: ""
+    parameter: "fx1_bypass"
+    parameter_type: bool
+    default: false
+    position: {x: 20, y: 695}
+    size: {width: 30, height: 20}
+
+  - id: fx1_type
+    type: combo
+    label: ""
+    parameter: "fx1_type"
+    choices: ["Distortion", "Chorus", "Phaser", "Flanger", "Delay", "Reverb", "EQ", "Compressor", "Filter", "Hyper"]
+    default: 0
+    position: {x: 55, y: 695}
+    size: {width: 90, height: 24}
+
+  - id: fx1_mix
+    type: knob
+    label: "Mix"
+    parameter: "fx1_mix"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 50.0
+    decimals: 1
+    position: {x: 20, y: 725}
+    size: {diameter: 40}
+
+  # Effect slot 2: Chorus
+  - id: fx2_bypass
+    type: toggle
+    label: ""
+    parameter: "fx2_bypass"
+    parameter_type: bool
+    default: false
+    position: {x: 155, y: 695}
+    size: {width: 30, height: 20}
+
+  - id: fx2_type
+    type: combo
+    label: ""
+    parameter: "fx2_type"
+    choices: ["Distortion", "Chorus", "Phaser", "Flanger", "Delay", "Reverb", "EQ", "Compressor", "Filter", "Hyper"]
+    default: 1
+    position: {x: 190, y: 695}
+    size: {width: 90, height: 24}
+
+  - id: fx2_mix
+    type: knob
+    label: "Mix"
+    parameter: "fx2_mix"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 30.0
+    decimals: 1
+    position: {x: 155, y: 725}
+    size: {diameter: 40}
+
+  # Effect slot 3: Delay
+  - id: fx3_bypass
+    type: toggle
+    label: ""
+    parameter: "fx3_bypass"
+    parameter_type: bool
+    default: false
+    position: {x: 290, y: 695}
+    size: {width: 30, height: 20}
+
+  - id: fx3_type
+    type: combo
+    label: ""
+    parameter: "fx3_type"
+    choices: ["Distortion", "Chorus", "Phaser", "Flanger", "Delay", "Reverb", "EQ", "Compressor", "Filter", "Hyper"]
+    default: 4
+    position: {x: 325, y: 695}
+    size: {width: 90, height: 24}
+
+  - id: fx3_mix
+    type: knob
+    label: "Mix"
+    parameter: "fx3_mix"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 25.0
+    decimals: 1
+    position: {x: 290, y: 725}
+    size: {diameter: 40}
+
+  # Effect slot 4: Reverb
+  - id: fx4_bypass
+    type: toggle
+    label: ""
+    parameter: "fx4_bypass"
+    parameter_type: bool
+    default: false
+    position: {x: 425, y: 695}
+    size: {width: 30, height: 20}
+
+  - id: fx4_type
+    type: combo
+    label: ""
+    parameter: "fx4_type"
+    choices: ["Distortion", "Chorus", "Phaser", "Flanger", "Delay", "Reverb", "EQ", "Compressor", "Filter", "Hyper"]
+    default: 5
+    position: {x: 460, y: 695}
+    size: {width: 90, height: 24}
+
+  - id: fx4_mix
+    type: knob
+    label: "Mix"
+    parameter: "fx4_mix"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 20.0
+    decimals: 1
+    position: {x: 425, y: 725}
+    size: {diameter: 40}
+
+  # Effect slot 5: EQ
+  - id: fx5_bypass
+    type: toggle
+    label: ""
+    parameter: "fx5_bypass"
+    parameter_type: bool
+    default: false
+    position: {x: 560, y: 695}
+    size: {width: 30, height: 20}
+
+  - id: fx5_type
+    type: combo
+    label: ""
+    parameter: "fx5_type"
+    choices: ["Distortion", "Chorus", "Phaser", "Flanger", "Delay", "Reverb", "EQ", "Compressor", "Filter", "Hyper"]
+    default: 6
+    position: {x: 595, y: 695}
+    size: {width: 90, height: 24}
+
+  - id: fx5_mix
+    type: knob
+    label: "Mix"
+    parameter: "fx5_mix"
+    range: [0.0, 100.0]
+    unit: "%"
+    default: 50.0
+    decimals: 1
+    position: {x: 560, y: 725}
+    size: {diameter: 40}
+
+notes:
+  - All positions in pixels from top-left (0,0)
+  - Parameter IDs must match PluginProcessor APVTS
+  - Special elements (wavetable visualizers, ADSR curves, mod matrix) require custom rendering
+  - Effects rack slots are reorderable via drag-and-drop in production UI
+  - Warm analog color scheme: dark brown background (#1a1612), warm orange accent (#e8a055)
+  - Layout passes validation: all controls within 1200×800 bounds, no overlaps, minimum sizes met

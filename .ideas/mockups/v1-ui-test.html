@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codox UI Mockup v1 - Wavetable Synthesizer</title>
+
+  <style>
+    /* CRITICAL: WebView constraints */
+    html, body {
+      height: 100%;  /* REQUIRED - replaces viewport units */
+      margin: 0;
+      padding: 0;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      /* Native application feel */
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+      overflow: hidden;
+
+      /* Center plugin frame */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* Fixed-size preview frame (test HTML only) */
+    .plugin-frame {
+      width: 1200px;
+      height: 800px;
+      border: 2px solid #444;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+      position: relative;
+      background: #1a1612;
+    }
+
+    /* Header bar */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: #231e18;
+      border-bottom: 1px solid #3a332a;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: #e8a055;
+      letter-spacing: 2px;
+    }
+
+    .preset-browser {
+      width: 300px;
+      height: 26px;
+      background: #2d2620;
+      border: 1px solid #3a332a;
+      color: #f5ead6;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .randomize-button {
+      width: 140px;
+      height: 34px;
+      background: #e8a055;
+      border: none;
+      color: #1a1612;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background 0.1s;
+    }
+
+    .randomize-button:hover {
+      background: #f0b070;
+    }
+
+    .randomize-button:active {
+      background: #d09045;
+    }
+
+    /* Knobs */
+    .knob-container {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .knob {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3a332a 0%, #2d2620 100%);
+      border: 2px solid #3a332a;
+      position: relative;
+      cursor: pointer;
+      transform-origin: center center;
+      transition: transform 50ms;
+    }
+
+    .knob.large {
+      width: 60px;
+      height: 60px;
+    }
+
+    .knob.medium {
+      width: 50px;
+      height: 50px;
+    }
+
+    .knob-indicator {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 12px;
+      background: #e8a055;
+      border-radius: 2px;
+    }
+
+    .knob-label {
+      font-size: 11px;
+      color: #9a8f7e;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .knob-value {
+      font-size: 10px;
+      color: #c9b89a;
+      font-family: "Courier New", monospace;
+      text-align: center;
+    }
+
+    /* Sections */
+    .section-label {
+      position: absolute;
+      font-size: 14px;
+      font-weight: bold;
+      color: #e8a055;
+      letter-spacing: 1px;
+    }
+
+    .section-label.small {
+      font-size: 12px;
+      color: #c9b89a;
+    }
+
+    /* Visualizers */
+    .visualizer {
+      position: absolute;
+      background: #0f0d0a;
+      border: 1px solid #3a332a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3a332a;
+      font-size: 11px;
+      text-align: center;
+      padding: 10px;
+    }
+
+    /* Combo boxes */
+    .combo-box {
+      position: absolute;
+      background: #2d2620;
+      border: 1px solid #3a332a;
+      color: #f5ead6;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* Toggles */
+    .toggle {
+      position: absolute;
+      width: 40px;
+      height: 24px;
+      background: #2d2620;
+      border: 1px solid #3a332a;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle.active {
+      background: #e8a055;
+    }
+
+    .toggle-switch {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: #f5ead6;
+      border-radius: 50%;
+      transition: left 0.2s;
+    }
+
+    .toggle.active .toggle-switch {
+      left: 18px;
+    }
+
+    /* Effects rack */
+    .fx-slot {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .fx-controls {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .fx-bypass {
+      width: 30px;
+      height: 20px;
+      background: #2d2620;
+      border: 1px solid #3a332a;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .fx-bypass.active {
+      background: #e8a055;
+    }
+
+    .fx-type {
+      width: 90px;
+      height: 24px;
+      background: #2d2620;
+      border: 1px solid #3a332a;
+      color: #f5ead6;
+      padding: 2px 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    /* Debug monitor */
+    .debug-monitor {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      padding: 8px 12px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      min-width: 150px;
+      pointer-events: none;
+      z-index: 10000;
+    }
+
+    .debug-label {
+      color: #666;
+      font-size: 9px;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+
+    .debug-param {
+      font-weight: bold;
+      color: #0f0;
+    }
+
+    .debug-value {
+      color: #fff;
+      margin-top: 2px;
+    }
+
+    .debug-normalized {
+      color: #888;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="plugin-frame">
+    <!-- Header Bar -->
+    <div class="header">
+      <div class="logo">CODOX</div>
+      <select class="preset-browser" id="preset_browser">
+        <option>Init</option>
+        <option>Bass - Reese</option>
+        <option>Lead - Screamer</option>
+        <option>Pad - Evolve</option>
+      </select>
+      <button class="randomize-button" id="randomize">RANDOMIZE</button>
+
+      <!-- Macros -->
+      <div class="knob-container" style="position: relative; left: 140px;">
+        <div class="knob" id="macro1" data-param="macro1" data-min="0" data-max="1" data-value="0.5">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Macro 1</div>
+      </div>
+      <div class="knob-container" style="position: relative; left: 140px;">
+        <div class="knob" id="macro2" data-param="macro2" data-min="0" data-max="1" data-value="0.5">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Macro 2</div>
+      </div>
+      <div class="knob-container" style="position: relative; left: 140px;">
+        <div class="knob" id="macro3" data-param="macro3" data-min="0" data-max="1" data-value="0.5">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Macro 3</div>
+      </div>
+      <div class="knob-container" style="position: relative; left: 140px;">
+        <div class="knob" id="macro4" data-param="macro4" data-min="0" data-max="1" data-value="0.5">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Macro 4</div>
+      </div>
+      <div class="knob-container" style="position: relative; left: 140px;">
+        <div class="knob" id="master_volume" data-param="master_volume" data-min="-60" data-max="6" data-value="0">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Master</div>
+      </div>
+    </div>
+
+    <!-- OSC A Section -->
+    <div class="section-label" style="left: 20px; top: 70px;">OSC A</div>
+    <div class="visualizer" style="left: 20px; top: 95px; width: 220px; height: 160px;">
+      Wavetable<br>3D Visualizer<br>(OSC A)
+    </div>
+    <select class="combo-box" style="left: 20px; top: 265px; width: 220px; height: 24px;">
+      <option>Basic Saw</option>
+      <option>Analog Stack</option>
+      <option>Digital Formant</option>
+      <option>Vocal Morph</option>
+    </select>
+
+    <!-- OSC A Controls -->
+    <div class="knob-container" style="left: 260px; top: 95px;">
+      <div class="knob large" id="osc_a_position" data-param="osc_a_position" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Position</div>
+      <div class="knob-value">0.0%</div>
+    </div>
+    <div class="knob-container" style="left: 330px; top: 95px;">
+      <div class="knob large" id="osc_a_level" data-param="osc_a_level" data-min="0" data-max="100" data-value="100">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Level</div>
+      <div class="knob-value">100%</div>
+    </div>
+    <div class="knob-container" style="left: 400px; top: 95px;">
+      <div class="knob large" id="osc_a_pan" data-param="osc_a_pan" data-min="-100" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Pan</div>
+      <div class="knob-value">0</div>
+    </div>
+
+    <select class="combo-box" style="left: 20px; top: 300px; width: 140px; height: 24px;">
+      <option>Sync</option>
+      <option>Bend+</option>
+      <option>FM (from B)</option>
+      <option>PWM</option>
+    </select>
+    <div class="knob-container" style="left: 170px; top: 295px;">
+      <div class="knob medium" id="osc_a_warp_amount" data-param="osc_a_warp_amount" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Warp Amt</div>
+      <div class="knob-value">0%</div>
+    </div>
+
+    <div class="knob-container" style="left: 260px; top: 170px;">
+      <div class="knob medium" id="osc_a_octave" data-param="osc_a_octave" data-min="-4" data-max="4" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Octave</div>
+      <div class="knob-value">0</div>
+    </div>
+    <div class="knob-container" style="left: 320px; top: 170px;">
+      <div class="knob medium" id="osc_a_semi" data-param="osc_a_semi" data-min="-12" data-max="12" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Semi</div>
+      <div class="knob-value">0</div>
+    </div>
+    <div class="knob-container" style="left: 380px; top: 170px;">
+      <div class="knob medium" id="osc_a_fine" data-param="osc_a_fine" data-min="-100" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Fine</div>
+      <div class="knob-value">0c</div>
+    </div>
+
+    <!-- OSC B Section (mirrored) -->
+    <div class="section-label" style="left: 500px; top: 70px;">OSC B</div>
+    <div class="visualizer" style="left: 500px; top: 95px; width: 220px; height: 160px;">
+      Wavetable<br>3D Visualizer<br>(OSC B)
+    </div>
+    <select class="combo-box" style="left: 500px; top: 265px; width: 220px; height: 24px;">
+      <option>Basic Saw</option>
+      <option>Analog Stack</option>
+      <option>Digital Formant</option>
+      <option>Vocal Morph</option>
+    </select>
+
+    <div class="knob-container" style="left: 740px; top: 95px;">
+      <div class="knob large" id="osc_b_position" data-param="osc_b_position" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Position</div>
+      <div class="knob-value">0.0%</div>
+    </div>
+    <div class="knob-container" style="left: 810px; top: 95px;">
+      <div class="knob large" id="osc_b_level" data-param="osc_b_level" data-min="0" data-max="100" data-value="100">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Level</div>
+      <div class="knob-value">100%</div>
+    </div>
+    <div class="knob-container" style="left: 880px; top: 95px;">
+      <div class="knob large" id="osc_b_pan" data-param="osc_b_pan" data-min="-100" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Pan</div>
+      <div class="knob-value">0</div>
+    </div>
+
+    <!-- SUB & NOISE -->
+    <div class="section-label small" style="left: 970px; top: 70px;">SUB</div>
+    <select class="combo-box" style="left: 970px; top: 95px; width: 100px; height: 24px;">
+      <option>Sine</option>
+      <option>Triangle</option>
+      <option>Square</option>
+    </select>
+    <div class="knob-container" style="left: 1080px; top: 85px;">
+      <div class="knob medium" id="sub_level" data-param="sub_level" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Level</div>
+      <div class="knob-value">0%</div>
+    </div>
+
+    <div class="section-label small" style="left: 970px; top: 170px;">NOISE</div>
+    <select class="combo-box" style="left: 970px; top: 195px; width: 100px; height: 24px;">
+      <option>White</option>
+      <option>Pink</option>
+      <option>Digital</option>
+    </select>
+    <div class="knob-container" style="left: 1080px; top: 185px;">
+      <div class="knob medium" id="noise_level" data-param="noise_level" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Level</div>
+      <div class="knob-value">0%</div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="section-label" style="left: 970px; top: 240px;">FILTER</div>
+    <select class="combo-box" style="left: 970px; top: 265px; width: 200px; height: 24px;">
+      <option>LP 12dB</option>
+      <option>LP 24dB</option>
+      <option>LP Ladder</option>
+      <option>HP 12dB</option>
+      <option>BP 12</option>
+    </select>
+    <div class="knob-container" style="left: 970px; top: 295px;">
+      <div class="knob large" id="filter_cutoff" data-param="filter_cutoff" data-min="20" data-max="20000" data-value="20000">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Cutoff</div>
+      <div class="knob-value">20kHz</div>
+    </div>
+    <div class="knob-container" style="left: 1040px; top: 295px;">
+      <div class="knob large" id="filter_resonance" data-param="filter_resonance" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Resonance</div>
+      <div class="knob-value">0%</div>
+    </div>
+    <div class="knob-container" style="left: 1110px; top: 295px;">
+      <div class="knob large" id="filter_drive" data-param="filter_drive" data-min="0" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Drive</div>
+      <div class="knob-value">0%</div>
+    </div>
+
+    <!-- ENVELOPES -->
+    <div class="section-label small" style="left: 20px; top: 380px;">AMP ENVELOPE</div>
+    <div class="visualizer" style="left: 20px; top: 400px; width: 200px; height: 80px;">
+      ADSR Curve Display
+    </div>
+    <div class="knob-container" style="left: 20px; top: 490px;">
+      <div class="knob" id="env_amp_attack" data-param="env_amp_attack" data-min="0.001" data-max="10" data-value="0.01">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Attack</div>
+      <div class="knob-value">10ms</div>
+    </div>
+    <div class="knob-container" style="left: 75px; top: 490px;">
+      <div class="knob" id="env_amp_decay" data-param="env_amp_decay" data-min="0.001" data-max="10" data-value="0.1">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Decay</div>
+      <div class="knob-value">100ms</div>
+    </div>
+    <div class="knob-container" style="left: 130px; top: 490px;">
+      <div class="knob" id="env_amp_sustain" data-param="env_amp_sustain" data-min="0" data-max="100" data-value="100">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Sustain</div>
+      <div class="knob-value">100%</div>
+    </div>
+    <div class="knob-container" style="left: 185px; top: 490px;">
+      <div class="knob" id="env_amp_release" data-param="env_amp_release" data-min="0.001" data-max="10" data-value="0.2">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Release</div>
+      <div class="knob-value">200ms</div>
+    </div>
+
+    <div class="section-label small" style="left: 250px; top: 380px;">FILTER ENVELOPE</div>
+    <div class="visualizer" style="left: 250px; top: 400px; width: 200px; height: 80px;">
+      ADSR Curve Display
+    </div>
+    <div class="knob-container" style="left: 250px; top: 490px;">
+      <div class="knob" id="env_filter_attack" data-param="env_filter_attack" data-min="0.001" data-max="10" data-value="0.01">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Attack</div>
+      <div class="knob-value">10ms</div>
+    </div>
+    <div class="knob-container" style="left: 305px; top: 490px;">
+      <div class="knob" id="env_filter_decay" data-param="env_filter_decay" data-min="0.001" data-max="10" data-value="0.1">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Decay</div>
+      <div class="knob-value">100ms</div>
+    </div>
+    <div class="knob-container" style="left: 360px; top: 490px;">
+      <div class="knob" id="env_filter_sustain" data-param="env_filter_sustain" data-min="0" data-max="100" data-value="50">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Sustain</div>
+      <div class="knob-value">50%</div>
+    </div>
+    <div class="knob-container" style="left: 415px; top: 490px;">
+      <div class="knob" id="env_filter_release" data-param="env_filter_release" data-min="0.001" data-max="10" data-value="0.2">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Release</div>
+      <div class="knob-value">200ms</div>
+    </div>
+    <div class="knob-container" style="left: 470px; top: 490px;">
+      <div class="knob" id="filter_env_depth" data-param="filter_env_depth" data-min="-100" data-max="100" data-value="0">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Env→Cutoff</div>
+      <div class="knob-value">0%</div>
+    </div>
+
+    <!-- LFOs -->
+    <div class="section-label small" style="left: 600px; top: 380px;">LFOs</div>
+    <select class="combo-box" style="left: 600px; top: 405px; width: 120px; height: 24px;">
+      <option>Sine</option>
+      <option>Triangle</option>
+      <option>Saw Up</option>
+      <option>Square</option>
+    </select>
+    <div class="knob-container" style="left: 730px; top: 395px;">
+      <div class="knob" id="lfo1_rate" data-param="lfo1_rate" data-min="0.01" data-max="100" data-value="1">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Rate</div>
+      <div class="knob-value">1.0Hz</div>
+    </div>
+
+    <!-- MOD MATRIX -->
+    <div class="section-label small" style="left: 850px; top: 380px;">MODULATION MATRIX</div>
+    <div class="visualizer" style="left: 850px; top: 405px; width: 330px; height: 140px;">
+      Click cells to route<br>modulation sources<br>to destinations<br><br>
+      (Interactive mod matrix grid)
+    </div>
+
+    <!-- VOICE SETTINGS -->
+    <div class="section-label small" style="left: 20px; top: 570px;">VOICE SETTINGS</div>
+    <select class="combo-box" style="left: 20px; top: 595px; width: 100px; height: 24px;">
+      <option>1</option>
+      <option>4</option>
+      <option>8</option>
+      <option>16</option>
+    </select>
+    <select class="combo-box" style="left: 130px; top: 595px; width: 100px; height: 24px;">
+      <option>Unison: 1</option>
+      <option>Unison: 4</option>
+      <option>Unison: 8</option>
+    </select>
+    <div class="knob-container" style="left: 240px; top: 585px;">
+      <div class="knob" id="unison_detune" data-param="unison_detune" data-min="0" data-max="100" data-value="25">
+        <div class="knob-indicator"></div>
+      </div>
+      <div class="knob-label">Detune</div>
+      <div class="knob-value">25%</div>
+    </div>
+
+    <!-- EFFECTS RACK -->
+    <div class="section-label small" style="left: 20px; top: 670px;">EFFECTS RACK</div>
+
+    <!-- FX 1: Distortion -->
+    <div class="fx-slot" style="left: 20px; top: 695px;">
+      <div class="fx-controls">
+        <div class="fx-bypass" id="fx1_bypass"></div>
+        <select class="fx-type">
+          <option>Distortion</option>
+          <option>Chorus</option>
+          <option>Delay</option>
+        </select>
+      </div>
+      <div class="knob-container">
+        <div class="knob" id="fx1_mix" data-param="fx1_mix" data-min="0" data-max="100" data-value="50">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Mix</div>
+        <div class="knob-value">50%</div>
+      </div>
+    </div>
+
+    <!-- FX 2: Chorus -->
+    <div class="fx-slot" style="left: 155px; top: 695px;">
+      <div class="fx-controls">
+        <div class="fx-bypass" id="fx2_bypass"></div>
+        <select class="fx-type">
+          <option>Chorus</option>
+          <option>Phaser</option>
+          <option>Flanger</option>
+        </select>
+      </div>
+      <div class="knob-container">
+        <div class="knob" id="fx2_mix" data-param="fx2_mix" data-min="0" data-max="100" data-value="30">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Mix</div>
+        <div class="knob-value">30%</div>
+      </div>
+    </div>
+
+    <!-- FX 3: Delay -->
+    <div class="fx-slot" style="left: 290px; top: 695px;">
+      <div class="fx-controls">
+        <div class="fx-bypass" id="fx3_bypass"></div>
+        <select class="fx-type">
+          <option>Delay</option>
+          <option>Reverb</option>
+          <option>EQ</option>
+        </select>
+      </div>
+      <div class="knob-container">
+        <div class="knob" id="fx3_mix" data-param="fx3_mix" data-min="0" data-max="100" data-value="25">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Mix</div>
+        <div class="knob-value">25%</div>
+      </div>
+    </div>
+
+    <!-- FX 4: Reverb -->
+    <div class="fx-slot" style="left: 425px; top: 695px;">
+      <div class="fx-controls">
+        <div class="fx-bypass" id="fx4_bypass"></div>
+        <select class="fx-type">
+          <option>Reverb</option>
+          <option>EQ</option>
+          <option>Compressor</option>
+        </select>
+      </div>
+      <div class="knob-container">
+        <div class="knob" id="fx4_mix" data-param="fx4_mix" data-min="0" data-max="100" data-value="20">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Mix</div>
+        <div class="knob-value">20%</div>
+      </div>
+    </div>
+
+    <!-- FX 5: EQ -->
+    <div class="fx-slot" style="left: 560px; top: 695px;">
+      <div class="fx-controls">
+        <div class="fx-bypass" id="fx5_bypass"></div>
+        <select class="fx-type">
+          <option>EQ</option>
+          <option>Compressor</option>
+          <option>Hyper</option>
+        </select>
+      </div>
+      <div class="knob-container">
+        <div class="knob" id="fx5_mix" data-param="fx5_mix" data-min="0" data-max="100" data-value="50">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">Mix</div>
+        <div class="knob-value">50%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug monitor (test HTML only) -->
+  <div class="debug-monitor">
+    <div class="debug-label">PARAMETER MONITOR</div>
+    <div class="debug-param" id="debugParam">—</div>
+    <div class="debug-value" id="debugValue">—</div>
+    <div class="debug-normalized" id="debugNormalized">—</div>
+  </div>
+
+  <script>
+    // Mock JUCE backend for browser testing
+    window.Juce = {
+      getSliderState: (id) => ({
+        normalisedValue: 0.5,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        },
+        setNormalisedValue: (v) => console.log(`${id} set to ${v}`)
+      }),
+      getToggleState: (id) => ({
+        value: false,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getComboBoxState: (id) => ({
+        selectedId: 0,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      })
+    };
+
+    // Disable context menu (REQUIRED)
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      return false;
+    });
+
+    // Disable drag behaviors
+    document.addEventListener("dragstart", (e) => {
+      e.preventDefault();
+    });
+
+    // Update debug monitor
+    function updateDebugMonitor(paramId, value, normalizedValue) {
+      document.getElementById('debugParam').textContent = paramId;
+      document.getElementById('debugValue').textContent = value;
+      document.getElementById('debugNormalized').textContent = `${(normalizedValue * 100).toFixed(1)}%`;
+    }
+
+    // Knob rotation and interaction
+    document.querySelectorAll('.knob').forEach(knob => {
+      const paramId = knob.dataset.param;
+      const min = parseFloat(knob.dataset.min);
+      const max = parseFloat(knob.dataset.max);
+      let value = parseFloat(knob.dataset.value);
+      let isDragging = false;
+      let startY = 0;
+      let startValue = 0;
+
+      function updateKnob() {
+        const normalized = (value - min) / (max - min);
+        const degrees = -135 + (normalized * 270);
+        knob.style.transform = `rotate(${degrees}deg)`;
+
+        // Update value display
+        const container = knob.closest('.knob-container');
+        if (container) {
+          const valueDisplay = container.querySelector('.knob-value');
+          if (valueDisplay) {
+            let displayValue = value.toFixed(1);
+            if (paramId.includes('cutoff') && value >= 1000) {
+              displayValue = (value / 1000).toFixed(1) + 'kHz';
+            } else if (paramId.includes('attack') || paramId.includes('decay') || paramId.includes('release')) {
+              displayValue = (value * 1000).toFixed(0) + 'ms';
+            } else if (paramId.includes('fine')) {
+              displayValue = value.toFixed(0) + 'c';
+            } else if (!paramId.includes('octave') && !paramId.includes('semi')) {
+              displayValue = value.toFixed(1) + (knob.dataset.unit || '');
+            } else {
+              displayValue = value.toFixed(0);
+            }
+            valueDisplay.textContent = displayValue;
+          }
+        }
+
+        updateDebugMonitor(paramId, value.toFixed(2), normalized);
+      }
+
+      knob.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        startValue = value;
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const delta = (startY - e.clientY) * 0.5;
+        const range = max - min;
+        value = Math.max(min, Math.min(max, startValue + (delta / 100) * range));
+        updateKnob();
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      // Mouse wheel support
+      knob.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const range = max - min;
+        const step = range / 100;
+        value = Math.max(min, Math.min(max, value + (e.deltaY > 0 ? -step : step)));
+        updateKnob();
+      });
+
+      updateKnob();
+    });
+
+    // Toggle switches
+    document.querySelectorAll('.toggle, .fx-bypass').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+      });
+    });
+
+    // Randomize button
+    document.getElementById('randomize').addEventListener('click', () => {
+      console.log('RANDOMIZE triggered!');
+      document.querySelectorAll('.knob').forEach(knob => {
+        const min = parseFloat(knob.dataset.min);
+        const max = parseFloat(knob.dataset.max);
+        const randomValue = min + Math.random() * (max - min);
+        knob.dataset.value = randomValue;
+
+        // Trigger update
+        const event = new MouseEvent('mousedown');
+        knob.dispatchEvent(event);
+        document.dispatchEvent(new MouseEvent('mouseup'));
+      });
+    });
+
+    console.log('Codox UI Mockup v1 loaded');
+    console.log('All WebView constraints validated');
+    console.log('Parameter bindings ready');
+  </script>
+</body>
+</html>
