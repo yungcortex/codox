@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codox UI Mockup v3 - Overlap Fixes</title>
+
+  <style>
+    /* CRITICAL: WebView constraints - NO viewport units */
+    html, body {
+      height: 100%;  /* REQUIRED - replaces viewport units */
+      margin: 0;
+      padding: 0;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      /* Native application feel */
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+      overflow: hidden;
+
+      /* Dark theme background */
+      background: #000;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+
+      /* Center plugin frame */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Fixed-size preview frame (test HTML only) */
+    .plugin-frame {
+      width: 1200px;
+      height: 800px;
+      border: 2px solid #444;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);
+    }
+
+    /* Header bar */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: #0f0f0f;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+    }
+
+    .preset-browser {
+      margin-left: 410px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .preset-btn {
+      width: 30px;
+      height: 24px;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      color: #b0b0b0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    .preset-select {
+      width: 260px;
+      height: 24px;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      color: #fff;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .randomize-btn {
+      position: absolute;
+      top: 8px;
+      left: 800px;
+      width: 150px;
+      height: 34px;
+      background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(255, 140, 66, 0.3);
+      transition: all 0.2s;
+    }
+
+    .randomize-btn:hover {
+      box-shadow: 0 6px 18px rgba(255, 140, 66, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Section panels */
+    .panel {
+      position: absolute;
+      background: rgba(30, 30, 30, 0.6);
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .panel-label {
+      position: absolute;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .osc-a-label {
+      color: #ff8c42;
+    }
+
+    .osc-b-label {
+      color: #4ecdc4;
+    }
+
+    /* Knobs */
+    .knob-container {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .knob {
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #5a5a5a, #2a2a2a);
+      border: 2px solid #3a3a3a;
+      box-shadow:
+        inset -2px -2px 4px rgba(0,0,0,0.4),
+        inset 2px 2px 4px rgba(255,255,255,0.1),
+        0 4px 8px rgba(0,0,0,0.3);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    .knob:hover {
+      box-shadow:
+        inset -2px -2px 4px rgba(0,0,0,0.4),
+        inset 2px 2px 4px rgba(255,255,255,0.2),
+        0 6px 12px rgba(255, 140, 66, 0.2);
+    }
+
+    .knob-indicator {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 40%;
+      background: linear-gradient(180deg, #ff8c42 0%, #ff6b35 100%);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255, 140, 66, 0.6);
+    }
+
+    .knob-label {
+      font-size: 10px;
+      color: #b0b0b0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .knob-value {
+      font-size: 11px;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Sliders */
+    .slider-container {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 10px;
+      outline: none;
+      height: 20px;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255, 140, 66, 0.4);
+    }
+
+    .slider-label {
+      font-size: 10px;
+      color: #b0b0b0;
+      text-align: center;
+    }
+
+    /* Combo boxes */
+    .combo {
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    /* Toggles */
+    .toggle {
+      width: 24px;
+      height: 24px;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .toggle.active {
+      background: #ff8c42;
+      border-color: #ff6b35;
+      box-shadow: 0 0 12px rgba(255, 140, 66, 0.6);
+    }
+
+    .toggle::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #4ecdc4;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .toggle.active::after {
+      opacity: 1;
+    }
+
+    /* Canvas displays */
+    .canvas-display {
+      position: absolute;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Debug monitor (test HTML only) */
+    .debug-monitor {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      padding: 8px 12px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      min-width: 150px;
+      pointer-events: none;
+      z-index: 10000;
+    }
+
+    .debug-label {
+      color: #666;
+      font-size: 9px;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+
+    .debug-param {
+      font-weight: bold;
+      color: #0f0;
+    }
+
+    .debug-value {
+      color: #fff;
+      margin-top: 2px;
+    }
+
+    .debug-normalized {
+      color: #888;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed-size plugin frame for testing -->
+  <div class="plugin-frame">
+    <!-- Header bar -->
+    <div class="header">
+      <div class="logo">CODOX</div>
+
+      <div class="preset-browser">
+        <button class="preset-btn">◀</button>
+        <select class="preset-select">
+          <option>Init</option>
+          <option>Bass - Reese</option>
+          <option>Lead - Screamer</option>
+          <option>Pad - Evolve</option>
+          <option>Pluck - Digital</option>
+        </select>
+        <button class="preset-btn">▶</button>
+      </div>
+
+      <button class="randomize-btn">⚡ RANDOMIZE</button>
+
+      <div class="knob-container" style="position: absolute; left: 1120px; top: 3px;">
+        <div class="knob" id="master_volume" style="width: 44px; height: 44px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">MASTER</div>
+      </div>
+    </div>
+
+    <!-- OSC A Panel -->
+    <div class="panel" style="left: 15px; top: 60px; width: 580px; height: 310px;">
+      <div class="panel-label osc-a-label" style="left: 25px; top: 68px;">OSCILLATOR A</div>
+
+      <!-- OSC A 3D Visualizer placeholder -->
+      <div class="canvas-display" style="left: 25px; top: 95px; width: 180px; height: 140px;">
+        <canvas id="osc_a_viz" width="180" height="140"></canvas>
+      </div>
+
+      <!-- OSC A Wavetable select -->
+      <select class="combo" style="position: absolute; left: 25px; top: 260px; width: 180px;">
+        <option>Basic Saw</option>
+        <option>Analog Stack</option>
+        <option>Digital Formant</option>
+        <option>Vocal Morph</option>
+        <option>PWM Shapes</option>
+      </select>
+
+      <!-- OSC A Knobs - Fixed spacing -->
+      <div class="knob-container" style="left: 230px; top: 95px;">
+        <div class="knob" id="osc_a_position" style="width: 75px; height: 75px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">WT POS</div>
+        <div class="knob-value">0.0%</div>
+      </div>
+
+      <div class="knob-container" style="left: 325px; top: 95px;">
+        <div class="knob" id="osc_a_level" style="width: 65px; height: 65px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">LEVEL</div>
+        <div class="knob-value">100%</div>
+      </div>
+
+      <div class="knob-container" style="left: 410px; top: 95px;">
+        <div class="knob" id="osc_a_pan" style="width: 65px; height: 65px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">PAN</div>
+        <div class="knob-value">C</div>
+      </div>
+
+      <div class="knob-container" style="left: 495px; top: 95px;">
+        <div class="knob" id="osc_a_octave" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">OCT</div>
+        <div class="knob-value">0</div>
+      </div>
+
+      <!-- Second row -->
+      <div class="knob-container" style="left: 230px; top: 190px;">
+        <div class="knob" id="osc_a_semi" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">SEMI</div>
+        <div class="knob-value">0</div>
+      </div>
+
+      <div class="knob-container" style="left: 305px; top: 190px;">
+        <div class="knob" id="osc_a_fine" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">FINE</div>
+        <div class="knob-value">0c</div>
+      </div>
+
+      <div class="knob-container" style="left: 380px; top: 190px;">
+        <div class="knob" id="osc_a_warp_amount" style="width: 65px; height: 65px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">WARP AMT</div>
+        <div class="knob-value">0%</div>
+      </div>
+
+      <!-- Warp mode select -->
+      <select class="combo" style="position: absolute; left: 25px; top: 295px; width: 180px;">
+        <option>Sync</option>
+        <option>Bend+</option>
+        <option>FM (B)</option>
+        <option>AM (B)</option>
+      </select>
+    </div>
+
+    <!-- OSC B Panel -->
+    <div class="panel" style="left: 605px; top: 60px; width: 580px; height: 310px;">
+      <div class="panel-label osc-b-label" style="left: 615px; top: 68px;">OSCILLATOR B</div>
+
+      <!-- OSC B 3D Visualizer placeholder -->
+      <div class="canvas-display" style="left: 615px; top: 95px; width: 180px; height: 140px;">
+        <canvas id="osc_b_viz" width="180" height="140"></canvas>
+      </div>
+
+      <!-- OSC B Wavetable select -->
+      <select class="combo" style="position: absolute; left: 615px; top: 260px; width: 180px;">
+        <option>Basic Saw</option>
+        <option>Analog Stack</option>
+        <option>Digital Formant</option>
+      </select>
+
+      <!-- OSC B Knobs - Complete set -->
+      <div class="knob-container" style="left: 820px; top: 95px;">
+        <div class="knob" id="osc_b_position" style="width: 75px; height: 75px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">WT POS</div>
+        <div class="knob-value">0.0%</div>
+      </div>
+
+      <div class="knob-container" style="left: 915px; top: 95px;">
+        <div class="knob" id="osc_b_level" style="width: 65px; height: 65px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">LEVEL</div>
+        <div class="knob-value">100%</div>
+      </div>
+
+      <div class="knob-container" style="left: 1000px; top: 95px;">
+        <div class="knob" id="osc_b_pan" style="width: 65px; height: 65px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">PAN</div>
+        <div class="knob-value">C</div>
+      </div>
+
+      <div class="knob-container" style="left: 1085px; top: 95px;">
+        <div class="knob" id="osc_b_octave" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">OCT</div>
+        <div class="knob-value">0</div>
+      </div>
+
+      <!-- Second row -->
+      <div class="knob-container" style="left: 820px; top: 190px;">
+        <div class="knob" id="osc_b_semi" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">SEMI</div>
+        <div class="knob-value">0</div>
+      </div>
+
+      <div class="knob-container" style="left: 895px; top: 190px;">
+        <div class="knob" id="osc_b_fine" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">FINE</div>
+        <div class="knob-value">0c</div>
+      </div>
+
+      <div class="knob-container" style="left: 970px; top: 190px;">
+        <div class="knob" id="osc_b_warp_amount" style="width: 65px; height: 65px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">WARP AMT</div>
+        <div class="knob-value">0%</div>
+      </div>
+
+      <!-- Warp mode select -->
+      <select class="combo" style="position: absolute; left: 615px; top: 295px; width: 180px;">
+        <option>Sync</option>
+        <option>Bend+</option>
+        <option>FM (A)</option>
+        <option>AM (A)</option>
+      </select>
+    </div>
+
+    <!-- OSC Mix Slider -->
+    <div class="slider-container" style="left: 445px; top: 340px; width: 310px;">
+      <div class="slider-label">A ← MIX → B</div>
+      <input type="range" class="slider" id="osc_mix" min="0" max="100" value="50" style="width: 310px;">
+    </div>
+
+    <!-- SUB Panel -->
+    <div class="panel" style="left: 15px; top: 380px; width: 285px; height: 110px;">
+      <div class="panel-label" style="left: 25px; top: 388px;">SUB</div>
+
+      <select class="combo" style="position: absolute; left: 25px; top: 410px; width: 100px;">
+        <option>Sine</option>
+        <option>Triangle</option>
+        <option>Square</option>
+      </select>
+
+      <select class="combo" style="position: absolute; left: 135px; top: 410px; width: 60px;">
+        <option>-2</option>
+        <option selected>-1</option>
+        <option>0</option>
+      </select>
+
+      <div class="knob-container" style="left: 215px; top: 395px;">
+        <div class="knob" id="sub_level" style="width: 60px; height: 60px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">LEVEL</div>
+      </div>
+    </div>
+
+    <!-- NOISE Panel (part of SUB panel) -->
+    <div style="position: absolute; left: 25px; top: 828px;">
+      <div class="panel-label" style="left: 0; top: 0;">NOISE</div>
+
+      <select class="combo" style="position: absolute; left: 0; top: 20px; width: 100px;">
+        <option>White</option>
+        <option>Pink</option>
+        <option>Digital</option>
+      </select>
+
+      <div class="knob-container" style="left: 120px; top: 5px;">
+        <div class="knob" id="noise_level" style="width: 60px; height: 60px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">LEVEL</div>
+      </div>
+    </div>
+
+    <!-- FILTER Panel -->
+    <div class="panel" style="left: 310px; top: 380px; width: 285px; height: 190px;">
+      <div class="panel-label" style="left: 320px; top: 388px;">FILTER</div>
+
+      <select class="combo" style="position: absolute; left: 320px; top: 410px; width: 140px;">
+        <option>LP 12dB</option>
+        <option selected>LP 24dB</option>
+        <option>HP 12dB</option>
+        <option>BP 12</option>
+      </select>
+
+      <!-- Filter knobs - ALL RENDERING -->
+      <div class="knob-container" style="left: 320px; top: 450px;">
+        <div class="knob" id="filter_cutoff" style="width: 80px; height: 80px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">CUTOFF</div>
+        <div class="knob-value">20kHz</div>
+      </div>
+
+      <div class="knob-container" style="left: 420px; top: 460px;">
+        <div class="knob" id="filter_resonance" style="width: 60px; height: 60px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">RES</div>
+        <div class="knob-value">0%</div>
+      </div>
+
+      <div class="knob-container" style="left: 500px; top: 460px;">
+        <div class="knob" id="filter_drive" style="width: 60px; height: 60px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">DRIVE</div>
+        <div class="knob-value">0%</div>
+      </div>
+
+      <div class="knob-container" style="left: 470px; top: 410px;">
+        <div class="knob" id="filter_env" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">ENV</div>
+      </div>
+
+      <div class="knob-container" style="left: 535px; top: 410px;">
+        <div class="knob" id="filter_key" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">KEY</div>
+      </div>
+    </div>
+
+    <!-- AMP ENVELOPE -->
+    <div class="panel" style="left: 15px; top: 560px; width: 280px; height: 160px;">
+      <div class="panel-label" style="left: 25px; top: 568px;">AMP ENVELOPE</div>
+
+      <!-- ADSR Curve Canvas -->
+      <div class="canvas-display" style="left: 25px; top: 590px; width: 260px; height: 60px;">
+        <canvas id="env_amp_curve" width="260" height="60"></canvas>
+      </div>
+
+      <!-- ADSR Knobs -->
+      <div class="knob-container" style="left: 25px; top: 665px;">
+        <div class="knob" id="env_amp_a" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">A</div>
+      </div>
+
+      <div class="knob-container" style="left: 90px; top: 665px;">
+        <div class="knob" id="env_amp_d" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">D</div>
+      </div>
+
+      <div class="knob-container" style="left: 155px; top: 665px;">
+        <div class="knob" id="env_amp_s" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">S</div>
+      </div>
+
+      <div class="knob-container" style="left: 220px; top: 665px;">
+        <div class="knob" id="env_amp_r" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">R</div>
+      </div>
+    </div>
+
+    <!-- FILTER ENVELOPE -->
+    <div class="panel" style="left: 305px; top: 560px; width: 280px; height: 160px;">
+      <div class="panel-label" style="left: 315px; top: 568px;">FILTER ENVELOPE</div>
+
+      <!-- ADSR Curve Canvas -->
+      <div class="canvas-display" style="left: 315px; top: 590px; width: 260px; height: 60px;">
+        <canvas id="env_filter_curve" width="260" height="60"></canvas>
+      </div>
+
+      <!-- ADSR Knobs -->
+      <div class="knob-container" style="left: 315px; top: 665px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">A</div>
+      </div>
+
+      <div class="knob-container" style="left: 380px; top: 665px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">D</div>
+      </div>
+
+      <div class="knob-container" style="left: 445px; top: 665px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">S</div>
+      </div>
+
+      <div class="knob-container" style="left: 510px; top: 665px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">R</div>
+      </div>
+    </div>
+
+    <!-- LFO Section - ALL 4 VISIBLE -->
+    <div class="panel" style="left: 605px; top: 380px; width: 285px; height: 330px;">
+      <div class="panel-label" style="left: 615px; top: 388px;">LFOs</div>
+
+      <!-- LFO 1 -->
+      <select class="combo" style="position: absolute; left: 615px; top: 410px; width: 100px;">
+        <option>Sine</option>
+        <option>Tri</option>
+        <option>Saw↑</option>
+      </select>
+      <div class="knob-container" style="left: 730px; top: 395px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">RATE</div>
+      </div>
+
+      <!-- LFO 2 -->
+      <select class="combo" style="position: absolute; left: 615px; top: 450px; width: 100px;">
+        <option>Sine</option>
+        <option>Tri</option>
+      </select>
+      <div class="knob-container" style="left: 730px; top: 435px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">RATE</div>
+      </div>
+
+      <!-- LFO 3 -->
+      <select class="combo" style="position: absolute; left: 615px; top: 490px; width: 100px;">
+        <option>Sine</option>
+        <option>Tri</option>
+      </select>
+      <div class="knob-container" style="left: 730px; top: 475px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">RATE</div>
+      </div>
+
+      <!-- LFO 4 -->
+      <select class="combo" style="position: absolute; left: 615px; top: 530px; width: 100px;">
+        <option>Sine</option>
+        <option>Tri</option>
+      </select>
+      <div class="knob-container" style="left: 730px; top: 515px;">
+        <div class="knob" style="width: 50px; height: 50px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">RATE</div>
+      </div>
+
+      <!-- MACROS -->
+      <div class="panel-label" style="left: 615px; top: 610px;">MACROS</div>
+
+      <div class="knob-container" style="left: 615px; top: 630px;">
+        <div class="knob" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">M1</div>
+      </div>
+
+      <div class="knob-container" style="left: 685px; top: 630px;">
+        <div class="knob" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">M2</div>
+      </div>
+
+      <div class="knob-container" style="left: 755px; top: 630px;">
+        <div class="knob" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">M3</div>
+      </div>
+
+      <div class="knob-container" style="left: 825px; top: 630px;">
+        <div class="knob" style="width: 55px; height: 55px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">M4</div>
+      </div>
+    </div>
+
+    <!-- MOD MATRIX -->
+    <div class="panel" style="left: 900px; top: 380px; width: 285px; height: 330px;">
+      <div class="panel-label" style="left: 910px; top: 388px;">MOD MATRIX</div>
+
+      <div class="canvas-display" style="left: 910px; top: 410px; width: 265px; height: 290px;">
+        <canvas id="mod_matrix" width="265" height="290"></canvas>
+      </div>
+    </div>
+
+    <!-- VOICE SETTINGS -->
+    <div class="panel" style="left: 15px; top: 730px; width: 570px; height: 55px;">
+      <div class="panel-label" style="left: 25px; top: 738px; font-size: 11px;">VOICE</div>
+
+      <select class="combo" style="position: absolute; left: 25px; top: 758px; width: 60px;">
+        <option>1</option>
+        <option>4</option>
+        <option selected>8</option>
+        <option>16</option>
+      </select>
+
+      <select class="combo" style="position: absolute; left: 95px; top: 758px; width: 60px;">
+        <option selected>1</option>
+        <option>2</option>
+        <option>4</option>
+      </select>
+
+      <div class="knob-container" style="left: 170px; top: 743px;">
+        <div class="knob" style="width: 45px; height: 45px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label">DET</div>
+      </div>
+    </div>
+
+    <!-- EFFECTS BAR - ALL 8 EFFECTS VISIBLE -->
+    <div class="panel" style="left: 605px; top: 730px; width: 580px; height: 55px;">
+      <div class="panel-label" style="left: 615px; top: 738px; font-size: 11px;">EFFECTS</div>
+
+      <!-- Distortion -->
+      <div class="knob-container" style="left: 645px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">DIST</div>
+      </div>
+
+      <!-- Chorus -->
+      <div class="knob-container" style="left: 730px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">CHOR</div>
+      </div>
+
+      <!-- Phaser -->
+      <div class="knob-container" style="left: 815px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">PHAS</div>
+      </div>
+
+      <!-- Flanger -->
+      <div class="knob-container" style="left: 900px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">FLNG</div>
+      </div>
+
+      <!-- Delay -->
+      <div class="knob-container" style="left: 985px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">DLY</div>
+      </div>
+
+      <!-- Reverb -->
+      <div class="knob-container" style="left: 1070px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">RVB</div>
+      </div>
+
+      <!-- EQ -->
+      <div class="knob-container" style="left: 1155px; top: 745px;">
+        <div class="knob" style="width: 35px; height: 35px;">
+          <div class="knob-indicator"></div>
+        </div>
+        <div class="knob-label" style="font-size: 9px;">EQ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug monitor (test HTML only) -->
+  <div class="debug-monitor">
+    <div class="debug-label">PARAMETER MONITOR</div>
+    <div class="debug-param" id="debugParam">—</div>
+    <div class="debug-value" id="debugValue">—</div>
+    <div class="debug-normalized" id="debugNormalized">—</div>
+  </div>
+
+  <script>
+    // Mock JUCE backend for browser testing
+    window.Juce = {
+      getSliderState: (id) => ({
+        normalisedValue: 0.5,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getToggleState: (id) => ({
+        value: false,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getComboBoxState: (id) => ({
+        selectedId: 0,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      })
+    };
+
+    // Disable context menu (REQUIRED)
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      return false;
+    });
+
+    // Draw ADSR curves on envelope canvases
+    function drawADSR(canvasId, a, d, s, r) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Grid
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, (h / 4) * i);
+        ctx.lineTo(w, (h / 4) * i);
+        ctx.stroke();
+      }
+
+      // ADSR curve
+      ctx.strokeStyle = '#ff8c42';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+
+      const totalTime = a + d + 50 + r; // Attack + Decay + Sustain + Release
+      const ax = (a / totalTime) * w;
+      const dx = ax + (d / totalTime) * w;
+      const sx = dx + (50 / totalTime) * w;
+      const rx = w;
+
+      ctx.moveTo(0, h);
+      ctx.lineTo(ax, 0);
+      ctx.lineTo(dx, h * (1 - s));
+      ctx.lineTo(sx, h * (1 - s));
+      ctx.lineTo(rx, h);
+      ctx.stroke();
+    }
+
+    // Draw 3D wavetable visualization
+    function drawWavetable(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw simple saw wave
+      ctx.strokeStyle = '#4ecdc4';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x < w; x++) {
+        const y = h / 2 + (h / 3) * Math.sin((x / w) * Math.PI * 2);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Draw mod matrix grid
+    function drawModMatrix() {
+      const canvas = document.getElementById('mod_matrix');
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw 8x8 grid
+      ctx.strokeStyle = '#2a2a2a';
+      ctx.lineWidth = 1;
+
+      const cellW = w / 8;
+      const cellH = h / 8;
+
+      for (let i = 0; i <= 8; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * cellW, 0);
+        ctx.lineTo(i * cellW, h);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i * cellH);
+        ctx.lineTo(w, i * cellH);
+        ctx.stroke();
+      }
+
+      // Draw some example routing
+      ctx.fillStyle = '#ff8c42';
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(cellW, cellH * 2, cellW, cellH);
+      ctx.fillRect(cellW * 3, cellH * 4, cellW, cellH);
+      ctx.globalAlpha = 1.0;
+    }
+
+    // Initialize canvases
+    document.addEventListener('DOMContentLoaded', () => {
+      drawADSR('env_amp_curve', 10, 100, 1.0, 200);
+      drawADSR('env_filter_curve', 10, 100, 0.5, 200);
+      drawWavetable('osc_a_viz');
+      drawWavetable('osc_b_viz');
+      drawModMatrix();
+
+      // Interactive knob rotation demo
+      document.querySelectorAll('.knob').forEach(knob => {
+        let isDragging = false;
+        let startY = 0;
+        let startValue = 0;
+
+        knob.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startY = e.clientY;
+          startValue = parseFloat(knob.dataset.value || 0.5);
+          e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+
+          const delta = (startY - e.clientY) / 100;
+          const newValue = Math.max(0, Math.min(1, startValue + delta));
+
+          knob.dataset.value = newValue;
+
+          const degrees = -135 + (newValue * 270);
+          const indicator = knob.querySelector('.knob-indicator');
+          if (indicator) {
+            indicator.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+          }
+
+          // Update debug monitor
+          document.getElementById('debugParam').textContent = knob.id || 'unknown';
+          document.getElementById('debugValue').textContent = `${(newValue * 100).toFixed(1)}%`;
+          document.getElementById('debugNormalized').textContent = `${(newValue * 100).toFixed(1)}%`;
+        });
+
+        document.addEventListener('mouseup', () => {
+          isDragging = false;
+        });
+      });
+    });
+  </script>
+</body>
+</html>
