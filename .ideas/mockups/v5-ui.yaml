@@ -1,0 +1,548 @@
+window:
+  width: 1200
+  height: 800
+  resizable: false
+
+controls:
+  # ===== HEADER SECTION (y: 0-45) =====
+  - id: preset_prev
+    type: button
+    position: { x: 350, y: 12 }
+    size: { width: 30, height: 20 }
+    label: "◀"
+
+  - id: preset_name
+    type: combo
+    position: { x: 390, y: 10 }
+    size: { width: 200, height: 25 }
+    label: "Init Preset"
+    options: ["Init Preset", "Bass Monster", "Evolving Pad", "Lead Saw"]
+
+  - id: preset_next
+    type: button
+    position: { x: 600, y: 12 }
+    size: { width: 30, height: 20 }
+    label: "▶"
+
+  - id: randomize
+    type: button
+    position: { x: 680, y: 10 }
+    size: { width: 100, height: 25 }
+    label: "RANDOMIZE"
+
+  - id: master_volume
+    type: slider
+    position: { x: 1050, y: 10 }
+    size: { width: 130, height: 25 }
+    range: [-60.0, 6.0]
+    default: 0.0
+    label: "MASTER"
+
+  # ===== OSCILLATOR A (y: 50-275, x: 10-350) =====
+  - id: osc_a_wavetable
+    type: combo
+    position: { x: 20, y: 75 }
+    size: { width: 150, height: 25 }
+    label: "Wavetable"
+    options: ["Basic", "Analog", "Digital", "Vocal"]
+
+  - id: osc_a_position
+    type: slider
+    position: { x: 20, y: 140 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Pos"
+
+  - id: osc_a_level
+    type: slider
+    position: { x: 85, y: 140 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 100.0
+    label: "Lvl"
+
+  - id: osc_a_pan
+    type: slider
+    position: { x: 150, y: 140 }
+    size: { width: 50, height: 50 }
+    range: [-100.0, 100.0]
+    default: 0.0
+    label: "Pan"
+
+  - id: osc_a_octave
+    type: combo
+    position: { x: 20, y: 210 }
+    size: { width: 55, height: 25 }
+    label: "Oct"
+    options: ["-4", "-3", "-2", "-1", "0", "+1", "+2", "+3", "+4"]
+
+  - id: osc_a_semitone
+    type: slider
+    position: { x: 90, y: 210 }
+    size: { width: 40, height: 40 }
+    range: [-12, 12]
+    default: 0
+    label: "Semi"
+
+  - id: osc_a_fine
+    type: slider
+    position: { x: 145, y: 210 }
+    size: { width: 40, height: 40 }
+    range: [-100, 100]
+    default: 0
+    label: "Fine"
+
+  - id: osc_a_warp_mode
+    type: combo
+    position: { x: 210, y: 140 }
+    size: { width: 130, height: 25 }
+    label: "Warp Mode"
+    options: ["Sync", "Bend+", "FM", "AM", "PWM"]
+
+  - id: osc_a_warp_amount
+    type: slider
+    position: { x: 260, y: 180 }
+    size: { width: 40, height: 40 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Amount"
+
+  # ===== OSCILLATOR B (y: 50-275, x: 360-700) =====
+  - id: osc_b_wavetable
+    type: combo
+    position: { x: 370, y: 75 }
+    size: { width: 150, height: 25 }
+    label: "Wavetable"
+    options: ["Basic", "Analog", "Digital", "Vocal"]
+
+  - id: osc_b_position
+    type: slider
+    position: { x: 370, y: 140 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Pos"
+
+  - id: osc_b_level
+    type: slider
+    position: { x: 435, y: 140 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 100.0
+    label: "Lvl"
+
+  - id: osc_b_pan
+    type: slider
+    position: { x: 500, y: 140 }
+    size: { width: 50, height: 50 }
+    range: [-100.0, 100.0]
+    default: 0.0
+    label: "Pan"
+
+  - id: osc_b_octave
+    type: combo
+    position: { x: 370, y: 210 }
+    size: { width: 55, height: 25 }
+    label: "Oct"
+    options: ["-4", "-3", "-2", "-1", "0", "+1", "+2", "+3", "+4"]
+
+  - id: osc_b_semitone
+    type: slider
+    position: { x: 440, y: 210 }
+    size: { width: 40, height: 40 }
+    range: [-12, 12]
+    default: 0
+    label: "Semi"
+
+  - id: osc_b_fine
+    type: slider
+    position: { x: 495, y: 210 }
+    size: { width: 40, height: 40 }
+    range: [-100, 100]
+    default: 0
+    label: "Fine"
+
+  - id: osc_b_warp_mode
+    type: combo
+    position: { x: 560, y: 140 }
+    size: { width: 130, height: 25 }
+    label: "Warp Mode"
+    options: ["Sync", "Bend+", "FM", "AM", "PWM"]
+
+  - id: osc_b_warp_amount
+    type: slider
+    position: { x: 610, y: 180 }
+    size: { width: 40, height: 40 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Amount"
+
+  # ===== SUB + NOISE (y: 50-275, x: 710-900) - FIXED LAYOUT =====
+  # SUB column (left)
+  - id: sub_shape
+    type: combo
+    position: { x: 720, y: 75 }
+    size: { width: 80, height: 25 }
+    label: "Shape"
+    options: ["Sine", "Triangle", "Square"]
+
+  - id: sub_octave
+    type: combo
+    position: { x: 720, y: 125 }
+    size: { width: 80, height: 25 }
+    label: "Octave"
+    options: ["-2", "-1", "0"]
+
+  - id: sub_level
+    type: slider
+    position: { x: 730, y: 180 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Level"
+
+  # NOISE column (right)
+  - id: noise_type
+    type: combo
+    position: { x: 815, y: 75 }
+    size: { width: 80, height: 25 }
+    label: "Type"
+    options: ["White", "Pink", "Digital"]
+
+  - id: noise_level
+    type: slider
+    position: { x: 825, y: 125 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Level"
+
+  # ===== FILTER (y: 50-275, x: 910-1190) =====
+  - id: filter_type
+    type: combo
+    position: { x: 920, y: 75 }
+    size: { width: 150, height: 25 }
+    label: "Filter Type"
+    options: ["LP 24dB", "LP 12dB", "HP 24dB", "BP 12dB", "Notch"]
+
+  - id: filter_cutoff
+    type: slider
+    position: { x: 930, y: 120 }
+    size: { width: 70, height: 70 }
+    range: [20.0, 20000.0]
+    default: 20000.0
+    label: "Cutoff"
+
+  - id: filter_resonance
+    type: slider
+    position: { x: 1020, y: 135 }
+    size: { width: 40, height: 40 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Res"
+
+  - id: filter_drive
+    type: slider
+    position: { x: 1075, y: 135 }
+    size: { width: 40, height: 40 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Drive"
+
+  - id: filter_env_depth
+    type: slider
+    position: { x: 1020, y: 200 }
+    size: { width: 40, height: 40 }
+    range: [-100.0, 100.0]
+    default: 0.0
+    label: "EnvDepth"
+
+  - id: filter_keytrack
+    type: slider
+    position: { x: 1075, y: 200 }
+    size: { width: 40, height: 40 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Keytrack"
+
+  # ===== AMP ENVELOPE (y: 290-480, x: 10-360) =====
+  - id: amp_attack
+    type: slider
+    position: { x: 30, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 10.0]
+    default: 0.01
+    label: "Attack"
+
+  - id: amp_decay
+    type: slider
+    position: { x: 110, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 10.0]
+    default: 0.1
+    label: "Decay"
+
+  - id: amp_sustain
+    type: slider
+    position: { x: 190, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 100.0
+    label: "Sustain"
+
+  - id: amp_release
+    type: slider
+    position: { x: 270, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 10.0]
+    default: 0.2
+    label: "Release"
+
+  # ===== FILTER ENVELOPE (y: 290-480, x: 370-720) =====
+  - id: filt_attack
+    type: slider
+    position: { x: 390, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 10.0]
+    default: 0.01
+    label: "Attack"
+
+  - id: filt_decay
+    type: slider
+    position: { x: 470, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 10.0]
+    default: 0.1
+    label: "Decay"
+
+  - id: filt_sustain
+    type: slider
+    position: { x: 550, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 100.0]
+    default: 50.0
+    label: "Sustain"
+
+  - id: filt_release
+    type: slider
+    position: { x: 630, y: 400 }
+    size: { width: 50, height: 50 }
+    range: [0.0, 10.0]
+    default: 0.2
+    label: "Release"
+
+  # ===== LFO 1-4 (y: 290-480, x: 730-1190) =====
+  - id: lfo1_shape
+    type: combo
+    position: { x: 740, y: 320 }
+    size: { width: 90, height: 25 }
+    label: "LFO1 Shape"
+    options: ["Sine", "Triangle", "Saw", "Square", "S&H"]
+
+  - id: lfo1_rate
+    type: slider
+    position: { x: 755, y: 365 }
+    size: { width: 45, height: 45 }
+    range: [0.01, 100.0]
+    default: 1.0
+    label: "Rate"
+
+  - id: lfo1_sync
+    type: toggle
+    position: { x: 770, y: 420 }
+    size: { width: 30, height: 20 }
+    label: "Sync"
+
+  - id: lfo2_shape
+    type: combo
+    position: { x: 850, y: 320 }
+    size: { width: 90, height: 25 }
+    label: "LFO2 Shape"
+    options: ["Sine", "Triangle", "Saw", "Square", "S&H"]
+
+  - id: lfo2_rate
+    type: slider
+    position: { x: 865, y: 365 }
+    size: { width: 45, height: 45 }
+    range: [0.01, 100.0]
+    default: 1.0
+    label: "Rate"
+
+  - id: lfo2_sync
+    type: toggle
+    position: { x: 880, y: 420 }
+    size: { width: 30, height: 20 }
+    label: "Sync"
+
+  - id: lfo3_shape
+    type: combo
+    position: { x: 960, y: 320 }
+    size: { width: 90, height: 25 }
+    label: "LFO3 Shape"
+    options: ["Sine", "Triangle", "Saw", "Square", "S&H"]
+
+  - id: lfo3_rate
+    type: slider
+    position: { x: 975, y: 365 }
+    size: { width: 45, height: 45 }
+    range: [0.01, 100.0]
+    default: 1.0
+    label: "Rate"
+
+  - id: lfo3_sync
+    type: toggle
+    position: { x: 990, y: 420 }
+    size: { width: 30, height: 20 }
+    label: "Sync"
+
+  - id: lfo4_shape
+    type: combo
+    position: { x: 1070, y: 320 }
+    size: { width: 90, height: 25 }
+    label: "LFO4 Shape"
+    options: ["Sine", "Triangle", "Saw", "Square", "S&H"]
+
+  - id: lfo4_rate
+    type: slider
+    position: { x: 1085, y: 365 }
+    size: { width: 45, height: 45 }
+    range: [0.01, 100.0]
+    default: 1.0
+    label: "Rate"
+
+  - id: lfo4_sync
+    type: toggle
+    position: { x: 1100, y: 420 }
+    size: { width: 30, height: 20 }
+    label: "Sync"
+
+  # ===== MACROS + VOICE (y: 490-680, x: 720-1190) =====
+  - id: macro1
+    type: slider
+    position: { x: 730, y: 530 }
+    size: { width: 55, height: 55 }
+    range: [0.0, 100.0]
+    default: 50.0
+    label: "M1"
+
+  - id: macro2
+    type: slider
+    position: { x: 810, y: 530 }
+    size: { width: 55, height: 55 }
+    range: [0.0, 100.0]
+    default: 50.0
+    label: "M2"
+
+  - id: macro3
+    type: slider
+    position: { x: 890, y: 530 }
+    size: { width: 55, height: 55 }
+    range: [0.0, 100.0]
+    default: 50.0
+    label: "M3"
+
+  - id: macro4
+    type: slider
+    position: { x: 970, y: 530 }
+    size: { width: 55, height: 55 }
+    range: [0.0, 100.0]
+    default: 50.0
+    label: "M4"
+
+  - id: unison_voices
+    type: combo
+    position: { x: 1060, y: 520 }
+    size: { width: 100, height: 25 }
+    label: "Unison Voices"
+    options: ["1", "2", "4", "8", "16"]
+
+  - id: unison_detune
+    type: slider
+    position: { x: 1070, y: 565 }
+    size: { width: 45, height: 45 }
+    range: [0.0, 100.0]
+    default: 25.0
+    label: "Detune"
+
+  - id: glide_time
+    type: slider
+    position: { x: 1130, y: 565 }
+    size: { width: 45, height: 45 }
+    range: [0.0, 10.0]
+    default: 0.0
+    label: "Glide"
+
+  # ===== EFFECTS BAR (y: 690-795, x: 10-1190) =====
+  - id: fx_distortion_mix
+    type: slider
+    position: { x: 20, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Dist"
+
+  - id: fx_chorus_mix
+    type: slider
+    position: { x: 165, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Chorus"
+
+  - id: fx_phaser_mix
+    type: slider
+    position: { x: 310, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Phaser"
+
+  - id: fx_flanger_mix
+    type: slider
+    position: { x: 455, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Flanger"
+
+  - id: fx_delay_mix
+    type: slider
+    position: { x: 600, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Delay"
+
+  - id: fx_reverb_mix
+    type: slider
+    position: { x: 745, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Reverb"
+
+  - id: fx_eq_mix
+    type: slider
+    position: { x: 890, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "EQ"
+
+  - id: fx_compressor_mix
+    type: slider
+    position: { x: 1035, y: 730 }
+    size: { width: 30, height: 30 }
+    range: [0.0, 100.0]
+    default: 0.0
+    label: "Comp"
+
+styling:
+  colors:
+    background: "#1a1a1a"
+    foreground: "#ffffff"
+    accent: "#ff8c42"
+    secondary: "#4ecdc4"
+  fonts:
+    primary: "Arial, sans-serif"
