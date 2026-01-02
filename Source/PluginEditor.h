@@ -11,7 +11,8 @@
     ⚠️ CRITICAL: Member declaration order affects destruction order
     Members destroyed in REVERSE order → attachments must be destroyed BEFORE webView
 */
-class CodoxAudioProcessorEditor  : public juce::AudioProcessorEditor
+class CodoxAudioProcessorEditor  : public juce::AudioProcessorEditor,
+                                   private juce::Timer
 {
 public:
     CodoxAudioProcessorEditor (CodoxAudioProcessor&);
@@ -20,8 +21,15 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    void visibilityChanged() override;
 
 private:
+    // Timer callback for WebView refresh
+    void timerCallback() override;
+
+    // Track if we need to refresh WebView after visibility change
+    bool needsRefresh = false;
+
     // Reference to processor
     CodoxAudioProcessor& audioProcessor;
 

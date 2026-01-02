@@ -235,19 +235,53 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
     // Set editor size (matches CSS plugin-frame dimensions - Serum-style)
     setSize (1000, 700);
 
+    // Make WebView opaque to prevent transparency issues
+    webView.setOpaque(true);
+
     // Add WebView to editor
     addAndMakeVisible(webView);
 
     // Navigate to local page
     webView.goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
+
+    // Start timer to handle visibility refresh (check every 100ms)
+    startTimer(100);
 }
 
 CodoxAudioProcessorEditor::~CodoxAudioProcessorEditor()
 {
+    // Stop timer before destruction
+    stopTimer();
+
     // Attachments destroyed first (reverse order)
     // Then webView destroyed
     // Then relays destroyed last
     // This order prevents crashes during plugin reload
+}
+
+//==============================================================================
+void CodoxAudioProcessorEditor::visibilityChanged()
+{
+    if (isVisible())
+    {
+        // Flag that we need to refresh WebView
+        needsRefresh = true;
+    }
+}
+
+void CodoxAudioProcessorEditor::timerCallback()
+{
+    if (needsRefresh && isVisible())
+    {
+        needsRefresh = false;
+
+        // Force WebView to repaint by triggering a resize
+        webView.setBounds(getLocalBounds());
+        webView.repaint();
+
+        // Also repaint the whole editor
+        repaint();
+    }
 }
 
 //==============================================================================
