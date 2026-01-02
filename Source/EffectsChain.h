@@ -25,7 +25,7 @@ public:
         // Prepare all effects
         chorus.prepare(spec);
         phaser.prepare(spec);
-        reverb.prepare(spec);
+        reverb.setSampleRate(sampleRate); // Classic juce::Reverb uses setSampleRate
         compressor.prepare(spec);
 
         // Delay line preparation (2 seconds max delay)
@@ -218,34 +218,19 @@ public:
             rightSample = dryRight * (1.0f - delayMix) + delayedRight * delayMix;
         }
 
-        // Effect 6: Reverb (simple feedback delay network approximation)
+        // Effect 6: Reverb (using JUCE Reverb with single-sample wrapper)
         if (reverbMix > 0.0f)
         {
             float dryLeft = leftSample;
             float dryRight = rightSample;
 
-            // Simple reverb using multiple delay taps (Schroeder-style approximation)
-            float wetLeft = 0.0f;
-            float wetRight = 0.0f;
+            // Use single-sample arrays for JUCE reverb
+            float wetLeftArr[1] = { leftSample };
+            float wetRightArr[1] = { rightSample };
+            reverb.processStereo(wetLeftArr, wetRightArr, 1);
 
-            // 4 delay taps with different delay times (simulating early reflections)
-            const float delays[] = { 0.03f, 0.05f, 0.07f, 0.11f }; // in seconds
-            const float gains[] = { 0.5f, 0.4f, 0.3f, 0.2f };
-
-            for (int tap = 0; tap < 4; ++tap)
-            {
-                float delaySamples = delays[tap] * static_cast<float>(currentSampleRate);
-                wetLeft += delayLine.popSample(0, delaySamples, true) * gains[tap];
-                wetRight += delayLine.popSample(1, delaySamples, true) * gains[tap];
-            }
-
-            // Cross-feed for stereo width
-            float tmp = wetLeft;
-            wetLeft = wetLeft * 0.7f + wetRight * 0.3f;
-            wetRight = wetRight * 0.7f + tmp * 0.3f;
-
-            leftSample = dryLeft * (1.0f - reverbMix) + wetLeft * reverbMix;
-            rightSample = dryRight * (1.0f - reverbMix) + wetRight * reverbMix;
+            leftSample = dryLeft * (1.0f - reverbMix) + wetLeftArr[0] * reverbMix;
+            rightSample = dryRight * (1.0f - reverbMix) + wetRightArr[0] * reverbMix;
         }
 
         // Effect 7: EQ (3-band parametric)
@@ -299,6 +284,46 @@ public:
     void setEQMix(float mix) { eqMix = juce::jlimit(0.0f, 1.0f, mix); }
     void setCompressorMix(float mix) { compressorMix = juce::jlimit(0.0f, 1.0f, mix); }
 
+    // Effect timing parameters
+    void setDelayTime(float timeMs) {
+        delayTime = juce::jlimit(10.0f, 2000.0f, timeMs);
+    }
+
+    void setDelayFeedback(float feedback) {
+        delayFeedback = juce::jlimit(0.0f, 0.95f, feedback);
+    }
+
+    void setReverbSize(float size) {
+        reverbRoomSize = juce::jlimit(0.0f, 1.0f, size);
+        updateReverbParams();
+    }
+
+    void setReverbDamping(float damping) {
+        reverbDamping = juce::jlimit(0.0f, 1.0f, damping);
+        updateReverbParams();
+    }
+
+    void setReverbWidth(float width) {
+        reverbWidth = juce::jlimit(0.0f, 1.0f, width);
+        updateReverbParams();
+    }
+
+    void setChorusRate(float rate) {
+        chorus.setRate(juce::jlimit(0.1f, 10.0f, rate));
+    }
+
+    void setChorusDepth(float depth) {
+        chorus.setDepth(juce::jlimit(0.0f, 1.0f, depth));
+    }
+
+    void setFlangerRate(float rate) {
+        flangerLFORate = juce::jlimit(0.05f, 5.0f, rate);
+    }
+
+    void setPhaserRate(float rate) {
+        phaser.setRate(juce::jlimit(0.1f, 5.0f, rate));
+    }
+
 private:
     // Mix parameters (0.0-1.0, controlled by APVTS)
     float distortionMix = 0.0f;
@@ -317,10 +342,25 @@ private:
     float flangerLFORate = 0.2f; // Hz
     float flangerFeedback = 0.6f;
 
+    // Reverb parameters (for classic juce::Reverb)
+    float reverbRoomSize = 0.7f;
+    float reverbDamping = 0.5f;
+    float reverbWidth = 1.0f;
+
+    void updateReverbParams() {
+        juce::Reverb::Parameters params;
+        params.roomSize = reverbRoomSize;
+        params.damping = reverbDamping;
+        params.width = reverbWidth;
+        params.wetLevel = 1.0f;
+        params.dryLevel = 0.0f;
+        reverb.setParameters(params);
+    }
+
     // JUCE DSP components
     juce::dsp::Chorus<float> chorus;
     juce::dsp::Phaser<float> phaser;
-    juce::dsp::Reverb reverb;
+    juce::Reverb reverb; // Using classic juce::Reverb for sample-by-sample processing
     juce::dsp::Compressor<float> compressor;
     juce::dsp::DelayLine<float> delayLine { 192000 }; // Max 2 seconds at 96kHz
     juce::dsp::DelayLine<float> flangerDelayLine { 1920 }; // Max 20ms at 96kHz
@@ -369,12 +409,12 @@ private:
         phaser.setMix(1.0f); // 100% wet
 
         // Reverb: room size = 0.7, damping = 0.5, width = 1.0, wet/dry handled externally
-        juce::dsp::Reverb::Parameters reverbParams;
+        juce::Reverb::Parameters reverbParams;
         reverbParams.roomSize = 0.7f;
         reverbParams.damping = 0.5f;
         reverbParams.width = 1.0f;
-        reverbParams.wetLevel = 1.0f; // 100% wet
-        reverbParams.dryLevel = 0.0f; // No dry (we handle dry/wet in processStereo)
+        reverbParams.wetLevel = 1.0f; // 100% wet (we handle dry/wet in processStereo)
+        reverbParams.dryLevel = 0.0f; // No dry
         reverb.setParameters(reverbParams);
 
         // Compressor: threshold = -20 dB, ratio = 4:1, attack = 10ms, release = 100ms

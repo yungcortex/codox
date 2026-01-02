@@ -232,8 +232,8 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
     , fxEqMixAttachment(*audioProcessor.parameters.getParameter("fx_eq_mix"), fxEqMixRelay, nullptr)
     , fxCompressorMixAttachment(*audioProcessor.parameters.getParameter("fx_compressor_mix"), fxCompressorMixRelay, nullptr)
 {
-    // Set editor size (from v6-ui.yaml window dimensions)
-    setSize (1200, 800);
+    // Set editor size (matches CSS plugin-frame dimensions - Serum-style)
+    setSize (1000, 700);
 
     // Add WebView to editor
     addAndMakeVisible(webView);
@@ -287,6 +287,14 @@ CodoxAudioProcessorEditor::getResource(const juce::String& url)
     if (url == "/js/juce/index.js") {
         return juce::WebBrowserComponent::Resource {
             makeVector(BinaryData::index_js, BinaryData::index_jsSize),
+            juce::String("application/javascript")
+        };
+    }
+
+    // JUCE native interop check (required by index.js)
+    if (url == "/js/juce/check_native_interop.js") {
+        return juce::WebBrowserComponent::Resource {
+            makeVector(BinaryData::check_native_interop_js, BinaryData::check_native_interop_jsSize),
             juce::String("application/javascript")
         };
     }

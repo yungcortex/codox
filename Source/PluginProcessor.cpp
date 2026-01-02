@@ -596,6 +596,104 @@ juce::AudioProcessorValueTreeState::ParameterLayout CodoxAudioProcessor::createP
         "%"
     ));
 
+    // fx_delay_time - Float (10-2000ms)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_delay_time", 1 },
+        "Delay Time",
+        juce::NormalisableRange<float>(10.0f, 2000.0f, 1.0f, 0.5f),
+        500.0f,
+        "ms"
+    ));
+
+    // fx_delay_feedback - Float (0-95%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_delay_feedback", 1 },
+        "Delay Feedback",
+        juce::NormalisableRange<float>(0.0f, 95.0f, 0.1f),
+        40.0f,
+        "%"
+    ));
+
+    // ==================== TEMPO SYNC PARAMETERS ====================
+
+    // fx_delay_sync - Bool (sync to tempo)
+    layout.add(std::make_unique<juce::AudioParameterBool>(
+        juce::ParameterID { "fx_delay_sync", 1 },
+        "Delay Sync",
+        false
+    ));
+
+    // fx_delay_sync_rate - Choice (1/16, 1/8, 1/4, 1/2, 1, 2 bars)
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID { "fx_delay_sync_rate", 1 },
+        "Delay Sync Rate",
+        juce::StringArray { "1/16", "1/8", "1/4", "1/2", "1", "2" },
+        2  // Default: 1/4 note
+    ));
+
+    // fx_chorus_sync - Bool
+    layout.add(std::make_unique<juce::AudioParameterBool>(
+        juce::ParameterID { "fx_chorus_sync", 1 },
+        "Chorus Sync",
+        false
+    ));
+
+    // fx_chorus_sync_rate - Choice
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID { "fx_chorus_sync_rate", 1 },
+        "Chorus Sync Rate",
+        juce::StringArray { "1/16", "1/8", "1/4", "1/2", "1", "2", "4" },
+        4  // Default: 1 bar
+    ));
+
+    // fx_phaser_sync - Bool
+    layout.add(std::make_unique<juce::AudioParameterBool>(
+        juce::ParameterID { "fx_phaser_sync", 1 },
+        "Phaser Sync",
+        false
+    ));
+
+    // fx_phaser_sync_rate - Choice
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID { "fx_phaser_sync_rate", 1 },
+        "Phaser Sync Rate",
+        juce::StringArray { "1/16", "1/8", "1/4", "1/2", "1", "2", "4" },
+        4  // Default: 1 bar
+    ));
+
+    // fx_flanger_sync - Bool
+    layout.add(std::make_unique<juce::AudioParameterBool>(
+        juce::ParameterID { "fx_flanger_sync", 1 },
+        "Flanger Sync",
+        false
+    ));
+
+    // fx_flanger_sync_rate - Choice
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID { "fx_flanger_sync_rate", 1 },
+        "Flanger Sync Rate",
+        juce::StringArray { "1/16", "1/8", "1/4", "1/2", "1", "2", "4" },
+        3  // Default: 1/2 bar
+    ));
+
+    // fx_reverb_size - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_reverb_size", 1 },
+        "Reverb Size",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        70.0f,
+        "%"
+    ));
+
+    // fx_reverb_decay - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_reverb_decay", 1 },
+        "Reverb Decay",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        50.0f,
+        "%"
+    ));
+
     return layout;
 }
 
@@ -761,6 +859,52 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     auto* fx_eq_mix = parameters.getRawParameterValue("fx_eq_mix");
     auto* fx_compressor_mix = parameters.getRawParameterValue("fx_compressor_mix");
 
+    // Phase 3.5: Read effect timing parameters
+    auto* fx_delay_time = parameters.getRawParameterValue("fx_delay_time");
+    auto* fx_delay_feedback = parameters.getRawParameterValue("fx_delay_feedback");
+    auto* fx_reverb_size = parameters.getRawParameterValue("fx_reverb_size");
+    auto* fx_reverb_decay = parameters.getRawParameterValue("fx_reverb_decay");
+
+    // Read tempo sync parameters
+    auto* fx_delay_sync = parameters.getRawParameterValue("fx_delay_sync");
+    auto* fx_delay_sync_rate = parameters.getRawParameterValue("fx_delay_sync_rate");
+    auto* fx_chorus_sync = parameters.getRawParameterValue("fx_chorus_sync");
+    auto* fx_chorus_sync_rate = parameters.getRawParameterValue("fx_chorus_sync_rate");
+    auto* fx_phaser_sync = parameters.getRawParameterValue("fx_phaser_sync");
+    auto* fx_phaser_sync_rate = parameters.getRawParameterValue("fx_phaser_sync_rate");
+    auto* fx_flanger_sync = parameters.getRawParameterValue("fx_flanger_sync");
+    auto* fx_flanger_sync_rate = parameters.getRawParameterValue("fx_flanger_sync_rate");
+
+    // Get BPM from host
+    double bpm = 120.0; // Default fallback
+    if (auto* playHead = getPlayHead())
+    {
+        if (auto posInfo = playHead->getPosition())
+        {
+            if (posInfo->getBpm().hasValue())
+                bpm = *posInfo->getBpm();
+        }
+    }
+
+    // Helper lambda to convert sync rate index to note multiplier
+    // Index: 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1, 5=2, 6=4
+    auto getSyncMultiplier = [](int rateIndex) -> float {
+        const float multipliers[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f };
+        return (rateIndex >= 0 && rateIndex < 7) ? multipliers[rateIndex] : 1.0f;
+    };
+
+    // Calculate synced time in ms: (60000 / bpm) * multiplier
+    auto calcSyncedTimeMs = [&](int rateIndex) -> float {
+        float quarterNoteMs = 60000.0f / static_cast<float>(bpm);
+        return quarterNoteMs * getSyncMultiplier(rateIndex);
+    };
+
+    // Calculate synced rate in Hz: bpm / (60 * multiplier)
+    auto calcSyncedRateHz = [&](int rateIndex) -> float {
+        float multiplier = getSyncMultiplier(rateIndex);
+        return static_cast<float>(bpm) / (60.0f * multiplier);
+    };
+
     // Phase 3.5: Update effects chain mix parameters
     effectsChain.setDistortionMix(fx_distortion_mix->load() / 100.0f); // Convert 0-100% to 0.0-1.0
     effectsChain.setChorusMix(fx_chorus_mix->load() / 100.0f);
@@ -770,6 +914,43 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     effectsChain.setReverbMix(fx_reverb_mix->load() / 100.0f);
     effectsChain.setEQMix(fx_eq_mix->load() / 100.0f);
     effectsChain.setCompressorMix(fx_compressor_mix->load() / 100.0f);
+
+    // Update delay time (with optional tempo sync)
+    if (fx_delay_sync->load() > 0.5f)
+    {
+        float syncedTimeMs = calcSyncedTimeMs(static_cast<int>(fx_delay_sync_rate->load()));
+        effectsChain.setDelayTime(juce::jlimit(10.0f, 2000.0f, syncedTimeMs));
+    }
+    else
+    {
+        effectsChain.setDelayTime(fx_delay_time->load());
+    }
+    effectsChain.setDelayFeedback(fx_delay_feedback->load() / 100.0f);
+
+    // Update chorus rate (with optional tempo sync)
+    if (fx_chorus_sync->load() > 0.5f)
+    {
+        float syncedRateHz = calcSyncedRateHz(static_cast<int>(fx_chorus_sync_rate->load()));
+        effectsChain.setChorusRate(juce::jlimit(0.01f, 20.0f, syncedRateHz));
+    }
+
+    // Update phaser rate (with optional tempo sync)
+    if (fx_phaser_sync->load() > 0.5f)
+    {
+        float syncedRateHz = calcSyncedRateHz(static_cast<int>(fx_phaser_sync_rate->load()));
+        effectsChain.setPhaserRate(juce::jlimit(0.01f, 20.0f, syncedRateHz));
+    }
+
+    // Update flanger rate (with optional tempo sync)
+    if (fx_flanger_sync->load() > 0.5f)
+    {
+        float syncedRateHz = calcSyncedRateHz(static_cast<int>(fx_flanger_sync_rate->load()));
+        effectsChain.setFlangerRate(juce::jlimit(0.01f, 20.0f, syncedRateHz));
+    }
+
+    // Update reverb parameters
+    effectsChain.setReverbSize(fx_reverb_size->load() / 100.0f);
+    effectsChain.setReverbDamping(1.0f - (fx_reverb_decay->load() / 100.0f)); // Invert: higher decay = less damping
 
     // Update all voices with current parameters
     for (auto& voice : voices)

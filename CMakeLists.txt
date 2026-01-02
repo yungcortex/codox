@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
+project(Codox VERSION 1.0.0)
+
+# JUCE is already added by root CMakeLists.txt - do not add again
 
 # Plugin formats: VST3, AU, Standalone
 juce_add_plugin(Codox
@@ -56,6 +59,7 @@ juce_add_binary_data(Codox_UIResources
     SOURCES
         Source/ui/public/index.html
         Source/ui/public/js/juce/index.js
+        Source/ui/public/js/juce/check_native_interop.js
 )
 
 target_link_libraries(Codox

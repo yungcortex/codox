@@ -4,602 +4,1353 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Codox</title>
-
   <style>
-    /* CRITICAL: WebView constraints */
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; }
     body {
-      /* Native application feel */
-      user-select: none;
-      -webkit-user-select: none;
-      cursor: default;
-      overflow: hidden;
-
-      /* Center the plugin frame */
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #000;
-      font-family: Arial, sans-serif;
     }
 
-    /* Fixed-size frame matching plugin spec */
     .plugin-frame {
-      width: 1200px;
-      height: 800px;
-      border: 2px solid #444;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      width: 1000px;
+      height: 700px;
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
       overflow: hidden;
-      position: relative;
-      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Main container */
-    .container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      color: #ffffff;
-    }
-
-    /* Section styling */
-    .section {
-      position: absolute;
-      border: 1px solid #333;
-      border-radius: 4px;
-      padding: 8px;
-    }
-
-    .section-label {
-      position: absolute;
-      font-size: 11px;
-      font-weight: bold;
-      color: #999;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    /* Header section */
+    /* Header */
     .header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 45px;
-      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+      height: 50px;
+      background: linear-gradient(180deg, #252525 0%, #1a1a1a 100%);
       border-bottom: 1px solid #333;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
+      padding: 0 15px;
+      gap: 15px;
+      flex-shrink: 0;
     }
 
-    /* Oscillator sections */
-    .osc-section {
-      background: rgba(78, 205, 196, 0.05);
-      border-color: rgba(78, 205, 196, 0.2);
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 3px;
     }
 
-    .osc-a {
-      left: 10px;
-      top: 50px;
-      width: 340px;
-      height: 225px;
+    .preset-browser { display: flex; align-items: center; gap: 8px; margin-left: 20px; }
+    .preset-nav-btn {
+      width: 24px; height: 24px;
+      background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #888; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: all 0.15s;
+    }
+    .preset-nav-btn:hover { background: #3a3a3a; color: #4ecdc4; border-color: #4ecdc4; }
+    .preset-select {
+      width: 200px; height: 28px;
+      background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #fff; padding: 0 10px; font-size: 12px; cursor: pointer;
+    }
+    .preset-save-btn {
+      padding: 6px 12px;
+      background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #888; font-size: 11px; cursor: pointer; transition: all 0.15s;
+    }
+    .preset-save-btn:hover { background: #4ecdc4; color: #000; border-color: #4ecdc4; }
+    .randomize-btn {
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+      border: none; border-radius: 4px;
+      color: #000; font-weight: 600; font-size: 11px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .randomize-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(78, 205, 196, 0.4); }
+    .header-spacer { flex: 1; }
+    .master-section { display: flex; align-items: center; gap: 10px; }
+    .master-label { font-size: 10px; color: #666; letter-spacing: 1px; }
+    .oscilloscope {
+      width: 100px; height: 35px;
+      background: #0a0a0a; border: 1px solid #333; border-radius: 4px; overflow: hidden;
     }
 
-    .osc-b {
-      left: 360px;
-      top: 50px;
-      width: 340px;
-      height: 225px;
-    }
-
-    /* Sub + Noise section */
-    .sub-noise {
-      left: 710px;
-      top: 50px;
-      width: 190px;
-      height: 225px;
-      background: rgba(255, 140, 66, 0.05);
-      border-color: rgba(255, 140, 66, 0.2);
-    }
-
-    /* Filter section */
-    .filter-section {
-      left: 910px;
-      top: 50px;
-      width: 280px;
-      height: 225px;
-      background: rgba(255, 140, 66, 0.05);
-      border-color: rgba(255, 140, 66, 0.2);
-    }
-
-    /* Envelope sections */
-    .amp-env {
-      left: 10px;
-      top: 290px;
-      width: 340px;
-      height: 190px;
-      background: rgba(78, 205, 196, 0.05);
-      border-color: rgba(78, 205, 196, 0.2);
-    }
-
-    .filt-env {
-      left: 360px;
-      top: 290px;
-      width: 340px;
-      height: 190px;
-      background: rgba(255, 140, 66, 0.05);
-      border-color: rgba(255, 140, 66, 0.2);
-    }
-
-    /* LFO section */
-    .lfo-section {
-      left: 710px;
-      top: 290px;
-      width: 480px;
-      height: 190px;
-      background: rgba(78, 205, 196, 0.05);
-      border-color: rgba(78, 205, 196, 0.2);
-    }
-
-    /* Macros + Voice section */
-    .macros-voice {
-      left: 710px;
-      top: 490px;
-      width: 480px;
-      height: 190px;
-      background: rgba(255, 140, 66, 0.05);
-      border-color: rgba(255, 140, 66, 0.2);
-    }
-
-    /* Effects bar */
-    .effects-bar {
-      left: 10px;
-      top: 690px;
-      width: 1180px;
-      height: 105px;
-      background: rgba(78, 205, 196, 0.05);
-      border-color: rgba(78, 205, 196, 0.2);
-    }
-
-    /* Control styling */
-    button {
-      padding: 4px 12px;
-      background: #333;
-      border: 1px solid #555;
-      border-radius: 3px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 11px;
-    }
-
-    button:hover {
-      background: #444;
-    }
-
-    select {
-      padding: 4px 8px;
-      background: #2a2a2a;
-      border: 1px solid #555;
-      border-radius: 3px;
-      color: #fff;
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      background: transparent;
-      cursor: pointer;
-    }
-
-    input[type="range"]::-webkit-slider-track {
-      background: #333;
-      height: 4px;
-      border-radius: 2px;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      background: #4ecdc4;
-      border-radius: 50%;
-      margin-top: -5px;
-    }
-
-    input[type="checkbox"] {
-      width: 30px;
-      height: 20px;
-      cursor: pointer;
-    }
-
-    /* Canvas displays */
-    canvas {
-      border-radius: 3px;
-      background: #0a0a0a;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-    }
-
-    /* Control labels */
-    .control-label {
-      font-size: 10px;
-      color: #999;
-      text-align: center;
-      margin-top: 3px;
-    }
-
-    /* Position absolute controls */
-    .positioned-control {
-      position: absolute;
+    /* Tabs */
+    .tab-nav {
+      height: 36px;
+      background: #151515;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      align-items: stretch;
+      border-bottom: 1px solid #333;
+      flex-shrink: 0;
     }
+    .tab-btn {
+      padding: 0 30px;
+      background: transparent; border: none;
+      color: #666; font-size: 12px; font-weight: 600; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.15s; position: relative;
+    }
+    .tab-btn:hover { color: #999; }
+    .tab-btn.active { color: #4ecdc4; background: #1a1a1a; }
+    .tab-btn.active::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: #4ecdc4;
+    }
+
+    /* Content */
+    .tab-content { flex: 1; overflow: hidden; }
+    .tab-panel { display: none; height: 100%; padding: 12px; }
+    .tab-panel.active { display: block; }
+
+    /* Section */
+    .section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 12px;
+      position: relative;
+    }
+    .section-title {
+      position: absolute; top: -8px; left: 12px;
+      background: #151515; padding: 0 8px;
+      font-size: 10px; font-weight: 600; color: #4ecdc4;
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .section.accent-orange .section-title { color: #ff8c42; }
+    .section.accent-purple .section-title { color: #9b59b6; }
+    .section.accent-blue .section-title { color: #3498db; }
+    .section.accent-red .section-title { color: #e74c3c; }
+
+    /* Knobs */
+    .knob-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .knob { width: 40px; height: 40px; position: relative; cursor: pointer; }
+    .knob.large { width: 50px; height: 50px; }
+    .knob.small { width: 32px; height: 32px; }
+    .knob-bg {
+      position: absolute; width: 100%; height: 100%; border-radius: 50%;
+      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+      box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5), inset -1px -1px 2px rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .knob-track { position: absolute; width: 100%; height: 100%; }
+    .knob-track circle { fill: none; stroke-width: 3; stroke-linecap: round; }
+    .knob-track .track-bg { stroke: #333; }
+    .knob-track .track-fill { stroke: #4ecdc4; transition: stroke-dasharray 0.1s; }
+    .knob-pointer {
+      position: absolute; width: 2px; height: 10px;
+      background: #4ecdc4; left: 50%; top: 5px; margin-left: -1px;
+      border-radius: 1px; transform-origin: center 15px;
+      box-shadow: 0 0 6px rgba(78, 205, 196, 0.6);
+    }
+    .knob.large .knob-pointer { height: 14px; top: 6px; transform-origin: center 19px; }
+    .knob.small .knob-pointer { height: 8px; top: 4px; transform-origin: center 12px; }
+    .knob-label { font-size: 8px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Main Tab Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+      height: 100%;
+    }
+
+    /* Oscillator - 3D Wavetable Style */
+    .osc-section { display: flex; gap: 15px; padding-top: 15px; }
+    .osc-display {
+      width: 140px; height: 100px;
+      background: linear-gradient(180deg, #0f1a1a 0%, #0a0a0a 100%);
+      border: 1px solid #333; border-radius: 4px; overflow: hidden;
+      position: relative;
+    }
+    .osc-display canvas {
+      position: absolute; top: 0; left: 0;
+      width: 140px !important; height: 100px !important;
+    }
+    .osc-controls { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .osc-row { display: flex; gap: 8px; align-items: center; }
+    .osc-row select {
+      flex: 1; height: 24px;
+      background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #fff; padding: 0 8px; font-size: 10px;
+    }
+    .osc-knobs { display: flex; gap: 8px; justify-content: space-around; }
+
+    /* Filter */
+    .filter-section { display: flex; gap: 12px; padding-top: 15px; }
+    .filter-display {
+      width: 120px; height: 80px;
+      background: linear-gradient(180deg, #1a0f0a 0%, #0a0a0a 100%);
+      border: 1px solid #333; border-radius: 4px; overflow: hidden;
+      position: relative;
+    }
+    .filter-display canvas {
+      position: absolute; top: 0; left: 0;
+      width: 120px !important; height: 80px !important;
+    }
+    .filter-controls { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .filter-row { display: flex; gap: 8px; align-items: center; }
+    .filter-row select {
+      width: 80px; height: 24px;
+      background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #fff; padding: 0 6px; font-size: 10px;
+    }
+    .filter-knobs { display: flex; gap: 10px; }
+
+    /* Envelope */
+    .env-section { display: flex; gap: 8px; padding-top: 15px; }
+    .env-display {
+      width: 100px; height: 60px;
+      background: linear-gradient(180deg, #0f0a1a 0%, #0a0a0a 100%);
+      border: 1px solid #333; border-radius: 4px; overflow: hidden;
+      position: relative;
+    }
+    .env-display canvas {
+      position: absolute; top: 0; left: 0;
+      width: 100px !important; height: 60px !important;
+    }
+    .env-knobs { flex: 1; display: flex; gap: 6px; justify-content: space-around; }
+
+    /* LFO */
+    .lfo-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-top: 15px; grid-column: span 2; }
+    .lfo-box { background: rgba(255,255,255,0.02); border: 1px solid #2a2a2a; border-radius: 4px; padding: 6px; }
+    .lfo-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .lfo-name { font-size: 9px; color: #4ecdc4; font-weight: 600; }
+    .lfo-display {
+      width: 100%; height: 40px;
+      background: linear-gradient(180deg, #0a0f1a 0%, #0a0a0a 100%);
+      border: 1px solid #333; border-radius: 3px; margin-bottom: 6px; overflow: hidden;
+      position: relative;
+    }
+    .lfo-display canvas {
+      position: absolute; top: 0; left: 0;
+      width: 100% !important; height: 40px !important;
+    }
+    .lfo-controls { display: flex; gap: 6px; justify-content: center; align-items: center; }
+    .lfo-controls select { width: 50px; height: 20px; background: #2a2a2a; border: 1px solid #444; border-radius: 3px; color: #fff; font-size: 9px; }
+    .sync-btn {
+      padding: 2px 6px; background: #2a2a2a; border: 1px solid #444; border-radius: 3px;
+      color: #666; font-size: 8px; cursor: pointer;
+    }
+    .sync-btn.active { background: #4ecdc4; color: #000; border-color: #4ecdc4; }
+
+    /* FX Tab */
+    .fx-container { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+    .fx-chain-header {
+      display: flex; align-items: center; gap: 15px;
+      padding: 8px 12px; background: rgba(255,255,255,0.02);
+      border: 1px solid #2a2a2a; border-radius: 6px;
+    }
+    .fx-chain-label { font-size: 10px; color: #4ecdc4; font-weight: 600; letter-spacing: 1px; }
+    .fx-chain-order { display: flex; gap: 8px; flex: 1; }
+    .fx-chip {
+      padding: 4px 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #888; font-size: 9px; cursor: grab; transition: all 0.15s;
+    }
+    .fx-chip:hover { border-color: #4ecdc4; color: #4ecdc4; }
+    .fx-chip.active { background: rgba(78, 205, 196, 0.2); border-color: #4ecdc4; color: #4ecdc4; }
+    .fx-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 10px; }
+    .fx-box { background: rgba(255,255,255,0.02); border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; }
+    .fx-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .fx-name { font-size: 10px; font-weight: 600; color: #4ecdc4; letter-spacing: 1px; text-transform: uppercase; }
+    .fx-toggle {
+      width: 36px; height: 18px; background: #2a2a2a; border: 1px solid #444;
+      border-radius: 9px; cursor: pointer; position: relative; transition: all 0.2s;
+    }
+    .fx-toggle::after {
+      content: ''; position: absolute; width: 14px; height: 14px;
+      background: #666; border-radius: 50%; top: 1px; left: 1px; transition: all 0.2s;
+    }
+    .fx-toggle.active { background: rgba(78, 205, 196, 0.3); border-color: #4ecdc4; }
+    .fx-toggle.active::after { left: 19px; background: #4ecdc4; }
+    .fx-knobs { flex: 1; display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    .fx-display {
+      width: 100%; height: 30px;
+      background: #0a0a0a; border: 1px solid #333; border-radius: 3px;
+      margin-bottom: 6px; overflow: hidden; position: relative;
+    }
+    .fx-display canvas {
+      position: absolute; top: 0; left: 0;
+      width: 100% !important; height: 30px !important;
+    }
+
+    /* Settings Tab */
+    .settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; height: 100%; }
+    .settings-section { background: rgba(255,255,255,0.02); border: 1px solid #2a2a2a; border-radius: 6px; padding: 12px; }
+    .settings-title { font-size: 10px; font-weight: 600; color: #4ecdc4; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+    .settings-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .settings-control { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .settings-control label { font-size: 9px; color: #666; }
+    .settings-control select {
+      width: 90px; height: 26px;
+      background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+      color: #fff; padding: 0 8px; font-size: 10px;
+    }
+
+    /* Hidden inputs */
+    .hidden-inputs { display: none; }
   </style>
 </head>
 <body>
-  <!-- Fixed-size plugin frame -->
-  <div class="plugin-frame">
-    <div class="container">
 
-      <!-- HEADER -->
-      <div class="header">
-        <button id="preset_prev">◀</button>
-        <select id="preset_name">
-          <option>Init Preset</option>
-          <option>Bass Monster</option>
-          <option>Evolving Pad</option>
-          <option>Lead Saw</option>
-        </select>
-        <button id="preset_next">▶</button>
-        <button id="randomize">RANDOMIZE</button>
-        <div style="margin-left: auto; display: flex; gap: 5px; align-items: center;">
-          <span style="font-size: 11px; color: #999;">MASTER</span>
-          <input type="range" id="master_volume" min="0" max="1" step="0.01" value="0.5" style="width: 130px;">
+<div class="plugin-frame">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">CODOX</div>
+    <div class="preset-browser">
+      <button class="preset-nav-btn" id="preset_prev">&lt;</button>
+      <select class="preset-select" id="preset_select">
+        <option>Init</option><option>Serum Lead</option><option>Fat Bass</option><option>Ethereal Pad</option><option>Pluck</option>
+        <option>Growl Bass</option><option>Supersaw</option><option>Bell</option><option>Wobble</option><option>Ambient</option>
+      </select>
+      <button class="preset-nav-btn" id="preset_next">&gt;</button>
+      <button class="preset-save-btn" id="preset_save">SAVE</button>
+    </div>
+    <button class="randomize-btn" id="randomize_btn">RANDOMIZE</button>
+    <div class="header-spacer"></div>
+    <div class="master-section">
+      <div class="oscilloscope"><canvas id="master_scope" width="200" height="70"></canvas></div>
+      <span class="master-label">MASTER</span>
+      <div class="knob-container">
+        <div class="knob large" data-param="master_volume">
+          <div class="knob-bg"></div>
+          <div class="knob-pointer"></div>
         </div>
       </div>
-
-      <!-- OSCILLATOR A -->
-      <div class="section osc-section osc-a">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">OSCILLATOR A</div>
-        <canvas id="osc_a_waveform_display" width="140" height="80" style="position: absolute; left: 180px; top: 10px;"></canvas>
-        <div style="position: absolute; left: 10px; top: 25px;">
-          <select id="osc_a_wavetable">
-            <option>Basic</option>
-            <option>Analog</option>
-            <option>Digital</option>
-            <option>Vocal</option>
-          </select>
-        </div>
-        <div class="positioned-control" style="left: 10px; top: 90px;">
-          <input type="range" id="osc_a_position" min="0" max="1" step="0.01" value="0" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Pos</div>
-        </div>
-        <div class="positioned-control" style="left: 75px; top: 90px;">
-          <input type="range" id="osc_a_level" min="0" max="1" step="0.01" value="1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Lvl</div>
-        </div>
-        <div class="positioned-control" style="left: 140px; top: 90px;">
-          <input type="range" id="osc_a_pan" min="0" max="1" step="0.01" value="0.5" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Pan</div>
-        </div>
-        <div style="position: absolute; left: 10px; top: 160px; display: flex; gap: 10px;">
-          <div>
-            <select id="osc_a_octave">
-              <option>-4</option><option>-3</option><option>-2</option><option>-1</option>
-              <option selected>0</option>
-              <option>+1</option><option>+2</option><option>+3</option><option>+4</option>
-            </select>
-            <div class="control-label">Oct</div>
-          </div>
-        </div>
-        <div style="position: absolute; left: 200px; top: 90px;">
-          <select id="osc_a_warp_mode">
-            <option>Sync</option>
-            <option>Bend+</option>
-            <option>FM</option>
-            <option>AM</option>
-            <option>PWM</option>
-          </select>
-          <div class="control-label">Warp Mode</div>
-        </div>
-      </div>
-
-      <!-- OSCILLATOR B -->
-      <div class="section osc-section osc-b">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">OSCILLATOR B</div>
-        <canvas id="osc_b_waveform_display" width="140" height="80" style="position: absolute; left: 180px; top: 10px;"></canvas>
-        <div style="position: absolute; left: 10px; top: 25px;">
-          <select id="osc_b_wavetable">
-            <option>Basic</option>
-            <option>Analog</option>
-            <option>Digital</option>
-            <option>Vocal</option>
-          </select>
-        </div>
-        <div class="positioned-control" style="left: 10px; top: 90px;">
-          <input type="range" id="osc_b_position" min="0" max="1" step="0.01" value="0" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Pos</div>
-        </div>
-        <div class="positioned-control" style="left: 75px; top: 90px;">
-          <input type="range" id="osc_b_level" min="0" max="1" step="0.01" value="1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Lvl</div>
-        </div>
-        <div class="positioned-control" style="left: 140px; top: 90px;">
-          <input type="range" id="osc_b_pan" min="0" max="1" step="0.01" value="0.5" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Pan</div>
-        </div>
-        <div style="position: absolute; left: 200px; top: 90px;">
-          <select id="osc_b_warp_mode">
-            <option>Sync</option>
-            <option>Bend+</option>
-            <option>FM</option>
-            <option>AM</option>
-            <option>PWM</option>
-          </select>
-          <div class="control-label">Warp Mode</div>
-        </div>
-      </div>
-
-      <!-- SUB + NOISE -->
-      <div class="section sub-noise">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">SUB + NOISE</div>
-        <div style="position: absolute; left: 10px; top: 25px;">
-          <select id="sub_shape">
-            <option>Sine</option>
-            <option>Triangle</option>
-            <option>Square</option>
-          </select>
-          <div class="control-label">Shape</div>
-        </div>
-        <div style="position: absolute; left: 105px; top: 25px;">
-          <select id="noise_type">
-            <option>White</option>
-            <option>Pink</option>
-            <option>Digital</option>
-          </select>
-          <div class="control-label">Type</div>
-        </div>
-      </div>
-
-      <!-- FILTER -->
-      <div class="section filter-section">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">FILTER</div>
-        <canvas id="filter_curve_display" width="50" height="90" style="position: absolute; left: 220px; top: 30px;"></canvas>
-        <div style="position: absolute; left: 10px; top: 25px;">
-          <select id="filter_type">
-            <option>LP 24dB</option>
-            <option>LP 12dB</option>
-            <option>HP 24dB</option>
-            <option>BP 12dB</option>
-            <option>Notch</option>
-          </select>
-          <div class="control-label">Filter Type</div>
-        </div>
-        <div class="positioned-control" style="left: 20px; top: 70px;">
-          <input type="range" id="filter_cutoff" min="0" max="1" step="0.01" value="1" style="width: 70px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Cutoff</div>
-        </div>
-        <div class="positioned-control" style="left: 110px; top: 85px;">
-          <input type="range" id="filter_resonance" min="0" max="1" step="0.01" value="0" style="width: 40px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Res</div>
-        </div>
-        <div class="positioned-control" style="left: 165px; top: 85px;">
-          <input type="range" id="filter_drive" min="0" max="1" step="0.01" value="0" style="width: 40px; transform: rotate(-90deg); transform-origin: center;">
-          <div class="control-label">Drive</div>
-        </div>
-      </div>
-
-      <!-- AMP ENVELOPE -->
-      <div class="section amp-env">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">AMP ENVELOPE</div>
-        <canvas id="amp_adsr_display" width="310" height="80" style="position: absolute; left: 10px; top: 20px;"></canvas>
-        <div style="position: absolute; left: 20px; top: 110px; display: flex; gap: 15px;">
-          <div>
-            <input type="range" id="amp_attack" min="0" max="1" step="0.01" value="0.01" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Attack</div>
-          </div>
-          <div>
-            <input type="range" id="amp_decay" min="0" max="1" step="0.01" value="0.1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Decay</div>
-          </div>
-          <div>
-            <input type="range" id="amp_sustain" min="0" max="1" step="0.01" value="1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Sustain</div>
-          </div>
-          <div>
-            <input type="range" id="amp_release" min="0" max="1" step="0.01" value="0.2" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Release</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- FILTER ENVELOPE -->
-      <div class="section filt-env">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">FILTER ENVELOPE</div>
-        <canvas id="filt_adsr_display" width="310" height="80" style="position: absolute; left: 10px; top: 20px;"></canvas>
-        <div style="position: absolute; left: 20px; top: 110px; display: flex; gap: 15px;">
-          <div>
-            <input type="range" id="filt_attack" min="0" max="1" step="0.01" value="0.01" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Attack</div>
-          </div>
-          <div>
-            <input type="range" id="filt_decay" min="0" max="1" step="0.01" value="0.1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Decay</div>
-          </div>
-          <div>
-            <input type="range" id="filt_sustain" min="0" max="1" step="0.01" value="0.5" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Sustain</div>
-          </div>
-          <div>
-            <input type="range" id="filt_release" min="0" max="1" step="0.01" value="0.2" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">Release</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LFOs -->
-      <div class="section lfo-section">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">LFOS</div>
-        <div style="display: flex; gap: 20px; padding: 10px;">
-          <div>
-            <div style="display: flex; gap: 5px; align-items: center;">
-              <select id="lfo1_shape">
-                <option>Sine</option>
-                <option>Triangle</option>
-                <option>Saw</option>
-                <option>Square</option>
-                <option>S&H</option>
-              </select>
-              <canvas id="lfo1_waveform_preview" width="50" height="30"></canvas>
-            </div>
-            <input type="checkbox" id="lfo1_sync">
-            <div class="control-label">LFO1</div>
-          </div>
-          <div>
-            <div style="display: flex; gap: 5px; align-items: center;">
-              <select id="lfo2_shape">
-                <option>Sine</option>
-                <option>Triangle</option>
-                <option>Saw</option>
-                <option>Square</option>
-                <option>S&H</option>
-              </select>
-              <canvas id="lfo2_waveform_preview" width="50" height="30"></canvas>
-            </div>
-            <input type="checkbox" id="lfo2_sync">
-            <div class="control-label">LFO2</div>
-          </div>
-          <div>
-            <div style="display: flex; gap: 5px; align-items: center;">
-              <select id="lfo3_shape">
-                <option>Sine</option>
-                <option>Triangle</option>
-                <option>Saw</option>
-                <option>Square</option>
-                <option>S&H</option>
-              </select>
-              <canvas id="lfo3_waveform_preview" width="50" height="30"></canvas>
-            </div>
-            <input type="checkbox" id="lfo3_sync">
-            <div class="control-label">LFO3</div>
-          </div>
-          <div>
-            <div style="display: flex; gap: 5px; align-items: center;">
-              <select id="lfo4_shape">
-                <option>Sine</option>
-                <option>Triangle</option>
-                <option>Saw</option>
-                <option>Square</option>
-                <option>S&H</option>
-              </select>
-              <canvas id="lfo4_waveform_preview" width="50" height="30"></canvas>
-            </div>
-            <input type="checkbox" id="lfo4_sync">
-            <div class="control-label">LFO4</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MACROS + VOICE -->
-      <div class="section macros-voice">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">MACROS + VOICE</div>
-        <div style="display: flex; gap: 20px; padding: 15px;">
-          <div>
-            <input type="range" id="macro1" min="0" max="1" step="0.01" value="0.5" style="width: 55px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">M1</div>
-          </div>
-          <div>
-            <input type="range" id="macro2" min="0" max="1" step="0.01" value="0.5" style="width: 55px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">M2</div>
-          </div>
-          <div>
-            <input type="range" id="macro3" min="0" max="1" step="0.01" value="0.5" style="width: 55px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">M3</div>
-          </div>
-          <div>
-            <input type="range" id="macro4" min="0" max="1" step="0.01" value="0.5" style="width: 55px; transform: rotate(-90deg); transform-origin: center;">
-            <div class="control-label">M4</div>
-          </div>
-          <div style="margin-left: 20px;">
-            <select id="unison_voices">
-              <option>1</option>
-              <option>2</option>
-              <option>4</option>
-              <option>8</option>
-              <option>16</option>
-            </select>
-            <div class="control-label">Voices</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- EFFECTS BAR -->
-      <div class="section effects-bar">
-        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">EFFECTS</div>
-        <div style="display: flex; gap: 30px; padding: 20px; justify-content: space-around;">
-          <div><input type="range" id="fx_distortion_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Dist</div></div>
-          <div><input type="range" id="fx_chorus_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Chorus</div></div>
-          <div><input type="range" id="fx_phaser_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Phaser</div></div>
-          <div><input type="range" id="fx_flanger_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Flanger</div></div>
-          <div><input type="range" id="fx_delay_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Delay</div></div>
-          <div><input type="range" id="fx_reverb_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Reverb</div></div>
-          <div><input type="range" id="fx_eq_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">EQ</div></div>
-          <div><input type="range" id="fx_compressor_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Comp</div></div>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <script type="module">
-    // JUCE FRONTEND LIBRARY IMPORT
-    import * as Juce from "./js/juce/index.js";
+  <!-- Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="main">MAIN</button>
+    <button class="tab-btn" data-tab="fx">FX</button>
+    <button class="tab-btn" data-tab="settings">SETTINGS</button>
+  </div>
 
-    // NATIVE APPLICATION FEEL
-    document.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      return false;
+  <!-- Tab Content -->
+  <div class="tab-content">
+
+    <!-- MAIN TAB -->
+    <div class="tab-panel active" id="tab-main">
+      <div class="main-grid">
+        <!-- Osc A -->
+        <div class="section">
+          <div class="section-title">OSC A</div>
+          <div class="osc-section">
+            <div class="osc-display"><canvas id="osc_a_wave" width="280" height="200"></canvas></div>
+            <div class="osc-controls">
+              <div class="osc-row">
+                <select id="osc_a_wavetable"><option value="0">Basic</option><option value="1">Analog</option><option value="2">Digital</option><option value="3">Spectral</option><option value="4">FM</option><option value="5">Additive</option></select>
+                <select id="osc_a_octave"><option value="0">-2</option><option value="1">-1</option><option value="2" selected>0</option><option value="3">+1</option><option value="4">+2</option></select>
+              </div>
+              <div class="osc-knobs">
+                <div class="knob-container"><div class="knob small" data-param="osc_a_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_a_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_a_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_a_warp"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Osc B -->
+        <div class="section">
+          <div class="section-title">OSC B</div>
+          <div class="osc-section">
+            <div class="osc-display"><canvas id="osc_b_wave" width="280" height="200"></canvas></div>
+            <div class="osc-controls">
+              <div class="osc-row">
+                <select id="osc_b_wavetable"><option value="0">Basic</option><option value="1">Analog</option><option value="2">Digital</option><option value="3">Spectral</option><option value="4">FM</option><option value="5">Additive</option></select>
+                <select id="osc_b_octave"><option value="0">-2</option><option value="1">-1</option><option value="2" selected>0</option><option value="3">+1</option><option value="4">+2</option></select>
+              </div>
+              <div class="osc-knobs">
+                <div class="knob-container"><div class="knob small" data-param="osc_b_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_b_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_b_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_b_warp"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="section accent-orange">
+          <div class="section-title">FILTER</div>
+          <div class="filter-section">
+            <div class="filter-display"><canvas id="filter_curve" width="240" height="160"></canvas></div>
+            <div class="filter-controls">
+              <div class="filter-row">
+                <select id="filter_type"><option value="0">LP 24</option><option value="1">LP 12</option><option value="2">HP 24</option><option value="3">HP 12</option><option value="4">BP</option><option value="5">Notch</option><option value="6">Comb+</option><option value="7">Comb-</option></select>
+              </div>
+              <div class="filter-knobs">
+                <div class="knob-container"><div class="knob" data-param="filter_cutoff"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Cutoff</span></div>
+                <div class="knob-container"><div class="knob small" data-param="filter_resonance"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Res</span></div>
+                <div class="knob-container"><div class="knob small" data-param="filter_drive"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Drive</span></div>
+                <div class="knob-container"><div class="knob small" data-param="filter_env"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Env</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amp Env -->
+        <div class="section accent-purple">
+          <div class="section-title">AMP ENV</div>
+          <div class="env-section">
+            <div class="env-display"><canvas id="amp_env_display" width="200" height="120"></canvas></div>
+            <div class="env-knobs">
+              <div class="knob-container"><div class="knob small" data-param="amp_attack"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">A</span></div>
+              <div class="knob-container"><div class="knob small" data-param="amp_decay"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">D</span></div>
+              <div class="knob-container"><div class="knob small" data-param="amp_sustain"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">S</span></div>
+              <div class="knob-container"><div class="knob small" data-param="amp_release"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">R</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Env -->
+        <div class="section accent-purple" style="grid-column: span 2;">
+          <div class="section-title">FILTER ENV</div>
+          <div class="env-section">
+            <div class="env-display"><canvas id="filt_env_display" width="200" height="120"></canvas></div>
+            <div class="env-knobs">
+              <div class="knob-container"><div class="knob small" data-param="filt_attack"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">A</span></div>
+              <div class="knob-container"><div class="knob small" data-param="filt_decay"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">D</span></div>
+              <div class="knob-container"><div class="knob small" data-param="filt_sustain"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">S</span></div>
+              <div class="knob-container"><div class="knob small" data-param="filt_release"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">R</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LFOs -->
+        <div class="section accent-blue" style="grid-column: span 2;">
+          <div class="section-title">LFOs</div>
+          <div class="lfo-container">
+            <div class="lfo-box">
+              <div class="lfo-header"><span class="lfo-name">LFO 1</span><button class="sync-btn" id="lfo1_sync_btn">SYNC</button></div>
+              <div class="lfo-display"><canvas id="lfo1_display" width="200" height="80"></canvas></div>
+              <div class="lfo-controls">
+                <select id="lfo1_shape"><option value="0">Sin</option><option value="1">Tri</option><option value="2">Saw</option><option value="3">Sqr</option><option value="4">S&H</option></select>
+                <div class="knob-container"><div class="knob small" data-param="lfo1_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
+              </div>
+            </div>
+            <div class="lfo-box">
+              <div class="lfo-header"><span class="lfo-name">LFO 2</span><button class="sync-btn" id="lfo2_sync_btn">SYNC</button></div>
+              <div class="lfo-display"><canvas id="lfo2_display" width="200" height="80"></canvas></div>
+              <div class="lfo-controls">
+                <select id="lfo2_shape"><option value="0">Sin</option><option value="1">Tri</option><option value="2">Saw</option><option value="3">Sqr</option><option value="4">S&H</option></select>
+                <div class="knob-container"><div class="knob small" data-param="lfo2_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
+              </div>
+            </div>
+            <div class="lfo-box">
+              <div class="lfo-header"><span class="lfo-name">LFO 3</span><button class="sync-btn" id="lfo3_sync_btn">SYNC</button></div>
+              <div class="lfo-display"><canvas id="lfo3_display" width="200" height="80"></canvas></div>
+              <div class="lfo-controls">
+                <select id="lfo3_shape"><option value="0">Sin</option><option value="1">Tri</option><option value="2">Saw</option><option value="3">Sqr</option><option value="4">S&H</option></select>
+                <div class="knob-container"><div class="knob small" data-param="lfo3_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
+              </div>
+            </div>
+            <div class="lfo-box">
+              <div class="lfo-header"><span class="lfo-name">LFO 4</span><button class="sync-btn" id="lfo4_sync_btn">SYNC</button></div>
+              <div class="lfo-display"><canvas id="lfo4_display" width="200" height="80"></canvas></div>
+              <div class="lfo-controls">
+                <select id="lfo4_shape"><option value="0">Sin</option><option value="1">Tri</option><option value="2">Saw</option><option value="3">Sqr</option><option value="4">S&H</option></select>
+                <div class="knob-container"><div class="knob small" data-param="lfo4_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FX TAB - Enhanced with unique FX -->
+    <div class="tab-panel" id="tab-fx">
+      <div class="fx-container">
+        <!-- FX Chain Order -->
+        <div class="fx-chain-header">
+          <span class="fx-chain-label">CHAIN:</span>
+          <div class="fx-chain-order">
+            <div class="fx-chip active" draggable="true">DIST</div>
+            <div class="fx-chip" draggable="true">FOLD</div>
+            <div class="fx-chip" draggable="true">CHOR</div>
+            <div class="fx-chip" draggable="true">FLAN</div>
+            <div class="fx-chip" draggable="true">DELY</div>
+            <div class="fx-chip" draggable="true">VERB</div>
+            <div class="fx-chip" draggable="true">CRUSH</div>
+            <div class="fx-chip" draggable="true">HYPER</div>
+          </div>
+        </div>
+
+        <!-- FX Grid - Creative sound design effects -->
+        <div class="fx-grid">
+          <!-- Distortion with multiple types -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name">DISTORTION</span><div class="fx-toggle active" data-fx="distortion"></div></div>
+            <div class="fx-display"><canvas id="dist_display" width="200" height="60"></canvas></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_dist_drive"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Drive</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_dist_tone"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Tone</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_dist_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Wavefolder - unique sound design -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name" style="color:#e74c3c">WAVEFOLDER</span><div class="fx-toggle" data-fx="fold"></div></div>
+            <div class="fx-display"><canvas id="fold_display" width="200" height="60"></canvas></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_fold_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Fold</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_fold_sym"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Sym</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_fold_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Chorus -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name">CHORUS</span><div class="fx-toggle" data-fx="chorus"></div></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_chorus_rate"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Rate</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_chorus_depth"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Depth</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_chorus_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Flanger -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name">FLANGER</span><div class="fx-toggle" data-fx="flanger"></div></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_flanger_rate"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Rate</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_flanger_depth"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Depth</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_flanger_fb"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Fdbk</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_flanger_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Delay with feedback modulation -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name">DELAY</span><div class="fx-toggle" data-fx="delay"></div></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_time"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Time</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_fb"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Fdbk</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_filter"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Filter</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Reverb with shimmer -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name">REVERB</span><div class="fx-toggle" data-fx="reverb"></div></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_size"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Size</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_decay"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Decay</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_shimmer"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Shimr</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Bitcrusher - lo-fi destruction -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name" style="color:#9b59b6">BITCRUSH</span><div class="fx-toggle" data-fx="crush"></div></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_crush_bits"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">Bits</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_crush_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">S.Rate</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_crush_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+
+          <!-- Hyper/Dimension - width and spread -->
+          <div class="fx-box">
+            <div class="fx-header"><span class="fx-name" style="color:#f39c12">HYPER</span><div class="fx-toggle" data-fx="hyper"></div></div>
+            <div class="fx-knobs">
+              <div class="knob-container"><div class="knob small" data-param="fx_hyper_voices"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Voices</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_hyper_detune"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Detune</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_hyper_spread"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Spread</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_hyper_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Mix</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="settings-grid">
+        <!-- Voice -->
+        <div class="settings-section">
+          <div class="settings-title">VOICE</div>
+          <div class="settings-row">
+            <div class="settings-control">
+              <label>Polyphony</label>
+              <select id="polyphony"><option>8</option><option>16</option><option selected>32</option><option>64</option></select>
+            </div>
+            <div class="settings-control">
+              <label>Priority</label>
+              <select id="priority"><option selected>Last</option><option>High</option><option>Low</option></select>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="knob-container"><div class="knob" data-param="glide_time"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Glide</span></div>
+            <div class="settings-control">
+              <label>Mode</label>
+              <select id="glide_mode"><option selected>Always</option><option>Legato</option><option>Off</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unison -->
+        <div class="settings-section">
+          <div class="settings-title">UNISON</div>
+          <div class="settings-row">
+            <div class="settings-control">
+              <label>Voices</label>
+              <select id="unison_voices"><option value="0">1</option><option value="1">2</option><option value="2">4</option><option value="3">8</option><option value="4">16</option></select>
+            </div>
+            <div class="settings-control">
+              <label>Mode</label>
+              <select id="unison_mode"><option selected>Classic</option><option>Super</option><option>Chord</option></select>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="knob-container"><div class="knob" data-param="unison_detune"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Detune</span></div>
+            <div class="knob-container"><div class="knob small" data-param="unison_blend"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Blend</span></div>
+            <div class="knob-container"><div class="knob small" data-param="unison_stereo"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Stereo</span></div>
+          </div>
+        </div>
+
+        <!-- Sub + Noise -->
+        <div class="settings-section">
+          <div class="settings-title">SUB + NOISE</div>
+          <div class="settings-row">
+            <div class="settings-control">
+              <label>Sub Shape</label>
+              <select id="sub_shape"><option value="0">Sine</option><option value="1">Square</option><option value="2">Triangle</option></select>
+            </div>
+            <div class="settings-control">
+              <label>Sub Oct</label>
+              <select id="sub_octave"><option>-1</option><option selected>-2</option></select>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="knob-container"><div class="knob" data-param="sub_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Sub</span></div>
+            <div class="settings-control">
+              <label>Noise</label>
+              <select id="noise_type"><option value="0">White</option><option value="1">Pink</option><option value="2">Digital</option></select>
+            </div>
+            <div class="knob-container"><div class="knob" data-param="noise_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Noise</span></div>
+          </div>
+        </div>
+
+        <!-- Macros -->
+        <div class="settings-section" style="grid-column: span 3;">
+          <div class="settings-title">MACROS</div>
+          <div class="settings-row">
+            <div class="knob-container"><div class="knob large" data-param="macro1"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Macro 1</span></div>
+            <div class="knob-container"><div class="knob large" data-param="macro2"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Macro 2</span></div>
+            <div class="knob-container"><div class="knob large" data-param="macro3"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Macro 3</span></div>
+            <div class="knob-container"><div class="knob large" data-param="macro4"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Macro 4</span></div>
+          </div>
+        </div>
+
+        <!-- Pitch Bend -->
+        <div class="settings-section">
+          <div class="settings-title">PITCH BEND</div>
+          <div class="settings-row">
+            <div class="settings-control">
+              <label>Range Up</label>
+              <select id="bend_up"><option>2</option><option>7</option><option selected>12</option><option>24</option></select>
+            </div>
+            <div class="settings-control">
+              <label>Range Down</label>
+              <select id="bend_down"><option>2</option><option>7</option><option selected>12</option><option>24</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Velocity -->
+        <div class="settings-section">
+          <div class="settings-title">VELOCITY</div>
+          <div class="settings-row">
+            <div class="knob-container"><div class="knob" data-param="vel_amp"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Amp</span></div>
+            <div class="knob-container"><div class="knob" data-param="vel_filter"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Filter</span></div>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="settings-section">
+          <div class="settings-title">OUTPUT</div>
+          <div class="settings-row">
+            <div class="settings-control">
+              <label>Quality</label>
+              <select id="quality"><option>Draft</option><option selected>Normal</option><option>High</option><option>Ultra</option></select>
+            </div>
+            <div class="knob-container"><div class="knob" data-param="output_width"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Width</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden Inputs for parameter state -->
+<div class="hidden-inputs">
+  <input type="hidden" id="master_volume" value="0.8">
+  <input type="hidden" id="osc_a_position" value="0.5"><input type="hidden" id="osc_a_level" value="0.8"><input type="hidden" id="osc_a_pan" value="0.5"><input type="hidden" id="osc_a_warp" value="0">
+  <input type="hidden" id="osc_b_position" value="0.5"><input type="hidden" id="osc_b_level" value="0.8"><input type="hidden" id="osc_b_pan" value="0.5"><input type="hidden" id="osc_b_warp" value="0">
+  <input type="hidden" id="filter_cutoff" value="1"><input type="hidden" id="filter_resonance" value="0"><input type="hidden" id="filter_drive" value="0"><input type="hidden" id="filter_env" value="0.5">
+  <input type="hidden" id="amp_attack" value="0.01"><input type="hidden" id="amp_decay" value="0.1"><input type="hidden" id="amp_sustain" value="0.8"><input type="hidden" id="amp_release" value="0.3">
+  <input type="hidden" id="filt_attack" value="0.01"><input type="hidden" id="filt_decay" value="0.1"><input type="hidden" id="filt_sustain" value="0.5"><input type="hidden" id="filt_release" value="0.3">
+  <input type="hidden" id="lfo1_rate" value="0.5"><input type="hidden" id="lfo2_rate" value="0.5"><input type="hidden" id="lfo3_rate" value="0.5"><input type="hidden" id="lfo4_rate" value="0.5">
+  <input type="hidden" id="sub_level" value="0"><input type="hidden" id="noise_level" value="0">
+  <input type="hidden" id="unison_detune" value="0.2"><input type="hidden" id="unison_blend" value="0.5"><input type="hidden" id="unison_stereo" value="1"><input type="hidden" id="glide_time" value="0">
+  <input type="hidden" id="macro1" value="0"><input type="hidden" id="macro2" value="0"><input type="hidden" id="macro3" value="0"><input type="hidden" id="macro4" value="0">
+  <input type="hidden" id="vel_amp" value="0.5"><input type="hidden" id="vel_filter" value="0.5"><input type="hidden" id="output_width" value="1">
+  <!-- FX Parameters -->
+  <input type="hidden" id="fx_dist_drive" value="0"><input type="hidden" id="fx_dist_tone" value="0.5"><input type="hidden" id="fx_dist_mix" value="0">
+  <input type="hidden" id="fx_fold_amount" value="0"><input type="hidden" id="fx_fold_sym" value="0.5"><input type="hidden" id="fx_fold_mix" value="0">
+  <input type="hidden" id="fx_chorus_rate" value="0.3"><input type="hidden" id="fx_chorus_depth" value="0.5"><input type="hidden" id="fx_chorus_mix" value="0">
+  <input type="hidden" id="fx_flanger_rate" value="0.3"><input type="hidden" id="fx_flanger_depth" value="0.5"><input type="hidden" id="fx_flanger_fb" value="0.5"><input type="hidden" id="fx_flanger_mix" value="0">
+  <input type="hidden" id="fx_delay_time" value="0.5"><input type="hidden" id="fx_delay_fb" value="0.4"><input type="hidden" id="fx_delay_filter" value="0.5"><input type="hidden" id="fx_delay_mix" value="0">
+  <input type="hidden" id="fx_reverb_size" value="0.5"><input type="hidden" id="fx_reverb_decay" value="0.5"><input type="hidden" id="fx_reverb_shimmer" value="0"><input type="hidden" id="fx_reverb_mix" value="0">
+  <input type="hidden" id="fx_crush_bits" value="1"><input type="hidden" id="fx_crush_rate" value="1"><input type="hidden" id="fx_crush_mix" value="0">
+  <input type="hidden" id="fx_hyper_voices" value="0"><input type="hidden" id="fx_hyper_detune" value="0.2"><input type="hidden" id="fx_hyper_spread" value="1"><input type="hidden" id="fx_hyper_mix" value="0">
+</div>
+
+<script>
+// ============================================================
+// CODOX - Serum-style Wavetable Synthesizer UI
+// Fixed canvas rendering + enhanced visualizations
+// ============================================================
+
+(function() {
+  'use strict';
+
+  // Canvas contexts - initialize once
+  const canvases = {};
+  let animFrame = 0;
+  let Juce = null;
+
+  // Wait for DOM then initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  function init() {
+    // Prevent context menu
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+
+    // Initialize all canvases ONCE
+    initCanvases();
+
+    // Initialize UI controls
+    initTabs();
+    initKnobs();
+    initFXToggles();
+    initSyncButtons();
+    initPresets();
+
+    // Start animation loop
+    requestAnimationFrame(animate);
+
+    // Connect to JUCE (async)
+    connectJUCE();
+
+    console.log('Codox UI initialized');
+  }
+
+  // ============================================================
+  // CANVAS INITIALIZATION - Fixed for WebView
+  // ============================================================
+
+  function initCanvases() {
+    // Get all canvases and set up contexts
+    const ids = [
+      'osc_a_wave', 'osc_b_wave', 'filter_curve',
+      'amp_env_display', 'filt_env_display',
+      'lfo1_display', 'lfo2_display', 'lfo3_display', 'lfo4_display',
+      'master_scope', 'dist_display', 'fold_display'
+    ];
+
+    ids.forEach(id => {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        // Store with actual pixel dimensions
+        canvases[id] = {
+          canvas: canvas,
+          ctx: ctx,
+          w: canvas.width,
+          h: canvas.height
+        };
+      }
     });
+  }
 
-    document.addEventListener("dragstart", (e) => {
-      e.preventDefault();
-    });
+  // ============================================================
+  // ANIMATION LOOP
+  // ============================================================
 
-    // ERROR HANDLING
-    window.addEventListener("error", (e) => {
-      console.error("JavaScript error:", e.message, e.filename, e.lineno);
-    });
+  function animate() {
+    animFrame++;
+    const phase = animFrame * 0.02;
 
-    window.addEventListener("unhandledrejection", (e) => {
-      console.error("Unhandled promise rejection:", e.reason);
-    });
+    // Draw all visualizations
+    drawOscillator('osc_a_wave', getSelectValue('osc_a_wavetable'), phase, getInputValue('osc_a_position'));
+    drawOscillator('osc_b_wave', getSelectValue('osc_b_wavetable'), phase * 1.1, getInputValue('osc_b_position'));
 
-    // VERIFY JUCE BACKEND
-    if (!window.__JUCE__) {
-      console.error("JUCE backend not available");
-      document.body.innerHTML = "<h1>Error: JUCE backend not connected</h1>";
-      throw new Error("JUCE backend not connected");
+    drawFilter(getInputValue('filter_cutoff'), getInputValue('filter_resonance'));
+
+    drawEnvelope('amp_env_display', getInputValue('amp_attack'), getInputValue('amp_decay'),
+                 getInputValue('amp_sustain'), getInputValue('amp_release'), '#9b59b6');
+    drawEnvelope('filt_env_display', getInputValue('filt_attack'), getInputValue('filt_decay'),
+                 getInputValue('filt_sustain'), getInputValue('filt_release'), '#9b59b6');
+
+    drawLFO('lfo1_display', getSelectValue('lfo1_shape'), phase * 0.5, getInputValue('lfo1_rate'));
+    drawLFO('lfo2_display', getSelectValue('lfo2_shape'), phase * 0.7, getInputValue('lfo2_rate'));
+    drawLFO('lfo3_display', getSelectValue('lfo3_shape'), phase * 0.3, getInputValue('lfo3_rate'));
+    drawLFO('lfo4_display', getSelectValue('lfo4_shape'), phase * 0.4, getInputValue('lfo4_rate'));
+
+    drawScope('master_scope', phase);
+    drawDistortion('dist_display', getInputValue('fx_dist_drive'));
+    drawWavefolder('fold_display', getInputValue('fx_fold_amount'));
+
+    requestAnimationFrame(animate);
+  }
+
+  // ============================================================
+  // 3D-STYLE WAVETABLE OSCILLATOR
+  // ============================================================
+
+  function drawOscillator(id, type, phase, position) {
+    const c = canvases[id];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background grid
+    ctx.strokeStyle = 'rgba(78, 205, 196, 0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 8; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, h * i / 8);
+      ctx.lineTo(w, h * i / 8);
+      ctx.stroke();
     }
 
-    console.log("JUCE backend connected:", window.__JUCE__.backend);
+    // Draw 3D layered waves (like Serum)
+    const layers = 5;
+    for (let layer = layers - 1; layer >= 0; layer--) {
+      const layerPhase = phase + layer * 0.1;
+      const layerPos = position + layer * 0.1;
+      const alpha = 0.3 + (layers - layer) * 0.14;
+      const yOffset = layer * 4;
 
-    // PARAMETER BINDINGS
-    // NOTE: Full parameter binding implementation will be added during Stage 3 integration
-    // This file serves as the production HTML template
+      ctx.strokeStyle = `rgba(78, 205, 196, ${alpha})`;
+      ctx.lineWidth = layer === 0 ? 2 : 1;
+      ctx.beginPath();
 
-    console.log("Codox UI initialized - 50 parameters ready for binding");
-  </script>
+      for (let x = 0; x <= w; x++) {
+        const t = (x / w + layerPhase) % 1;
+        let y = getWaveValue(type, t, layerPos);
+        const py = h / 2 - y * (h * 0.35) + yOffset;
+        x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+      }
+      ctx.stroke();
+    }
+
+    // Glow on front wave
+    ctx.shadowColor = '#4ecdc4';
+    ctx.shadowBlur = 10;
+    ctx.strokeStyle = '#4ecdc4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x++) {
+      const t = (x / w + phase) % 1;
+      let y = getWaveValue(type, t, position);
+      const py = h / 2 - y * (h * 0.35);
+      x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  function getWaveValue(type, t, pos) {
+    // Different wavetable shapes based on type and position
+    const morph = pos;
+    switch (type) {
+      case 0: // Basic - sine to saw
+        return Math.sin(t * Math.PI * 4) * (1 - morph) + (1 - 2 * ((t * 2) % 1)) * morph;
+      case 1: // Analog - saw with harmonics
+        let saw = 0;
+        for (let h = 1; h <= 8; h++) saw += Math.sin(t * Math.PI * 4 * h) / h * (1 - morph * 0.5);
+        return saw * 0.5;
+      case 2: // Digital - sharp edges
+        return Math.sin(t * Math.PI * 4 + morph * Math.sin(t * Math.PI * 16)) * 0.9;
+      case 3: // Spectral - complex
+        return Math.sin(t * Math.PI * 4) * Math.cos(t * Math.PI * 2 * (1 + morph * 3));
+      case 4: // FM
+        return Math.sin(t * Math.PI * 4 + morph * 4 * Math.sin(t * Math.PI * 8));
+      case 5: // Additive
+        let add = 0;
+        for (let h = 1; h <= 6; h++) add += Math.sin(t * Math.PI * 4 * h) * (1 - morph + morph * ((h % 2) * 2 - 1));
+        return add * 0.3;
+      default:
+        return Math.sin(t * Math.PI * 4);
+    }
+  }
+
+  // ============================================================
+  // FILTER VISUALIZATION
+  // ============================================================
+
+  function drawFilter(cutoff, resonance) {
+    const c = canvases['filter_curve'];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255, 140, 66, 0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(w * i / 4, 0);
+      ctx.lineTo(w * i / 4, h);
+      ctx.stroke();
+    }
+
+    // Filter curve with resonance peak
+    const cx = cutoff * w * 0.85 + w * 0.05;
+
+    // Fill under curve
+    ctx.fillStyle = 'rgba(255, 140, 66, 0.2)';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    for (let x = 0; x <= w; x++) {
+      const freq = x / w;
+      let gain = 1;
+      if (freq > cutoff * 0.85) {
+        gain = Math.pow(1 - (freq - cutoff * 0.85) / (1 - cutoff * 0.85), 2);
+      }
+      // Resonance peak
+      const dist = Math.abs(freq - cutoff * 0.85);
+      gain += resonance * 0.8 * Math.exp(-dist * dist * 100);
+      const py = h - gain * h * 0.85;
+      ctx.lineTo(x, py);
+    }
+    ctx.lineTo(w, h);
+    ctx.fill();
+
+    // Curve line
+    ctx.strokeStyle = '#ff8c42';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#ff8c42';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x++) {
+      const freq = x / w;
+      let gain = 1;
+      if (freq > cutoff * 0.85) {
+        gain = Math.pow(1 - (freq - cutoff * 0.85) / (1 - cutoff * 0.85), 2);
+      }
+      const dist = Math.abs(freq - cutoff * 0.85);
+      gain += resonance * 0.8 * Math.exp(-dist * dist * 100);
+      const py = h - gain * h * 0.85;
+      x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // ============================================================
+  // ENVELOPE VISUALIZATION
+  // ============================================================
+
+  function drawEnvelope(id, a, d, s, r, color) {
+    const c = canvases[id];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const pad = 4;
+    const ew = w - pad * 2;
+    const eh = h - pad * 2;
+
+    // Fill under curve
+    ctx.fillStyle = color.replace(')', ', 0.2)').replace('rgb', 'rgba');
+    ctx.beginPath();
+    let x = pad;
+    ctx.moveTo(x, h - pad);
+
+    // Attack
+    x += a * 0.3 * ew;
+    ctx.lineTo(x, pad);
+
+    // Decay
+    x += d * 0.25 * ew;
+    ctx.lineTo(x, pad + (1 - s) * eh);
+
+    // Sustain
+    x += 0.2 * ew;
+    ctx.lineTo(x, pad + (1 - s) * eh);
+
+    // Release
+    x += r * 0.25 * ew;
+    ctx.lineTo(x, h - pad);
+    ctx.lineTo(pad, h - pad);
+    ctx.fill();
+
+    // Envelope line
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    x = pad;
+    ctx.moveTo(x, h - pad);
+    x += a * 0.3 * ew;
+    ctx.lineTo(x, pad);
+    x += d * 0.25 * ew;
+    ctx.lineTo(x, pad + (1 - s) * eh);
+    x += 0.2 * ew;
+    ctx.lineTo(x, pad + (1 - s) * eh);
+    x += r * 0.25 * ew;
+    ctx.lineTo(x, h - pad);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // ADSR dots
+    ctx.fillStyle = '#fff';
+    x = pad;
+    ctx.beginPath(); ctx.arc(x, h - pad, 3, 0, Math.PI * 2); ctx.fill();
+    x += a * 0.3 * ew;
+    ctx.beginPath(); ctx.arc(x, pad, 3, 0, Math.PI * 2); ctx.fill();
+    x += d * 0.25 * ew;
+    ctx.beginPath(); ctx.arc(x, pad + (1 - s) * eh, 3, 0, Math.PI * 2); ctx.fill();
+    x += 0.2 * ew;
+    ctx.beginPath(); ctx.arc(x, pad + (1 - s) * eh, 3, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // ============================================================
+  // LFO VISUALIZATION
+  // ============================================================
+
+  function drawLFO(id, shape, phase, rate) {
+    const c = canvases[id];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Center line
+    ctx.strokeStyle = 'rgba(52, 152, 219, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    ctx.stroke();
+
+    // LFO wave
+    const speed = 0.5 + rate * 2;
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#3498db';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+
+    for (let x = 0; x <= w; x++) {
+      const t = (x / w * speed + phase) % 1;
+      let y = 0;
+      switch (shape) {
+        case 0: y = Math.sin(t * Math.PI * 2); break;
+        case 1: y = Math.abs(((t * 2) % 2) - 1) * 2 - 1; break;
+        case 2: y = 1 - 2 * (t % 1); break;
+        case 3: y = t < 0.5 ? 1 : -1; break;
+        case 4: y = Math.random() * 2 - 1; break; // S&H approximation
+        default: y = Math.sin(t * Math.PI * 2);
+      }
+      const py = h / 2 - y * (h * 0.4);
+      x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // ============================================================
+  // SCOPE / FX DISPLAYS
+  // ============================================================
+
+  function drawScope(id, phase) {
+    const c = canvases[id];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#4ecdc4';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+
+    for (let x = 0; x <= w; x++) {
+      const t = x / w + phase;
+      const y = Math.sin(t * Math.PI * 4) * 0.5 + Math.sin(t * Math.PI * 8) * 0.3;
+      const py = h / 2 - y * h * 0.4;
+      x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+  }
+
+  function drawDistortion(id, drive) {
+    const c = canvases[id];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#4ecdc4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    for (let x = 0; x <= w; x++) {
+      const input = (x / w) * 2 - 1;
+      let output = Math.tanh(input * (1 + drive * 10));
+      const py = h / 2 - output * h * 0.4;
+      x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+  }
+
+  function drawWavefolder(id, amount) {
+    const c = canvases[id];
+    if (!c) return;
+    const { ctx, w, h } = c;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    for (let x = 0; x <= w; x++) {
+      const input = (x / w) * 2 - 1;
+      let output = input * (1 + amount * 4);
+      // Fold
+      while (Math.abs(output) > 1) {
+        output = output > 1 ? 2 - output : -2 - output;
+      }
+      const py = h / 2 - output * h * 0.4;
+      x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+  }
+
+  // ============================================================
+  // UI CONTROLS
+  // ============================================================
+
+  function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+  }
+
+  function initKnobs() {
+    let activeKnob = null;
+    let startY = 0;
+    let startValue = 0;
+
+    document.querySelectorAll('.knob[data-param]').forEach(knob => {
+      const paramId = knob.dataset.param;
+      const input = document.getElementById(paramId);
+      if (!input) return;
+
+      // Set initial rotation
+      updateKnobVisual(knob, parseFloat(input.value) || 0.5);
+
+      knob.addEventListener('mousedown', e => {
+        activeKnob = { knob, input, paramId };
+        startY = e.clientY;
+        startValue = parseFloat(input.value) || 0;
+        document.body.style.cursor = 'ns-resize';
+        e.preventDefault();
+      });
+
+      knob.addEventListener('dblclick', () => {
+        input.value = 0.5;
+        updateKnobVisual(knob, 0.5);
+      });
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!activeKnob) return;
+      const deltaY = startY - e.clientY;
+      const sensitivity = e.shiftKey ? 0.001 : 0.006;
+      let newValue = Math.max(0, Math.min(1, startValue + deltaY * sensitivity));
+      activeKnob.input.value = newValue;
+      updateKnobVisual(activeKnob.knob, newValue);
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (activeKnob) {
+        document.body.style.cursor = '';
+        activeKnob = null;
+      }
+    });
+  }
+
+  function updateKnobVisual(knob, value) {
+    const rotation = -135 + value * 270;
+    const pointer = knob.querySelector('.knob-pointer');
+    if (pointer) pointer.style.transform = `rotate(${rotation}deg)`;
+  }
+
+  function initFXToggles() {
+    document.querySelectorAll('.fx-toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => toggle.classList.toggle('active'));
+    });
+  }
+
+  function initSyncButtons() {
+    document.querySelectorAll('.sync-btn').forEach(btn => {
+      btn.addEventListener('click', () => btn.classList.toggle('active'));
+    });
+  }
+
+  function initPresets() {
+    const presetSelect = document.getElementById('preset_select');
+    const prevBtn = document.getElementById('preset_prev');
+    const nextBtn = document.getElementById('preset_next');
+    const saveBtn = document.getElementById('preset_save');
+    const randomBtn = document.getElementById('randomize_btn');
+
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+      if (presetSelect.selectedIndex > 0) presetSelect.selectedIndex--;
+      loadPreset(presetSelect.value);
+    });
+
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+      if (presetSelect.selectedIndex < presetSelect.options.length - 1) presetSelect.selectedIndex++;
+      loadPreset(presetSelect.value);
+    });
+
+    if (presetSelect) presetSelect.addEventListener('change', () => loadPreset(presetSelect.value));
+
+    if (saveBtn) saveBtn.addEventListener('click', savePreset);
+    if (randomBtn) randomBtn.addEventListener('click', randomize);
+  }
+
+  function loadPreset(name) {
+    console.log('Loading preset:', name);
+    // Preset loading would be handled by JUCE backend
+  }
+
+  function savePreset() {
+    const name = prompt('Enter preset name:');
+    if (name) console.log('Saving preset:', name);
+  }
+
+  function randomize() {
+    document.querySelectorAll('.knob[data-param]').forEach(knob => {
+      const paramId = knob.dataset.param;
+      const input = document.getElementById(paramId);
+      if (input && !paramId.includes('master')) {
+        const value = Math.random();
+        input.value = value;
+        updateKnobVisual(knob, value);
+      }
+    });
+  }
+
+  // ============================================================
+  // JUCE CONNECTION
+  // ============================================================
+
+  async function connectJUCE() {
+    try {
+      const module = await import('./js/juce/index.js');
+      if (window.__JUCE__ && window.__JUCE__.backend) {
+        Juce = module;
+        bindParameters();
+        console.log('Connected to JUCE backend');
+      }
+    } catch (e) {
+      // Retry connection
+      setTimeout(connectJUCE, 500);
+    }
+  }
+
+  function bindParameters() {
+    if (!Juce) return;
+
+    // Bind all knobs to JUCE
+    document.querySelectorAll('.knob[data-param]').forEach(knob => {
+      const paramId = knob.dataset.param;
+      const input = document.getElementById(paramId);
+      if (!input) return;
+
+      try {
+        const state = Juce.getSliderState(paramId);
+        if (state) {
+          // Update from JUCE
+          state.valueChangedEvent.addListener(() => {
+            const value = state.getNormalisedValue();
+            input.value = value;
+            updateKnobVisual(knob, value);
+          });
+          // Initialize from JUCE
+          const value = state.getNormalisedValue();
+          input.value = value;
+          updateKnobVisual(knob, value);
+        }
+      } catch (e) {}
+    });
+
+    // Bind dropdowns
+    ['osc_a_wavetable', 'osc_b_wavetable', 'osc_a_octave', 'osc_b_octave',
+     'filter_type', 'lfo1_shape', 'lfo2_shape', 'lfo3_shape', 'lfo4_shape',
+     'unison_voices', 'sub_shape', 'noise_type'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      try {
+        const state = Juce.getComboBoxState(id);
+        if (state) {
+          state.valueChangedEvent.addListener(() => el.selectedIndex = state.getChoiceIndex());
+          el.addEventListener('change', () => state.setChoiceIndex(el.selectedIndex));
+          el.selectedIndex = state.getChoiceIndex();
+        }
+      } catch (e) {}
+    });
+  }
+
+  // ============================================================
+  // UTILITY FUNCTIONS
+  // ============================================================
+
+  function getInputValue(id) {
+    const el = document.getElementById(id);
+    return el ? parseFloat(el.value) || 0 : 0;
+  }
+
+  function getSelectValue(id) {
+    const el = document.getElementById(id);
+    return el ? parseInt(el.value) || 0 : 0;
+  }
+
+})();
+</script>
+
 </body>
 </html>
