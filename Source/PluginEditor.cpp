@@ -78,7 +78,11 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
     , fxPhaserMixRelay("fx_phaser_mix")
     , fxFlangerMixRelay("fx_flanger_mix")
     , fxDelayMixRelay("fx_delay_mix")
+    , fxDelayTimeRelay("fx_delay_time")
+    , fxDelayFeedbackRelay("fx_delay_feedback")
     , fxReverbMixRelay("fx_reverb_mix")
+    , fxReverbSizeRelay("fx_reverb_size")
+    , fxReverbDecayRelay("fx_reverb_decay")
     , fxEqMixRelay("fx_eq_mix")
     , fxCompressorMixRelay("fx_compressor_mix")
     // ========================================================================
@@ -149,7 +153,11 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
         .withOptionsFrom(fxPhaserMixRelay)
         .withOptionsFrom(fxFlangerMixRelay)
         .withOptionsFrom(fxDelayMixRelay)
+        .withOptionsFrom(fxDelayTimeRelay)
+        .withOptionsFrom(fxDelayFeedbackRelay)
         .withOptionsFrom(fxReverbMixRelay)
+        .withOptionsFrom(fxReverbSizeRelay)
+        .withOptionsFrom(fxReverbDecayRelay)
         .withOptionsFrom(fxEqMixRelay)
         .withOptionsFrom(fxCompressorMixRelay)
     )
@@ -228,7 +236,11 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
     , fxPhaserMixAttachment(*audioProcessor.parameters.getParameter("fx_phaser_mix"), fxPhaserMixRelay, nullptr)
     , fxFlangerMixAttachment(*audioProcessor.parameters.getParameter("fx_flanger_mix"), fxFlangerMixRelay, nullptr)
     , fxDelayMixAttachment(*audioProcessor.parameters.getParameter("fx_delay_mix"), fxDelayMixRelay, nullptr)
+    , fxDelayTimeAttachment(*audioProcessor.parameters.getParameter("fx_delay_time"), fxDelayTimeRelay, nullptr)
+    , fxDelayFeedbackAttachment(*audioProcessor.parameters.getParameter("fx_delay_feedback"), fxDelayFeedbackRelay, nullptr)
     , fxReverbMixAttachment(*audioProcessor.parameters.getParameter("fx_reverb_mix"), fxReverbMixRelay, nullptr)
+    , fxReverbSizeAttachment(*audioProcessor.parameters.getParameter("fx_reverb_size"), fxReverbSizeRelay, nullptr)
+    , fxReverbDecayAttachment(*audioProcessor.parameters.getParameter("fx_reverb_decay"), fxReverbDecayRelay, nullptr)
     , fxEqMixAttachment(*audioProcessor.parameters.getParameter("fx_eq_mix"), fxEqMixRelay, nullptr)
     , fxCompressorMixAttachment(*audioProcessor.parameters.getParameter("fx_compressor_mix"), fxCompressorMixRelay, nullptr)
 {
@@ -263,23 +275,41 @@ CodoxAudioProcessorEditor::~CodoxAudioProcessorEditor()
 void CodoxAudioProcessorEditor::visibilityChanged()
 {
     if (isVisible())
-    {
-        // Flag that we need to refresh WebView
         needsRefresh = true;
-    }
+}
+
+void CodoxAudioProcessorEditor::parentHierarchyChanged()
+{
+    // Called when component is added to parent - trigger refresh
+    needsRefresh = true;
 }
 
 void CodoxAudioProcessorEditor::timerCallback()
 {
-    if (needsRefresh && isVisible())
+    // Decrement cooldown
+    if (refreshCooldown > 0)
+        refreshCooldown--;
+
+    // Detect visibility transition (was hidden, now visible)
+    bool currentlyVisible = isVisible() && isShowing();
+
+    if (!wasVisible && currentlyVisible)
+    {
+        // Just became visible - need refresh
+        needsRefresh = true;
+    }
+    wasVisible = currentlyVisible;
+
+    // Perform refresh if needed and cooldown expired
+    if (needsRefresh && currentlyVisible && refreshCooldown == 0)
     {
         needsRefresh = false;
+        refreshCooldown = 5;  // 500ms cooldown (5 x 100ms)
 
-        // Force WebView to repaint by triggering a resize
+        // AGGRESSIVE FIX: Force reload the entire page
+        webView.goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
         webView.setBounds(getLocalBounds());
         webView.repaint();
-
-        // Also repaint the whole editor
         repaint();
     }
 }

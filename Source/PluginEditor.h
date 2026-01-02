@@ -22,13 +22,16 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void visibilityChanged() override;
+    void parentHierarchyChanged() override;
 
 private:
     // Timer callback for WebView refresh
     void timerCallback() override;
 
-    // Track if we need to refresh WebView after visibility change
+    // Track WebView state
     bool needsRefresh = false;
+    bool wasVisible = false;
+    int refreshCooldown = 0;
 
     // Reference to processor
     CodoxAudioProcessor& audioProcessor;
@@ -118,13 +121,17 @@ private:
     juce::WebSliderRelay unisonDetuneRelay;
     juce::WebSliderRelay glideTimeRelay;
 
-    // Effects (8 parameters)
+    // Effects (12 parameters)
     juce::WebSliderRelay fxDistortionMixRelay;
     juce::WebSliderRelay fxChorusMixRelay;
     juce::WebSliderRelay fxPhaserMixRelay;
     juce::WebSliderRelay fxFlangerMixRelay;
     juce::WebSliderRelay fxDelayMixRelay;
+    juce::WebSliderRelay fxDelayTimeRelay;
+    juce::WebSliderRelay fxDelayFeedbackRelay;
     juce::WebSliderRelay fxReverbMixRelay;
+    juce::WebSliderRelay fxReverbSizeRelay;
+    juce::WebSliderRelay fxReverbDecayRelay;
     juce::WebSliderRelay fxEqMixRelay;
     juce::WebSliderRelay fxCompressorMixRelay;
 
@@ -216,7 +223,11 @@ private:
     juce::WebSliderParameterAttachment fxPhaserMixAttachment;
     juce::WebSliderParameterAttachment fxFlangerMixAttachment;
     juce::WebSliderParameterAttachment fxDelayMixAttachment;
+    juce::WebSliderParameterAttachment fxDelayTimeAttachment;
+    juce::WebSliderParameterAttachment fxDelayFeedbackAttachment;
     juce::WebSliderParameterAttachment fxReverbMixAttachment;
+    juce::WebSliderParameterAttachment fxReverbSizeAttachment;
+    juce::WebSliderParameterAttachment fxReverbDecayAttachment;
     juce::WebSliderParameterAttachment fxEqMixAttachment;
     juce::WebSliderParameterAttachment fxCompressorMixAttachment;
 

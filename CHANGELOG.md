@@ -2,12 +2,23 @@
 
 All notable changes to Codox wavetable synthesizer are documented here.
 
+## [1.0.3] - 2026-01-02
+
+### Fixed
+
+- **FX knobs not connected to JUCE** - Added C++ relays and attachments for Delay Time, Delay Feedback, Reverb Size, and Reverb Decay parameters
+  - Added 4 new WebSliderRelay declarations in PluginEditor.h
+  - Added 4 new WebSliderParameterAttachment declarations
+  - Added relay initialization in constructor
+  - Added withOptionsFrom() registration for WebView
+  - Added attachment bindings to APVTS parameters
+
 ## [1.0.2] - 2026-01-02
 
 ### Added
 
-- **Delay parameters** - Added Time and Feedback knobs to Delay effect
-- **Reverb parameters** - Added Size and Decay knobs to Reverb effect
+- **Delay parameters** - Added Time and Feedback knobs to Delay effect (UI only)
+- **Reverb parameters** - Added Size and Decay knobs to Reverb effect (UI only)
 
 ### Fixed
 
