@@ -2,6 +2,20 @@
 
 All notable changes to Codox wavetable synthesizer are documented here.
 
+## [1.0.2] - 2026-01-02
+
+### Added
+
+- **Delay parameters** - Added Time and Feedback knobs to Delay effect
+- **Reverb parameters** - Added Size and Decay knobs to Reverb effect
+
+### Fixed
+
+- **FX toggle buttons switching tabs** - Added `e.stopPropagation()` to prevent clicks from bubbling up to tab handlers
+- **FX toggle buttons not controlling effects** - Toggle now sets mix to 0 (off) or restores previous value (on)
+- **FX toggle state desync** - Toggle state now syncs when mix knob is changed directly
+- **Sync buttons event bubbling** - Added `e.stopPropagation()` to LFO sync buttons
+
 ## [1.0.1] - 2026-01-02
 
 ### Fixed

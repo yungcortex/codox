@@ -532,7 +532,9 @@
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">DELAY</span><div class="fx-toggle" data-fx="delay"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob" data-param="fx_delay_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_time"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Time</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_delay_feedback"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Fdbk</span></div>
             </div>
           </div>
 
@@ -540,7 +542,9 @@
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">REVERB</span><div class="fx-toggle" data-fx="reverb"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob" data-param="fx_reverb_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_size"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Size</span></div>
+              <div class="knob-container"><div class="knob small" data-param="fx_reverb_decay"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Decay</span></div>
             </div>
           </div>
 
@@ -701,7 +705,11 @@
   <input type="hidden" id="fx_chorus_mix" value="0">
   <input type="hidden" id="fx_flanger_mix" value="0">
   <input type="hidden" id="fx_delay_mix" value="0">
+  <input type="hidden" id="fx_delay_time" value="0.25">
+  <input type="hidden" id="fx_delay_feedback" value="0.4">
   <input type="hidden" id="fx_reverb_mix" value="0">
+  <input type="hidden" id="fx_reverb_size" value="0.7">
+  <input type="hidden" id="fx_reverb_decay" value="0.5">
   <input type="hidden" id="fx_eq_mix" value="0">
   <input type="hidden" id="fx_compressor_mix" value="0">
 </div>
@@ -1255,14 +1263,78 @@
   }
 
   function initFXToggles() {
+    // Map fx name to mix parameter ID
+    const fxMixParams = {
+      'distortion': 'fx_distortion_mix',
+      'phaser': 'fx_phaser_mix',
+      'chorus': 'fx_chorus_mix',
+      'flanger': 'fx_flanger_mix',
+      'delay': 'fx_delay_mix',
+      'reverb': 'fx_reverb_mix',
+      'eq': 'fx_eq_mix',
+      'compressor': 'fx_compressor_mix'
+    };
+
+    // Store previous values for toggle restore
+    const previousValues = {};
+
     document.querySelectorAll('.fx-toggle').forEach(toggle => {
-      toggle.addEventListener('click', () => toggle.classList.toggle('active'));
+      const fxName = toggle.dataset.fx;
+      const mixParamId = fxMixParams[fxName];
+
+      toggle.addEventListener('click', (e) => {
+        // CRITICAL: Stop propagation to prevent tab switching
+        e.stopPropagation();
+        e.preventDefault();
+
+        const isActive = toggle.classList.contains('active');
+
+        if (isActive) {
+          // Turning OFF - store current value and set to 0
+          const state = sliderStates[mixParamId];
+          if (state) {
+            previousValues[fxName] = state.getNormalisedValue();
+            state.setNormalisedValue(0);
+          }
+          // Also update hidden input and knob visual
+          const input = document.getElementById(mixParamId);
+          const knob = document.querySelector(`.knob[data-param="${mixParamId}"]`);
+          if (input) input.value = 0;
+          if (knob) updateKnobVisual(knob, 0);
+          toggle.classList.remove('active');
+        } else {
+          // Turning ON - restore previous value or use 50%
+          const restoreValue = previousValues[fxName] || 0.5;
+          const state = sliderStates[mixParamId];
+          if (state) {
+            state.setNormalisedValue(restoreValue);
+          }
+          // Also update hidden input and knob visual
+          const input = document.getElementById(mixParamId);
+          const knob = document.querySelector(`.knob[data-param="${mixParamId}"]`);
+          if (input) input.value = restoreValue;
+          if (knob) updateKnobVisual(knob, restoreValue);
+          toggle.classList.add('active');
+        }
+      });
+
+      // Initialize toggle state based on current mix value
+      const input = document.getElementById(mixParamId);
+      if (input && parseFloat(input.value) > 0) {
+        toggle.classList.add('active');
+      } else {
+        toggle.classList.remove('active');
+      }
     });
   }
 
   function initSyncButtons() {
     document.querySelectorAll('.sync-btn').forEach(btn => {
-      btn.addEventListener('click', () => btn.classList.toggle('active'));
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        btn.classList.toggle('active');
+      });
     });
   }
 
@@ -1351,12 +1423,38 @@
             const value = state.getNormalisedValue();
             input.value = value;
             updateKnobVisual(knob, value);
+
+            // Sync FX toggle state when mix parameter changes
+            if (paramId.endsWith('_mix') && paramId.startsWith('fx_')) {
+              const fxName = paramId.replace('fx_', '').replace('_mix', '');
+              const toggle = document.querySelector(`.fx-toggle[data-fx="${fxName}"]`);
+              if (toggle) {
+                if (value > 0.01) {
+                  toggle.classList.add('active');
+                } else {
+                  toggle.classList.remove('active');
+                }
+              }
+            }
           });
 
           // Initialize from JUCE's current value
           const value = state.getNormalisedValue();
           input.value = value;
           updateKnobVisual(knob, value);
+
+          // Initialize FX toggle state
+          if (paramId.endsWith('_mix') && paramId.startsWith('fx_')) {
+            const fxName = paramId.replace('fx_', '').replace('_mix', '');
+            const toggle = document.querySelector(`.fx-toggle[data-fx="${fxName}"]`);
+            if (toggle) {
+              if (value > 0.01) {
+                toggle.classList.add('active');
+              } else {
+                toggle.classList.remove('active');
+              }
+            }
+          }
 
           console.log(`Bound slider: ${paramId} = ${value}`);
         } else {
