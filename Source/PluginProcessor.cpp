@@ -668,6 +668,29 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     auto* oscB_warpMode = parameters.getRawParameterValue("osc_b_warp_mode");
     auto* oscB_warpAmount = parameters.getRawParameterValue("osc_b_warp_amount");
 
+    // Read sub oscillator parameters (Phase 3.3)
+    auto* sub_shape = parameters.getRawParameterValue("sub_shape");
+    auto* sub_octave = parameters.getRawParameterValue("sub_octave");
+    auto* sub_level = parameters.getRawParameterValue("sub_level");
+
+    // Read noise oscillator parameters (Phase 3.3)
+    auto* noise_type = parameters.getRawParameterValue("noise_type");
+    auto* noise_level = parameters.getRawParameterValue("noise_level");
+
+    // Read filter parameters (Phase 3.3)
+    auto* filter_type = parameters.getRawParameterValue("filter_type");
+    auto* filter_cutoff = parameters.getRawParameterValue("filter_cutoff");
+    auto* filter_resonance = parameters.getRawParameterValue("filter_resonance");
+    auto* filter_drive = parameters.getRawParameterValue("filter_drive");
+    auto* filter_env_depth = parameters.getRawParameterValue("filter_env_depth");
+    auto* filter_keytrack = parameters.getRawParameterValue("filter_keytrack");
+
+    // Read filter envelope parameters (Phase 3.3)
+    auto* filt_attack = parameters.getRawParameterValue("filt_attack");
+    auto* filt_decay = parameters.getRawParameterValue("filt_decay");
+    auto* filt_sustain = parameters.getRawParameterValue("filt_sustain");
+    auto* filt_release = parameters.getRawParameterValue("filt_release");
+
     // Update all voices with current parameters
     for (auto& voice : voices)
     {
@@ -698,6 +721,37 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
             static_cast<int>(oscB_fine->load()),
             static_cast<int>(oscB_warpMode->load()),
             oscB_warpAmount->load()
+        );
+
+        // Update sub oscillator (Phase 3.3)
+        voice.updateSubOscillator(
+            static_cast<int>(sub_shape->load()),
+            static_cast<int>(sub_octave->load()),
+            sub_level->load()
+        );
+
+        // Update noise oscillator (Phase 3.3)
+        voice.updateNoiseOscillator(
+            static_cast<int>(noise_type->load()),
+            noise_level->load()
+        );
+
+        // Update filter (Phase 3.3)
+        voice.updateFilter(
+            static_cast<int>(filter_type->load()),
+            filter_cutoff->load(),
+            filter_resonance->load(),
+            filter_drive->load(),
+            filter_env_depth->load(),
+            filter_keytrack->load()
+        );
+
+        // Update filter envelope (Phase 3.3)
+        voice.updateFilterEnvelope(
+            filt_attack->load(),
+            filt_decay->load(),
+            filt_sustain->load() / 100.0f, // Convert 0-100% to 0.0-1.0
+            filt_release->load()
         );
     }
 

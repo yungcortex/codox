@@ -1,9 +1,12 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "WavetableOscillator.h"
+#include "SubOscillator.h"
+#include "NoiseOscillator.h"
+#include "FilterBank.h"
 
-// Voice class - Phase 3.2a: Wavetable oscillator with frame interpolation
-// Replaced simple sine with full wavetable engine
+// Voice class - Phase 3.3: Added Sub, Noise, and Filter Bank
+// Complete subtractive synthesis path: Oscillators → Mix → Filter → Amp Envelope
 class Voice
 {
 public:
@@ -27,6 +30,15 @@ public:
         // Reset oscillators
         oscA.reset();
         oscB.reset();
+        subOsc.reset();
+        noiseOsc.reset();
+
+        // Set sub oscillator frequency
+        subOsc.setFrequency(frequency, sampleRate);
+
+        // Reset filter and trigger filter envelope
+        filter.reset();
+        filter.noteOn();
 
         // Reset release flag and trigger envelope
         inRelease = false;
@@ -37,6 +49,7 @@ public:
     void noteOff()
     {
         ampEnvelope.noteOff();
+        filter.noteOff();
         inRelease = true;
     }
 
@@ -86,6 +99,42 @@ public:
         oscB_pan = pan / 100.0f;
     }
 
+    // Update sub oscillator parameters
+    void updateSubOscillator(int shape, int octaveIndex, float level)
+    {
+        subOsc.setShape(shape); // 0=Sine, 1=Triangle, 2=Square
+        subOsc.setOctaveOffset(octaveIndex); // 0=-2, 1=-1, 2=0
+        subOsc.setFrequency(frequency, sampleRate);
+
+        sub_level = level / 100.0f; // Convert 0-100% to 0.0-1.0
+    }
+
+    // Update noise oscillator parameters
+    void updateNoiseOscillator(int noiseType, float level)
+    {
+        noiseOsc.setType(noiseType); // 0=White, 1=Pink, 2=Digital
+
+        noise_level = level / 100.0f; // Convert 0-100% to 0.0-1.0
+    }
+
+    // Update filter parameters
+    void updateFilter(int filterType, float cutoff, float resonance, float drive,
+                      float envDepth, float keytrack)
+    {
+        filter.setFilterType(filterType); // 0=LP24, 1=LP12, 2=HP24, 3=BP12, 4=Notch
+        filter.setCutoffFrequency(cutoff); // 20-20000 Hz
+        filter.setResonance(resonance); // 0-100%
+        filter.setDrive(drive); // 0-100%
+        filter.setEnvelopeDepth(envDepth); // -100 to +100%
+        filter.setKeytrackAmount(keytrack); // 0-100%
+    }
+
+    // Update filter envelope parameters
+    void updateFilterEnvelope(float attack, float decay, float sustain, float release)
+    {
+        filter.updateFilterEnvelope(attack, decay, sustain, release);
+    }
+
     // Generate next audio sample (mono - for backward compatibility)
     float getNextSample()
     {
@@ -113,7 +162,7 @@ public:
         return mixedSample;
     }
 
-    // Generate next stereo sample pair (Phase 3.2d - constant-power panning)
+    // Generate next stereo sample pair (Phase 3.3 - Added Sub, Noise, Filter)
     void getNextSampleStereo(float& leftOut, float& rightOut)
     {
         if (!isActive)
@@ -123,7 +172,7 @@ public:
             return;
         }
 
-        // Generate samples from both oscillators
+        // Generate samples from both wavetable oscillators
         float sampleA = oscA.getNextSample() * oscA_level;
         float sampleB = oscB.getNextSample() * oscB_level;
 
@@ -139,15 +188,30 @@ public:
         float gainL_B = std::cos(panB * juce::MathConstants<float>::halfPi);
         float gainR_B = std::sin(panB * juce::MathConstants<float>::halfPi);
 
-        // Mix oscillators with panning applied
+        // Mix wavetable oscillators with panning applied
         float leftMix = (sampleA * gainL_A) + (sampleB * gainL_B);
         float rightMix = (sampleA * gainR_A) + (sampleB * gainR_B);
 
-        // Apply velocity
+        // Add sub oscillator (mono, centered - no pan)
+        float subSample = subOsc.getNextSample() * sub_level;
+        leftMix += subSample;
+        rightMix += subSample;
+
+        // Add noise oscillator (stereo, same noise to both channels)
+        float noiseSample = noiseOsc.getNextSample() * noise_level;
+        leftMix += noiseSample;
+        rightMix += noiseSample;
+
+        // Apply velocity to mixed oscillators
         leftMix *= velocity;
         rightMix *= velocity;
 
-        // Apply amp envelope
+        // Process through filter (per-channel)
+        // Filter processes left and right independently
+        leftMix = filter.processSample(leftMix, midiNote);
+        rightMix = filter.processSample(rightMix, midiNote);
+
+        // Apply amp envelope AFTER filter (standard subtractive synthesis order)
         float envValue = ampEnvelope.getNextSample();
         leftMix *= envValue;
         rightMix *= envValue;
@@ -173,11 +237,15 @@ public:
         sampleRate = sr;
         ampEnvelope.setSampleRate(sampleRate);
 
+        // Prepare filter with new sample rate
+        filter.prepareToPlay(sampleRate);
+
         // Update oscillator frequencies with new sample rate
         if (isActive)
         {
             // Recalculate frequencies (tuning parameters stored in oscillators)
             // This will be called during voice update cycle
+            subOsc.setFrequency(frequency, sampleRate);
         }
     }
 
@@ -195,9 +263,14 @@ public:
         oscA_pan = 0.0f;
         oscB_level = 1.0f;
         oscB_pan = 0.0f;
+        sub_level = 0.0f;
+        noise_level = 0.0f;
 
         oscA.reset();
         oscB.reset();
+        subOsc.reset();
+        noiseOsc.reset();
+        filter.reset();
         ampEnvelope.reset();
     }
 
@@ -218,6 +291,15 @@ private:
     float oscA_pan = 0.0f;
     float oscB_level = 1.0f;
     float oscB_pan = 0.0f;
+
+    // Phase 3.3: Sub oscillator, Noise oscillator, Filter
+    SubOscillator subOsc;
+    NoiseOscillator noiseOsc;
+    FilterBank filter;
+
+    // Sub and Noise levels
+    float sub_level = 0.0f;
+    float noise_level = 0.0f;
 
     juce::ADSR ampEnvelope;
 };
