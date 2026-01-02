@@ -17,6 +17,7 @@ target_sources(Codox
     PRIVATE
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
+        Source/Voice.h
 )
 
 # Include paths

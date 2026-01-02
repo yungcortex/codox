@@ -614,26 +614,113 @@ CodoxAudioProcessor::~CodoxAudioProcessor()
 //==============================================================================
 void CodoxAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Initialization will be added in Stage 2 (DSP)
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
+    juce::ignoreUnused(samplesPerBlock);
+
+    // Prepare all voices
+    for (auto& voice : voices)
+        voice.prepareToPlay(sampleRate);
 }
 
 void CodoxAudioProcessor::releaseResources()
 {
-    // Cleanup will be added in Stage 2 (DSP)
+    // Reset all voices
+    for (auto& voice : voices)
+        voice.reset();
 }
 
 void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    juce::ignoreUnused(midiMessages);
 
-    // Parameter access example (for Stage 2 DSP implementation):
-    // auto* masterVolumeParam = parameters.getRawParameterValue("master_volume");
-    // float masterVolume = masterVolumeParam->load();  // Atomic read (real-time safe)
+    // Clear output buffer
+    buffer.clear();
 
-    // Pass-through for Stage 1 (DSP implementation happens in Stage 2)
-    // Audio routing is already handled by JUCE
+    // Read envelope parameters (atomic, real-time safe)
+    auto* ampAttackParam = parameters.getRawParameterValue("amp_attack");
+    auto* ampDecayParam = parameters.getRawParameterValue("amp_decay");
+    auto* ampSustainParam = parameters.getRawParameterValue("amp_sustain");
+    auto* ampReleaseParam = parameters.getRawParameterValue("amp_release");
+
+    float attack = ampAttackParam->load();
+    float decay = ampDecayParam->load();
+    float sustain = ampSustainParam->load() / 100.0f; // Convert 0-100% to 0.0-1.0
+    float release = ampReleaseParam->load();
+
+    // Update all voice envelopes
+    for (auto& voice : voices)
+        voice.updateEnvelope(attack, decay, sustain, release);
+
+    // Process MIDI events
+    for (const auto metadata : midiMessages)
+    {
+        auto message = metadata.getMessage();
+
+        if (message.isNoteOn())
+        {
+            int note = message.getNoteNumber();
+            float velocity = message.getVelocity() / 127.0f;
+            allocateVoice(note, velocity, getSampleRate());
+        }
+        else if (message.isNoteOff())
+        {
+            int note = message.getNoteNumber();
+            releaseVoice(note);
+        }
+    }
+
+    // Generate audio from all active voices
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        float mixedSample = 0.0f;
+
+        // Sum all active voices
+        for (auto& voice : voices)
+        {
+            if (voice.isPlaying())
+                mixedSample += voice.getNextSample();
+        }
+
+        // Apply master volume
+        auto* masterVolumeParam = parameters.getRawParameterValue("master_volume");
+        float masterVolumeDB = masterVolumeParam->load();
+        float masterVolumeLinear = juce::Decibels::decibelsToGain(masterVolumeDB);
+        mixedSample *= masterVolumeLinear;
+
+        // Write to all output channels (stereo)
+        for (int channel = 0; channel < numChannels; ++channel)
+            buffer.setSample(channel, sample, mixedSample);
+    }
+}
+
+// Voice allocation: Round-robin with voice stealing
+void CodoxAudioProcessor::allocateVoice(int midiNote, float velocity, double sampleRate)
+{
+    // First, try to find a free voice
+    for (auto& voice : voices)
+    {
+        if (!voice.isPlaying())
+        {
+            voice.noteOn(midiNote, velocity, sampleRate);
+            return;
+        }
+    }
+
+    // No free voices - steal oldest voice (round-robin)
+    voices[nextVoiceIndex].noteOn(midiNote, velocity, sampleRate);
+    nextVoiceIndex = (nextVoiceIndex + 1) % numVoices;
+}
+
+// Voice release: Find all voices playing this MIDI note and release them
+void CodoxAudioProcessor::releaseVoice(int midiNote)
+{
+    for (auto& voice : voices)
+    {
+        if (voice.isPlaying() && voice.getMidiNote() == midiNote)
+            voice.noteOff();
+    }
 }
 
 juce::AudioProcessorEditor* CodoxAudioProcessor::createEditor()

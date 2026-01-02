@@ -1,5 +1,6 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "Voice.h"
 
 class CodoxAudioProcessor : public juce::AudioProcessor
 {
@@ -34,6 +35,15 @@ public:
 private:
     // Parameter layout creation
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
+    // Voice management (Phase 3.1)
+    static constexpr int numVoices = 16;
+    std::array<Voice, numVoices> voices;
+    int nextVoiceIndex = 0; // Round-robin voice allocation
+
+    // Helper methods
+    void allocateVoice(int midiNote, float velocity, double sampleRate);
+    void releaseVoice(int midiNote);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CodoxAudioProcessor)
 };
