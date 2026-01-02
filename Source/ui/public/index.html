@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background:#0a0a0a;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Codox</title>
+  <!-- CRITICAL: Inline style to prevent white flash -->
   <style>
+    /* Prevent white screen - set background immediately */
+    html { background: #0a0a0a !important; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; }
+    html, body { height: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; background: #0a0a0a; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: #0a0a0a;
@@ -15,6 +18,9 @@
       align-items: center;
       justify-content: center;
     }
+    /* Loading fallback */
+    .plugin-frame { opacity: 0; transition: opacity 0.15s ease-in; }
+    .plugin-frame.loaded { opacity: 1; }
 
     .plugin-frame {
       width: 1000px;
@@ -734,13 +740,42 @@
   const canvases = {};
   let animFrame = 0;
   let Juce = null;
+  let initAttempts = 0;
+  const MAX_INIT_ATTEMPTS = 5;
 
-  // Wait for DOM then initialize
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  // Multiple initialization strategies to prevent white screen
+  function tryInit() {
+    try {
+      init();
+    } catch (e) {
+      console.error('Init failed:', e);
+      if (initAttempts < MAX_INIT_ATTEMPTS) {
+        initAttempts++;
+        setTimeout(tryInit, 100);
+      } else {
+        // Force show UI even if init fails
+        const frame = document.querySelector('.plugin-frame');
+        if (frame) frame.classList.add('loaded');
+      }
+    }
   }
+
+  // Wait for DOM then initialize with multiple fallbacks
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInit);
+  } else {
+    // DOM already ready - init immediately
+    tryInit();
+  }
+
+  // Additional fallback - if still not loaded after 500ms, force it
+  setTimeout(() => {
+    const frame = document.querySelector('.plugin-frame');
+    if (frame && !frame.classList.contains('loaded')) {
+      console.warn('Forcing UI visibility after timeout');
+      tryInit();
+    }
+  }, 500);
 
   function init() {
     // Prevent context menu
@@ -756,6 +791,10 @@
     initFXToggles();
     initSyncButtons();
     initPresets();
+
+    // Show UI (fade in)
+    const frame = document.querySelector('.plugin-frame');
+    if (frame) frame.classList.add('loaded');
 
     // Start animation loop
     requestAnimationFrame(animate);
