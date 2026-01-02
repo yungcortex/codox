@@ -1,5 +1,7 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <memory>
+#include <vector>
 #include "Voice.h"
 
 class CodoxAudioProcessor : public juce::AudioProcessor
@@ -38,7 +40,7 @@ private:
 
     // Voice management (Phase 3.1)
     static constexpr int numVoices = 16;
-    std::array<Voice, numVoices> voices;
+    std::vector<std::unique_ptr<Voice>> voices;
     int nextVoiceIndex = 0; // Round-robin voice allocation
 
     // Helper methods

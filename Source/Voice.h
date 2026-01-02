@@ -1,12 +1,13 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <array>
 #include "WavetableOscillator.h"
 #include "SubOscillator.h"
 #include "NoiseOscillator.h"
 #include "FilterBank.h"
 
-// Voice class - Phase 3.3: Added Sub, Noise, and Filter Bank
-// Complete subtractive synthesis path: Oscillators → Mix → Filter → Amp Envelope
+// Voice class - Phase 3.4: Added Unison Processing
+// Complete subtractive synthesis path: Oscillators → Mix → Unison Expansion → Filter → Amp Envelope
 class Voice
 {
 public:
@@ -14,6 +15,14 @@ public:
     {
         ampEnvelope.setSampleRate(44100.0);
         ampEnvelope.setParameters({0.01f, 0.1f, 1.0f, 0.2f}); // Default ADSR
+
+        // Initialize unison parameters
+        unisonCount = 1; // Default: no unison (1 voice)
+        detuneAmount = 0.0f;
+        stereoSpread = 0.5f;
+
+        // Pre-calculate detune factors for max unison count (will use subset based on unisonCount)
+        calculateDetuneFactors();
     }
 
     // Note-on: trigger voice
@@ -27,9 +36,12 @@ public:
         // Calculate base frequency from MIDI note
         frequency = 440.0f * std::pow(2.0f, (noteNumber - 69) / 12.0f);
 
-        // Reset oscillators
-        oscA.reset();
-        oscB.reset();
+        // Reset all unison oscillators
+        for (int i = 0; i < maxUnisonVoices; ++i)
+        {
+            unisonOscA[i].reset();
+            unisonOscB[i].reset();
+        }
         subOsc.reset();
         noiseOsc.reset();
 
@@ -70,13 +82,19 @@ public:
                            int octave, int semitone, int fine,
                            int warpMode, float warpAmount)
     {
-        oscA.setWavetable(wavetable);
-        oscA.setPosition(position / 100.0f); // Convert 0-100% to 0.0-1.0
-        oscA.setWarpMode(warpMode);
-        oscA.setWarpAmount(warpAmount / 100.0f); // Convert 0-100% to 0.0-1.0
+        // Update all unison oscillators with same parameters
+        // Frequency will be detuned individually during sample generation
+        for (int i = 0; i < maxUnisonVoices; ++i)
+        {
+            unisonOscA[i].setWavetable(wavetable);
+            unisonOscA[i].setPosition(position / 100.0f); // Convert 0-100% to 0.0-1.0
+            unisonOscA[i].setWarpMode(warpMode);
+            unisonOscA[i].setWarpAmount(warpAmount / 100.0f); // Convert 0-100% to 0.0-1.0
 
-        // Update frequency with tuning
-        oscA.setFrequency(frequency, octave - 4, semitone, fine, sampleRate); // octave param is index 0-8, convert to -4 to +4
+            // Calculate detuned frequency for this unison voice
+            float detunedFreq = frequency * detuneFactors[i];
+            unisonOscA[i].setFrequency(detunedFreq, octave - 4, semitone, fine, sampleRate); // octave param is index 0-8, convert to -4 to +4
+        }
 
         // Store level and pan for mixing
         oscA_level = level / 100.0f; // Convert 0-100% to 0.0-1.0
@@ -88,12 +106,18 @@ public:
                            int octave, int semitone, int fine,
                            int warpMode, float warpAmount)
     {
-        oscB.setWavetable(wavetable);
-        oscB.setPosition(position / 100.0f);
-        oscB.setWarpMode(warpMode);
-        oscB.setWarpAmount(warpAmount / 100.0f);
+        // Update all unison oscillators with same parameters
+        for (int i = 0; i < maxUnisonVoices; ++i)
+        {
+            unisonOscB[i].setWavetable(wavetable);
+            unisonOscB[i].setPosition(position / 100.0f);
+            unisonOscB[i].setWarpMode(warpMode);
+            unisonOscB[i].setWarpAmount(warpAmount / 100.0f);
 
-        oscB.setFrequency(frequency, octave - 4, semitone, fine, sampleRate);
+            // Calculate detuned frequency for this unison voice
+            float detunedFreq = frequency * detuneFactors[i];
+            unisonOscB[i].setFrequency(detunedFreq, octave - 4, semitone, fine, sampleRate);
+        }
 
         oscB_level = level / 100.0f;
         oscB_pan = pan / 100.0f;
@@ -135,15 +159,33 @@ public:
         filter.updateFilterEnvelope(attack, decay, sustain, release);
     }
 
+    // Update unison parameters (Phase 3.4)
+    void updateUnisonParameters(int unisonIndex, float detune, float spread)
+    {
+        // Convert unison index (0-4) to actual voice count (1, 2, 4, 8, 16)
+        static const int unisonCounts[] = {1, 2, 4, 8, 16};
+        unisonCount = unisonCounts[unisonIndex];
+
+        // Convert detune parameter from 0-100% to 0.0-1.0, then scale to semitones
+        // Max detune is ±0.5 semitones (50 cents) at 100%
+        detuneAmount = (detune / 100.0f) * 0.5f; // 0-100% → 0.0-0.5 semitones
+
+        // Convert spread parameter from 0-100% to 0.0-1.0
+        stereoSpread = spread / 100.0f;
+
+        // Recalculate detune factors for new unison count
+        calculateDetuneFactors();
+    }
+
     // Generate next audio sample (mono - for backward compatibility)
     float getNextSample()
     {
         if (!isActive)
             return 0.0f;
 
-        // Generate samples from both oscillators
-        float sampleA = oscA.getNextSample() * oscA_level;
-        float sampleB = oscB.getNextSample() * oscB_level;
+        // Generate samples from first unison oscillators (mono fallback)
+        float sampleA = unisonOscA[0].getNextSample() * oscA_level;
+        float sampleB = unisonOscB[0].getNextSample() * oscB_level;
 
         // Mix oscillators (mono sum)
         float mixedSample = sampleA + sampleB;
@@ -162,7 +204,7 @@ public:
         return mixedSample;
     }
 
-    // Generate next stereo sample pair (Phase 3.3 - Added Sub, Noise, Filter)
+    // Generate next stereo sample pair (Phase 3.4 - Added Unison Processing)
     void getNextSampleStereo(float& leftOut, float& rightOut)
     {
         if (!isActive)
@@ -172,35 +214,62 @@ public:
             return;
         }
 
-        // Generate samples from both wavetable oscillators
-        float sampleA = oscA.getNextSample() * oscA_level;
-        float sampleB = oscB.getNextSample() * oscB_level;
+        // Initialize accumulator for unison voices
+        float leftMix = 0.0f;
+        float rightMix = 0.0f;
 
-        // Constant-power panning for Osc A
-        // Convert pan from -1..1 to 0..1 range
-        float panA = (oscA_pan + 1.0f) * 0.5f;
-        // Apply constant-power law using cos/sin (maintains perceived loudness)
-        float gainL_A = std::cos(panA * juce::MathConstants<float>::halfPi);
-        float gainR_A = std::sin(panA * juce::MathConstants<float>::halfPi);
+        // Process each active unison voice
+        for (int unisonIndex = 0; unisonIndex < unisonCount; ++unisonIndex)
+        {
+            // Generate samples from detuned wavetable oscillators (already configured with detuned frequencies)
+            float sampleA = unisonOscA[unisonIndex].getNextSample() * oscA_level;
+            float sampleB = unisonOscB[unisonIndex].getNextSample() * oscB_level;
 
-        // Constant-power panning for Osc B
-        float panB = (oscB_pan + 1.0f) * 0.5f;
-        float gainL_B = std::cos(panB * juce::MathConstants<float>::halfPi);
-        float gainR_B = std::sin(panB * juce::MathConstants<float>::halfPi);
+            // Calculate stereo panning for this unison voice
+            float unisonPan = panFactors[unisonIndex] * stereoSpread; // -1.0 to +1.0
 
-        // Mix wavetable oscillators with panning applied
-        float leftMix = (sampleA * gainL_A) + (sampleB * gainL_B);
-        float rightMix = (sampleA * gainR_A) + (sampleB * gainR_B);
+            // Apply oscillator-specific panning FIRST, then unison stereo spread
+            // Convert pan from -1..1 to 0..1 range for constant-power law
+            float panA = (oscA_pan + unisonPan + 1.0f) * 0.5f;
+            panA = juce::jlimit(0.0f, 1.0f, panA); // Clamp to valid range
+            float gainL_A = std::cos(panA * juce::MathConstants<float>::halfPi);
+            float gainR_A = std::sin(panA * juce::MathConstants<float>::halfPi);
 
-        // Add sub oscillator (mono, centered - no pan)
-        float subSample = subOsc.getNextSample() * sub_level;
-        leftMix += subSample;
-        rightMix += subSample;
+            float panB = (oscB_pan + unisonPan + 1.0f) * 0.5f;
+            panB = juce::jlimit(0.0f, 1.0f, panB);
+            float gainL_B = std::cos(panB * juce::MathConstants<float>::halfPi);
+            float gainR_B = std::sin(panB * juce::MathConstants<float>::halfPi);
 
-        // Add noise oscillator (stereo, same noise to both channels)
-        float noiseSample = noiseOsc.getNextSample() * noise_level;
-        leftMix += noiseSample;
-        rightMix += noiseSample;
+            // Mix wavetable oscillators with panning applied for this unison voice
+            float leftSample = (sampleA * gainL_A) + (sampleB * gainL_B);
+            float rightSample = (sampleA * gainR_A) + (sampleB * gainR_B);
+
+            // Add sub oscillator (mono, centered - only once for first unison voice to avoid excessive bass)
+            if (unisonIndex == 0)
+            {
+                float subSample = subOsc.getNextSample() * sub_level;
+                leftSample += subSample;
+                rightSample += subSample;
+            }
+
+            // Add noise oscillator (stereo, same noise - only once for first unison voice)
+            if (unisonIndex == 0)
+            {
+                float noiseSample = noiseOsc.getNextSample() * noise_level;
+                leftSample += noiseSample;
+                rightSample += noiseSample;
+            }
+
+            // Accumulate this unison voice to the mix
+            leftMix += leftSample;
+            rightMix += rightSample;
+        }
+
+        // Normalize by unison count to maintain consistent loudness
+        // Use sqrt to maintain constant power (energy preservation)
+        float unisonGain = 1.0f / std::sqrt(static_cast<float>(unisonCount));
+        leftMix *= unisonGain;
+        rightMix *= unisonGain;
 
         // Apply velocity to mixed oscillators
         leftMix *= velocity;
@@ -266,8 +335,11 @@ public:
         sub_level = 0.0f;
         noise_level = 0.0f;
 
-        oscA.reset();
-        oscB.reset();
+        for (int i = 0; i < maxUnisonVoices; ++i)
+        {
+            unisonOscA[i].reset();
+            unisonOscB[i].reset();
+        }
         subOsc.reset();
         noiseOsc.reset();
         filter.reset();
@@ -275,6 +347,9 @@ public:
     }
 
 private:
+    // Phase 3.4: Unison constant (must be declared before arrays that use it)
+    static constexpr int maxUnisonVoices = 16;
+
     bool isActive = false;
     bool inRelease = false;
     int midiNote = -1;
@@ -282,9 +357,9 @@ private:
     float frequency = 0.0f;
     double sampleRate = 44100.0;
 
-    // Oscillators (Phase 3.2a: Wavetable oscillators)
-    WavetableOscillator oscA;
-    WavetableOscillator oscB;
+    // Oscillators (Phase 3.4: Arrays for unison expansion)
+    std::array<WavetableOscillator, maxUnisonVoices> unisonOscA;
+    std::array<WavetableOscillator, maxUnisonVoices> unisonOscB;
 
     // Oscillator levels and panning
     float oscA_level = 1.0f;
@@ -302,4 +377,44 @@ private:
     float noise_level = 0.0f;
 
     juce::ADSR ampEnvelope;
+
+    // Phase 3.4: Unison processing
+    int unisonCount = 1; // 1, 2, 4, 8, or 16 voices
+    float detuneAmount = 0.0f; // 0.0-0.5 semitones (0-50 cents)
+    float stereoSpread = 0.5f; // 0.0-1.0 (0-100%)
+
+    // Pre-calculated detune and pan factors for each unison voice
+    std::array<float, maxUnisonVoices> detuneFactors;
+    std::array<float, maxUnisonVoices> panFactors;
+
+    // Calculate detune and pan factors for current unison count
+    void calculateDetuneFactors()
+    {
+        if (unisonCount == 1)
+        {
+            // No unison: single voice, no detune, centered
+            detuneFactors[0] = 1.0f;
+            panFactors[0] = 0.0f;
+            return;
+        }
+
+        // Calculate symmetric detune spread
+        // Formula: detune = (voiceIndex / (unisonCount-1) - 0.5) * 2.0 * detuneAmount
+        // This creates symmetric spread: voice 0 at -detuneAmount, voice N-1 at +detuneAmount
+        for (int i = 0; i < unisonCount; ++i)
+        {
+            // Symmetric offset: -0.5 to +0.5
+            float offset = (static_cast<float>(i) / (unisonCount - 1)) - 0.5f;
+
+            // Scale to detune range: -detuneAmount to +detuneAmount (in semitones)
+            float detuneSemitones = offset * 2.0f * detuneAmount;
+
+            // Convert semitones to frequency multiplier: freq × 2^(semitones/12)
+            detuneFactors[i] = std::pow(2.0f, detuneSemitones / 12.0f);
+
+            // Calculate stereo pan position for this unison voice
+            // Voice 0 far left (-1.0), Voice N-1 far right (+1.0)
+            panFactors[i] = offset * 2.0f; // -1.0 to +1.0
+        }
+    }
 };

@@ -605,6 +605,12 @@ CodoxAudioProcessor::CodoxAudioProcessor()
                         .withOutput("Output", juce::AudioChannelSet::stereo(), true))  // Synth: output-only bus
     , parameters(*this, nullptr, "Parameters", createParameterLayout())
 {
+    // Initialize voice pool with unique_ptr
+    voices.reserve(numVoices);
+    for (int i = 0; i < numVoices; ++i)
+    {
+        voices.push_back(std::make_unique<Voice>());
+    }
 }
 
 CodoxAudioProcessor::~CodoxAudioProcessor()
@@ -618,14 +624,14 @@ void CodoxAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 
     // Prepare all voices
     for (auto& voice : voices)
-        voice.prepareToPlay(sampleRate);
+        voice->prepareToPlay(sampleRate);
 }
 
 void CodoxAudioProcessor::releaseResources()
 {
     // Reset all voices
     for (auto& voice : voices)
-        voice.reset();
+        voice->reset();
 }
 
 void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -691,14 +697,18 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     auto* filt_sustain = parameters.getRawParameterValue("filt_sustain");
     auto* filt_release = parameters.getRawParameterValue("filt_release");
 
+    // Read unison parameters (Phase 3.4)
+    auto* unison_voices = parameters.getRawParameterValue("unison_voices");
+    auto* unison_detune = parameters.getRawParameterValue("unison_detune");
+
     // Update all voices with current parameters
     for (auto& voice : voices)
     {
         // Update envelope
-        voice.updateEnvelope(attack, decay, sustain, release);
+        voice->updateEnvelope(attack, decay, sustain, release);
 
         // Update oscillator A
-        voice.updateOscillatorA(
+        voice->updateOscillatorA(
             static_cast<int>(oscA_wavetable->load()),
             oscA_position->load(),
             oscA_level->load(),
@@ -711,7 +721,7 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         );
 
         // Update oscillator B
-        voice.updateOscillatorB(
+        voice->updateOscillatorB(
             static_cast<int>(oscB_wavetable->load()),
             oscB_position->load(),
             oscB_level->load(),
@@ -724,20 +734,20 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         );
 
         // Update sub oscillator (Phase 3.3)
-        voice.updateSubOscillator(
+        voice->updateSubOscillator(
             static_cast<int>(sub_shape->load()),
             static_cast<int>(sub_octave->load()),
             sub_level->load()
         );
 
         // Update noise oscillator (Phase 3.3)
-        voice.updateNoiseOscillator(
+        voice->updateNoiseOscillator(
             static_cast<int>(noise_type->load()),
             noise_level->load()
         );
 
         // Update filter (Phase 3.3)
-        voice.updateFilter(
+        voice->updateFilter(
             static_cast<int>(filter_type->load()),
             filter_cutoff->load(),
             filter_resonance->load(),
@@ -747,11 +757,18 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         );
 
         // Update filter envelope (Phase 3.3)
-        voice.updateFilterEnvelope(
+        voice->updateFilterEnvelope(
             filt_attack->load(),
             filt_decay->load(),
             filt_sustain->load() / 100.0f, // Convert 0-100% to 0.0-1.0
             filt_release->load()
+        );
+
+        // Update unison parameters (Phase 3.4)
+        voice->updateUnisonParameters(
+            static_cast<int>(unison_voices->load()),  // 0-4 index → 1,2,4,8,16 voices
+            unison_detune->load(),                    // 0-100%
+            50.0f                                     // Fixed stereo spread 50% (not in parameter spec)
         );
     }
 
@@ -790,10 +807,10 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         // Sum all active voices (stereo)
         for (auto& voice : voices)
         {
-            if (voice.isPlaying())
+            if (voice->isPlaying())
             {
                 float voiceLeft, voiceRight;
-                voice.getNextSampleStereo(voiceLeft, voiceRight);
+                voice->getNextSampleStereo(voiceLeft, voiceRight);
                 leftMix += voiceLeft;
                 rightMix += voiceRight;
             }
@@ -816,20 +833,20 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
 }
 
 // Voice allocation: Round-robin with voice stealing
-void CodoxAudioProcessor::allocateVoice(int midiNote, float velocity, double sampleRate)
+void CodoxAudioProcessor::allocateVoice(int midiNote, float velocity, double sr)
 {
     // First, try to find a free voice
     for (auto& voice : voices)
     {
-        if (!voice.isPlaying())
+        if (!voice->isPlaying())
         {
-            voice.noteOn(midiNote, velocity, sampleRate);
+            voice->noteOn(midiNote, velocity, sr);
             return;
         }
     }
 
     // No free voices - steal oldest voice (round-robin)
-    voices[nextVoiceIndex].noteOn(midiNote, velocity, sampleRate);
+    voices[static_cast<size_t>(nextVoiceIndex)]->noteOn(midiNote, velocity, sr);
     nextVoiceIndex = (nextVoiceIndex + 1) % numVoices;
 }
 
@@ -838,8 +855,8 @@ void CodoxAudioProcessor::releaseVoice(int midiNote)
 {
     for (auto& voice : voices)
     {
-        if (voice.isPlaying() && voice.getMidiNote() == midiNote)
-            voice.noteOff();
+        if (voice->isPlaying() && voice->getMidiNote() == midiNote)
+            voice->noteOff();
     }
 }
 
