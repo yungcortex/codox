@@ -361,7 +361,7 @@
                 <div class="knob-container"><div class="knob small" data-param="osc_a_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
                 <div class="knob-container"><div class="knob small" data-param="osc_a_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
                 <div class="knob-container"><div class="knob small" data-param="osc_a_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
-                <div class="knob-container"><div class="knob small" data-param="osc_a_warp"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_a_warp_amount"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
               </div>
             </div>
           </div>
@@ -381,7 +381,7 @@
                 <div class="knob-container"><div class="knob small" data-param="osc_b_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
                 <div class="knob-container"><div class="knob small" data-param="osc_b_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
                 <div class="knob-container"><div class="knob small" data-param="osc_b_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
-                <div class="knob-container"><div class="knob small" data-param="osc_b_warp"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
+                <div class="knob-container"><div class="knob small" data-param="osc_b_warp_amount"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
               </div>
             </div>
           </div>
@@ -400,7 +400,7 @@
                 <div class="knob-container"><div class="knob" data-param="filter_cutoff"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Cutoff</span></div>
                 <div class="knob-container"><div class="knob small" data-param="filter_resonance"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Res</span></div>
                 <div class="knob-container"><div class="knob small" data-param="filter_drive"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Drive</span></div>
-                <div class="knob-container"><div class="knob small" data-param="filter_env"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Env</span></div>
+                <div class="knob-container"><div class="knob small" data-param="filter_env_depth"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Env</span></div>
               </div>
             </div>
           </div>
@@ -483,37 +483,32 @@
           <span class="fx-chain-label">CHAIN:</span>
           <div class="fx-chain-order">
             <div class="fx-chip active" draggable="true">DIST</div>
-            <div class="fx-chip" draggable="true">FOLD</div>
+            <div class="fx-chip" draggable="true">PHAS</div>
             <div class="fx-chip" draggable="true">CHOR</div>
             <div class="fx-chip" draggable="true">FLAN</div>
             <div class="fx-chip" draggable="true">DELY</div>
             <div class="fx-chip" draggable="true">VERB</div>
-            <div class="fx-chip" draggable="true">CRUSH</div>
-            <div class="fx-chip" draggable="true">HYPER</div>
+            <div class="fx-chip" draggable="true">EQ</div>
+            <div class="fx-chip" draggable="true">COMP</div>
           </div>
         </div>
 
-        <!-- FX Grid - Creative sound design effects -->
+        <!-- FX Grid - Effects with Mix controls (bound to JUCE) -->
         <div class="fx-grid">
-          <!-- Distortion with multiple types -->
+          <!-- Distortion -->
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">DISTORTION</span><div class="fx-toggle active" data-fx="distortion"></div></div>
             <div class="fx-display"><canvas id="dist_display" width="200" height="60"></canvas></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_dist_drive"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Drive</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_dist_tone"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Tone</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_dist_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_distortion_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
-          <!-- Wavefolder - unique sound design -->
+          <!-- Phaser -->
           <div class="fx-box">
-            <div class="fx-header"><span class="fx-name" style="color:#e74c3c">WAVEFOLDER</span><div class="fx-toggle" data-fx="fold"></div></div>
-            <div class="fx-display"><canvas id="fold_display" width="200" height="60"></canvas></div>
+            <div class="fx-header"><span class="fx-name" style="color:#e74c3c">PHASER</span><div class="fx-toggle" data-fx="phaser"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_fold_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Fold</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_fold_sym"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Sym</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_fold_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_phaser_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#e74c3c"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
@@ -521,9 +516,7 @@
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">CHORUS</span><div class="fx-toggle" data-fx="chorus"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_chorus_rate"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Rate</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_chorus_depth"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Depth</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_chorus_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_chorus_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
@@ -531,53 +524,39 @@
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">FLANGER</span><div class="fx-toggle" data-fx="flanger"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_flanger_rate"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Rate</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_flanger_depth"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Depth</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_flanger_fb"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Fdbk</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_flanger_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_flanger_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
-          <!-- Delay with feedback modulation -->
+          <!-- Delay -->
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">DELAY</span><div class="fx-toggle" data-fx="delay"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_delay_time"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Time</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_delay_fb"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Fdbk</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_delay_filter"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Filter</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_delay_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_delay_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
-          <!-- Reverb with shimmer -->
+          <!-- Reverb -->
           <div class="fx-box">
             <div class="fx-header"><span class="fx-name">REVERB</span><div class="fx-toggle" data-fx="reverb"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_reverb_size"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Size</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_reverb_decay"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Decay</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_reverb_shimmer"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Shimr</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_reverb_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_reverb_mix"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
-          <!-- Bitcrusher - lo-fi destruction -->
+          <!-- EQ -->
           <div class="fx-box">
-            <div class="fx-header"><span class="fx-name" style="color:#9b59b6">BITCRUSH</span><div class="fx-toggle" data-fx="crush"></div></div>
+            <div class="fx-header"><span class="fx-name" style="color:#9b59b6">EQ</span><div class="fx-toggle" data-fx="eq"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_crush_bits"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">Bits</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_crush_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">S.Rate</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_crush_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_eq_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
 
-          <!-- Hyper/Dimension - width and spread -->
+          <!-- Compressor -->
           <div class="fx-box">
-            <div class="fx-header"><span class="fx-name" style="color:#f39c12">HYPER</span><div class="fx-toggle" data-fx="hyper"></div></div>
+            <div class="fx-header"><span class="fx-name" style="color:#f39c12">COMPRESSOR</span><div class="fx-toggle" data-fx="compressor"></div></div>
             <div class="fx-knobs">
-              <div class="knob-container"><div class="knob small" data-param="fx_hyper_voices"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Voices</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_hyper_detune"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Detune</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_hyper_spread"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Spread</span></div>
-              <div class="knob-container"><div class="knob small" data-param="fx_hyper_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Mix</span></div>
+              <div class="knob-container"><div class="knob" data-param="fx_compressor_mix"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f39c12"></div></div><span class="knob-label">Mix</span></div>
             </div>
           </div>
         </div>
@@ -706,9 +685,9 @@
 <!-- Hidden Inputs for parameter state -->
 <div class="hidden-inputs">
   <input type="hidden" id="master_volume" value="0.8">
-  <input type="hidden" id="osc_a_position" value="0.5"><input type="hidden" id="osc_a_level" value="0.8"><input type="hidden" id="osc_a_pan" value="0.5"><input type="hidden" id="osc_a_warp" value="0">
-  <input type="hidden" id="osc_b_position" value="0.5"><input type="hidden" id="osc_b_level" value="0.8"><input type="hidden" id="osc_b_pan" value="0.5"><input type="hidden" id="osc_b_warp" value="0">
-  <input type="hidden" id="filter_cutoff" value="1"><input type="hidden" id="filter_resonance" value="0"><input type="hidden" id="filter_drive" value="0"><input type="hidden" id="filter_env" value="0.5">
+  <input type="hidden" id="osc_a_position" value="0.5"><input type="hidden" id="osc_a_level" value="0.8"><input type="hidden" id="osc_a_pan" value="0.5"><input type="hidden" id="osc_a_warp_amount" value="0">
+  <input type="hidden" id="osc_b_position" value="0.5"><input type="hidden" id="osc_b_level" value="0.8"><input type="hidden" id="osc_b_pan" value="0.5"><input type="hidden" id="osc_b_warp_amount" value="0">
+  <input type="hidden" id="filter_cutoff" value="1"><input type="hidden" id="filter_resonance" value="0"><input type="hidden" id="filter_drive" value="0"><input type="hidden" id="filter_env_depth" value="0.5">
   <input type="hidden" id="amp_attack" value="0.01"><input type="hidden" id="amp_decay" value="0.1"><input type="hidden" id="amp_sustain" value="0.8"><input type="hidden" id="amp_release" value="0.3">
   <input type="hidden" id="filt_attack" value="0.01"><input type="hidden" id="filt_decay" value="0.1"><input type="hidden" id="filt_sustain" value="0.5"><input type="hidden" id="filt_release" value="0.3">
   <input type="hidden" id="lfo1_rate" value="0.5"><input type="hidden" id="lfo2_rate" value="0.5"><input type="hidden" id="lfo3_rate" value="0.5"><input type="hidden" id="lfo4_rate" value="0.5">
@@ -716,21 +695,22 @@
   <input type="hidden" id="unison_detune" value="0.2"><input type="hidden" id="unison_blend" value="0.5"><input type="hidden" id="unison_stereo" value="1"><input type="hidden" id="glide_time" value="0">
   <input type="hidden" id="macro1" value="0"><input type="hidden" id="macro2" value="0"><input type="hidden" id="macro3" value="0"><input type="hidden" id="macro4" value="0">
   <input type="hidden" id="vel_amp" value="0.5"><input type="hidden" id="vel_filter" value="0.5"><input type="hidden" id="output_width" value="1">
-  <!-- FX Parameters -->
-  <input type="hidden" id="fx_dist_drive" value="0"><input type="hidden" id="fx_dist_tone" value="0.5"><input type="hidden" id="fx_dist_mix" value="0">
-  <input type="hidden" id="fx_fold_amount" value="0"><input type="hidden" id="fx_fold_sym" value="0.5"><input type="hidden" id="fx_fold_mix" value="0">
-  <input type="hidden" id="fx_chorus_rate" value="0.3"><input type="hidden" id="fx_chorus_depth" value="0.5"><input type="hidden" id="fx_chorus_mix" value="0">
-  <input type="hidden" id="fx_flanger_rate" value="0.3"><input type="hidden" id="fx_flanger_depth" value="0.5"><input type="hidden" id="fx_flanger_fb" value="0.5"><input type="hidden" id="fx_flanger_mix" value="0">
-  <input type="hidden" id="fx_delay_time" value="0.5"><input type="hidden" id="fx_delay_fb" value="0.4"><input type="hidden" id="fx_delay_filter" value="0.5"><input type="hidden" id="fx_delay_mix" value="0">
-  <input type="hidden" id="fx_reverb_size" value="0.5"><input type="hidden" id="fx_reverb_decay" value="0.5"><input type="hidden" id="fx_reverb_shimmer" value="0"><input type="hidden" id="fx_reverb_mix" value="0">
-  <input type="hidden" id="fx_crush_bits" value="1"><input type="hidden" id="fx_crush_rate" value="1"><input type="hidden" id="fx_crush_mix" value="0">
-  <input type="hidden" id="fx_hyper_voices" value="0"><input type="hidden" id="fx_hyper_detune" value="0.2"><input type="hidden" id="fx_hyper_spread" value="1"><input type="hidden" id="fx_hyper_mix" value="0">
+  <!-- FX Parameters (matching C++ bindings) -->
+  <input type="hidden" id="fx_distortion_mix" value="0">
+  <input type="hidden" id="fx_phaser_mix" value="0">
+  <input type="hidden" id="fx_chorus_mix" value="0">
+  <input type="hidden" id="fx_flanger_mix" value="0">
+  <input type="hidden" id="fx_delay_mix" value="0">
+  <input type="hidden" id="fx_reverb_mix" value="0">
+  <input type="hidden" id="fx_eq_mix" value="0">
+  <input type="hidden" id="fx_compressor_mix" value="0">
 </div>
 
 <script>
 // ============================================================
 // CODOX - Serum-style Wavetable Synthesizer UI
 // Fixed canvas rendering + enhanced visualizations
+// Fixed: Bidirectional JUCE parameter binding
 // ============================================================
 
 (function() {
@@ -742,6 +722,10 @@
   let Juce = null;
   let initAttempts = 0;
   const MAX_INIT_ATTEMPTS = 5;
+
+  // CRITICAL: Store JUCE slider states for bidirectional binding
+  const sliderStates = {};
+  const comboStates = {};
 
   // Multiple initialization strategies to prevent white screen
   function tryInit() {
@@ -1222,12 +1206,19 @@
       knob.addEventListener('mousedown', e => {
         activeKnob = { knob, input, paramId };
         startY = e.clientY;
-        startValue = parseFloat(input.value) || 0;
+        // Get current value from JUCE if available, else from input
+        const state = sliderStates[paramId];
+        startValue = state ? state.getNormalisedValue() : (parseFloat(input.value) || 0);
         document.body.style.cursor = 'ns-resize';
         e.preventDefault();
       });
 
       knob.addEventListener('dblclick', () => {
+        // Reset to center (0.5 normalized)
+        const state = sliderStates[activeKnob?.paramId || paramId];
+        if (state) {
+          state.setNormalisedValue(0.5);
+        }
         input.value = 0.5;
         updateKnobVisual(knob, 0.5);
       });
@@ -1238,6 +1229,13 @@
       const deltaY = startY - e.clientY;
       const sensitivity = e.shiftKey ? 0.001 : 0.006;
       let newValue = Math.max(0, Math.min(1, startValue + deltaY * sensitivity));
+
+      // CRITICAL FIX: Send value to JUCE parameter
+      const state = sliderStates[activeKnob.paramId];
+      if (state) {
+        state.setNormalisedValue(newValue);
+      }
+
       activeKnob.input.value = newValue;
       updateKnobVisual(activeKnob.knob, newValue);
     });
@@ -1334,7 +1332,9 @@
   function bindParameters() {
     if (!Juce) return;
 
-    // Bind all knobs to JUCE
+    console.log('Binding parameters to JUCE...');
+
+    // Bind all knobs to JUCE - STORE STATES FOR BIDIRECTIONAL BINDING
     document.querySelectorAll('.knob[data-param]').forEach(knob => {
       const paramId = knob.dataset.param;
       const input = document.getElementById(paramId);
@@ -1343,35 +1343,63 @@
       try {
         const state = Juce.getSliderState(paramId);
         if (state) {
-          // Update from JUCE
+          // CRITICAL: Store state for drag handler to use
+          sliderStates[paramId] = state;
+
+          // Update UI from JUCE
           state.valueChangedEvent.addListener(() => {
             const value = state.getNormalisedValue();
             input.value = value;
             updateKnobVisual(knob, value);
           });
-          // Initialize from JUCE
+
+          // Initialize from JUCE's current value
           const value = state.getNormalisedValue();
           input.value = value;
           updateKnobVisual(knob, value);
+
+          console.log(`Bound slider: ${paramId} = ${value}`);
+        } else {
+          console.warn(`No JUCE state for: ${paramId}`);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(`Failed to bind ${paramId}:`, e);
+      }
     });
 
-    // Bind dropdowns
+    // Bind dropdowns - STORE STATES FOR CHANGE HANDLERS
     ['osc_a_wavetable', 'osc_b_wavetable', 'osc_a_octave', 'osc_b_octave',
      'filter_type', 'lfo1_shape', 'lfo2_shape', 'lfo3_shape', 'lfo4_shape',
-     'unison_voices', 'sub_shape', 'noise_type'].forEach(id => {
+     'unison_voices', 'sub_shape', 'sub_octave', 'noise_type'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       try {
         const state = Juce.getComboBoxState(id);
         if (state) {
-          state.valueChangedEvent.addListener(() => el.selectedIndex = state.getChoiceIndex());
-          el.addEventListener('change', () => state.setChoiceIndex(el.selectedIndex));
+          // Store state
+          comboStates[id] = state;
+
+          // Update UI from JUCE
+          state.valueChangedEvent.addListener(() => {
+            el.selectedIndex = state.getChoiceIndex();
+          });
+
+          // Send changes TO JUCE
+          el.addEventListener('change', () => {
+            state.setChoiceIndex(el.selectedIndex);
+          });
+
+          // Initialize from JUCE
           el.selectedIndex = state.getChoiceIndex();
+
+          console.log(`Bound combo: ${id} = ${state.getChoiceIndex()}`);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(`Failed to bind combo ${id}:`, e);
+      }
     });
+
+    console.log(`Bound ${Object.keys(sliderStates).length} sliders, ${Object.keys(comboStates).length} combos`);
   }
 
   // ============================================================
