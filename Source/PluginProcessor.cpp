@@ -694,6 +694,172 @@ juce::AudioProcessorValueTreeState::ParameterLayout CodoxAudioProcessor::createP
         "%"
     ));
 
+    // ==================== V2.0 NEW PARAMETERS ====================
+
+    // ==================== MACROS 5-8 ====================
+
+    // macro5 - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "macro5", 1 },
+        "Macro 5",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        50.0f,
+        "%"
+    ));
+
+    // macro6 - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "macro6", 1 },
+        "Macro 6",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        50.0f,
+        "%"
+    ));
+
+    // macro7 - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "macro7", 1 },
+        "Macro 7",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        50.0f,
+        "%"
+    ));
+
+    // macro8 - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "macro8", 1 },
+        "Macro 8",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        50.0f,
+        "%"
+    ));
+
+    // ==================== FX DETAILED PARAMETERS ====================
+
+    // fx_distortion_drive - Float (1-20x)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_distortion_drive", 1 },
+        "Distortion Drive",
+        juce::NormalisableRange<float>(1.0f, 20.0f, 0.1f),
+        5.0f
+    ));
+
+    // fx_chorus_rate - Float (0.1-10 Hz)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_chorus_rate", 1 },
+        "Chorus Rate",
+        juce::NormalisableRange<float>(0.1f, 10.0f, 0.01f, 0.5f),
+        0.5f,
+        "Hz"
+    ));
+
+    // fx_chorus_depth - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_chorus_depth", 1 },
+        "Chorus Depth",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        30.0f,
+        "%"
+    ));
+
+    // fx_phaser_rate - Float (0.1-5 Hz)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_phaser_rate", 1 },
+        "Phaser Rate",
+        juce::NormalisableRange<float>(0.1f, 5.0f, 0.01f, 0.5f),
+        0.3f,
+        "Hz"
+    ));
+
+    // fx_phaser_depth - Float (0-100%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_phaser_depth", 1 },
+        "Phaser Depth",
+        juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+        50.0f,
+        "%"
+    ));
+
+    // fx_flanger_rate - Float (0.05-5 Hz)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_flanger_rate", 1 },
+        "Flanger Rate",
+        juce::NormalisableRange<float>(0.05f, 5.0f, 0.01f, 0.5f),
+        0.2f,
+        "Hz"
+    ));
+
+    // fx_flanger_feedback - Float (0-95%)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_flanger_feedback", 1 },
+        "Flanger Feedback",
+        juce::NormalisableRange<float>(0.0f, 95.0f, 0.1f),
+        60.0f,
+        "%"
+    ));
+
+    // fx_eq_low - Float (-12 to +12 dB)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_eq_low", 1 },
+        "EQ Low",
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f),
+        0.0f,
+        "dB"
+    ));
+
+    // fx_eq_mid - Float (-12 to +12 dB)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_eq_mid", 1 },
+        "EQ Mid",
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f),
+        0.0f,
+        "dB"
+    ));
+
+    // fx_eq_high - Float (-12 to +12 dB)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_eq_high", 1 },
+        "EQ High",
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f),
+        0.0f,
+        "dB"
+    ));
+
+    // fx_compressor_threshold - Float (-40 to 0 dB)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_compressor_threshold", 1 },
+        "Compressor Threshold",
+        juce::NormalisableRange<float>(-40.0f, 0.0f, 0.1f),
+        -20.0f,
+        "dB"
+    ));
+
+    // fx_compressor_ratio - Float (1:1 to 20:1)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_compressor_ratio", 1 },
+        "Compressor Ratio",
+        juce::NormalisableRange<float>(1.0f, 20.0f, 0.1f),
+        4.0f
+    ));
+
+    // fx_compressor_attack - Float (0.1-100 ms)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_compressor_attack", 1 },
+        "Compressor Attack",
+        juce::NormalisableRange<float>(0.1f, 100.0f, 0.1f, 0.5f),
+        10.0f,
+        "ms"
+    ));
+
+    // fx_compressor_release - Float (10-1000 ms)
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID { "fx_compressor_release", 1 },
+        "Compressor Release",
+        juce::NormalisableRange<float>(10.0f, 1000.0f, 1.0f, 0.5f),
+        100.0f,
+        "ms"
+    ));
+
     return layout;
 }
 
@@ -865,6 +1031,22 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     auto* fx_reverb_size = parameters.getRawParameterValue("fx_reverb_size");
     auto* fx_reverb_decay = parameters.getRawParameterValue("fx_reverb_decay");
 
+    // V2.0: Read new detailed FX parameters
+    auto* fx_distortion_drive = parameters.getRawParameterValue("fx_distortion_drive");
+    auto* fx_chorus_rate = parameters.getRawParameterValue("fx_chorus_rate");
+    auto* fx_chorus_depth = parameters.getRawParameterValue("fx_chorus_depth");
+    auto* fx_phaser_rate = parameters.getRawParameterValue("fx_phaser_rate");
+    auto* fx_phaser_depth = parameters.getRawParameterValue("fx_phaser_depth");
+    auto* fx_flanger_rate = parameters.getRawParameterValue("fx_flanger_rate");
+    auto* fx_flanger_feedback = parameters.getRawParameterValue("fx_flanger_feedback");
+    auto* fx_eq_low = parameters.getRawParameterValue("fx_eq_low");
+    auto* fx_eq_mid = parameters.getRawParameterValue("fx_eq_mid");
+    auto* fx_eq_high = parameters.getRawParameterValue("fx_eq_high");
+    auto* fx_compressor_threshold = parameters.getRawParameterValue("fx_compressor_threshold");
+    auto* fx_compressor_ratio = parameters.getRawParameterValue("fx_compressor_ratio");
+    auto* fx_compressor_attack = parameters.getRawParameterValue("fx_compressor_attack");
+    auto* fx_compressor_release = parameters.getRawParameterValue("fx_compressor_release");
+
     // Read tempo sync parameters
     auto* fx_delay_sync = parameters.getRawParameterValue("fx_delay_sync");
     auto* fx_delay_sync_rate = parameters.getRawParameterValue("fx_delay_sync_rate");
@@ -951,6 +1133,35 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     // Update reverb parameters
     effectsChain.setReverbSize(fx_reverb_size->load() / 100.0f);
     effectsChain.setReverbDamping(1.0f - (fx_reverb_decay->load() / 100.0f)); // Invert: higher decay = less damping
+
+    // V2.0: Update new detailed FX parameters
+    effectsChain.setDistortionDrive(fx_distortion_drive->load());
+
+    // Chorus rate (if not tempo synced) and depth
+    if (fx_chorus_sync->load() <= 0.5f)
+        effectsChain.setChorusRate(fx_chorus_rate->load());
+    effectsChain.setChorusDepth(fx_chorus_depth->load() / 100.0f);
+
+    // Phaser rate (if not tempo synced) and depth
+    if (fx_phaser_sync->load() <= 0.5f)
+        effectsChain.setPhaserRate(fx_phaser_rate->load());
+    effectsChain.setPhaserDepth(fx_phaser_depth->load() / 100.0f);
+
+    // Flanger rate (if not tempo synced) and feedback
+    if (fx_flanger_sync->load() <= 0.5f)
+        effectsChain.setFlangerRate(fx_flanger_rate->load());
+    effectsChain.setFlangerFeedback(fx_flanger_feedback->load() / 100.0f);
+
+    // EQ bands (dB values passed directly)
+    effectsChain.setEQLow(fx_eq_low->load());
+    effectsChain.setEQMid(fx_eq_mid->load());
+    effectsChain.setEQHigh(fx_eq_high->load());
+
+    // Compressor parameters
+    effectsChain.setCompressorThreshold(fx_compressor_threshold->load());
+    effectsChain.setCompressorRatio(fx_compressor_ratio->load());
+    effectsChain.setCompressorAttack(fx_compressor_attack->load());
+    effectsChain.setCompressorRelease(fx_compressor_release->load());
 
     // Update all voices with current parameters
     for (auto& voice : voices)

@@ -324,6 +324,52 @@ public:
         phaser.setRate(juce::jlimit(0.1f, 5.0f, rate));
     }
 
+    // V2.0: New detailed parameter setters
+    void setDistortionDrive(float drive) {
+        distortionDrive = juce::jlimit(1.0f, 20.0f, drive);
+    }
+
+    // setChorusDepth already exists above
+
+    void setPhaserDepth(float depth) {
+        phaser.setDepth(juce::jlimit(0.0f, 1.0f, depth));
+    }
+
+    void setFlangerFeedback(float feedback) {
+        flangerFeedback = juce::jlimit(0.0f, 0.95f, feedback);
+    }
+
+    void setEQLow(float gainDb) {
+        eqLowGain = juce::jlimit(-12.0f, 12.0f, gainDb);
+        updateEQCoefficients();
+    }
+
+    void setEQMid(float gainDb) {
+        eqMidGain = juce::jlimit(-12.0f, 12.0f, gainDb);
+        updateEQCoefficients();
+    }
+
+    void setEQHigh(float gainDb) {
+        eqHighGain = juce::jlimit(-12.0f, 12.0f, gainDb);
+        updateEQCoefficients();
+    }
+
+    void setCompressorThreshold(float thresholdDb) {
+        compressor.setThreshold(juce::jlimit(-40.0f, 0.0f, thresholdDb));
+    }
+
+    void setCompressorRatio(float ratio) {
+        compressor.setRatio(juce::jlimit(1.0f, 20.0f, ratio));
+    }
+
+    void setCompressorAttack(float attackMs) {
+        compressor.setAttack(juce::jlimit(0.1f, 100.0f, attackMs));
+    }
+
+    void setCompressorRelease(float releaseMs) {
+        compressor.setRelease(juce::jlimit(10.0f, 1000.0f, releaseMs));
+    }
+
 private:
     // Mix parameters (0.0-1.0, controlled by APVTS)
     float distortionMix = 0.0f;
@@ -347,6 +393,11 @@ private:
     float reverbDamping = 0.5f;
     float reverbWidth = 1.0f;
 
+    // V2.0: EQ gain parameters (dB)
+    float eqLowGain = 0.0f;
+    float eqMidGain = 0.0f;
+    float eqHighGain = 0.0f;
+
     void updateReverbParams() {
         juce::Reverb::Parameters params;
         params.roomSize = reverbRoomSize;
@@ -355,6 +406,17 @@ private:
         params.wetLevel = 1.0f;
         params.dryLevel = 0.0f;
         reverb.setParameters(params);
+    }
+
+    void updateEQCoefficients() {
+        if (currentSampleRate > 0) {
+            *lowShelf.coefficients = *juce::dsp::IIR::Coefficients<float>::makeLowShelf(
+                currentSampleRate, 100.0f, 0.707f, juce::Decibels::decibelsToGain(eqLowGain));
+            *midPeak.coefficients = *juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+                currentSampleRate, 1000.0f, 0.707f, juce::Decibels::decibelsToGain(eqMidGain));
+            *highShelf.coefficients = *juce::dsp::IIR::Coefficients<float>::makeHighShelf(
+                currentSampleRate, 8000.0f, 0.707f, juce::Decibels::decibelsToGain(eqHighGain));
+        }
     }
 
     // JUCE DSP components

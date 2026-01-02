@@ -2,6 +2,60 @@
 
 All notable changes to Codox wavetable synthesizer are documented here.
 
+## [2.0.0] - 2026-01-02
+
+### Breaking Changes
+
+- **Complete UI redesign** - Serum-style single-page layout replaces tabbed interface
+- **New parameters added** - Preset compatibility with v1.x may be limited
+
+### Added
+
+- **Serum-style single-page layout**
+  - All controls visible on one screen (no tabs)
+  - Sub + Noise oscillators now on main page with Osc A/B
+  - Compact envelope displays
+  - FX rack on right side with full parameter access
+
+- **8 Macros** (up from 4)
+  - macro5, macro6, macro7, macro8 added to C++ backend
+  - All 8 visible in bottom row
+
+- **Full FX parameter controls** (not just Mix)
+  - Distortion: Drive control
+  - Chorus: Rate, Depth
+  - Phaser: Rate, Depth
+  - Flanger: Rate, Feedback
+  - Delay: Time, Feedback (existing) - now more prominent
+  - Reverb: Size, Decay (existing) - now more prominent
+  - EQ: Low, Mid, High band controls
+  - Compressor: Threshold, Ratio, Attack, Release
+
+- **Drag-and-drop FX chain reordering**
+  - Drag any FX unit to reorder the processing chain
+  - Visual feedback during drag
+
+- **Custom save modal**
+  - Replaced browser prompt() with styled modal
+  - Preset file download (.codox format)
+
+- **External preset loading**
+  - LOAD button opens file picker
+  - Supports .json and .codox files
+
+### Fixed
+
+- **Save button not working** - Custom modal replaces blocked browser prompt()
+- **Page switching during FX adjustment** - Event propagation properly stopped
+- **Sub oscillator hidden** - Now visible on main page
+
+### Changed
+
+- UI width increased to 1000px for more space
+- Envelopes more compact (35px display height)
+- LFOs in horizontal row (4 columns)
+- Color scheme updated with better contrast
+
 ## [1.0.4] - 2026-01-02
 
 ### Added
