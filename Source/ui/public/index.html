@@ -1361,27 +1361,245 @@
     if (randomBtn) randomBtn.addEventListener('click', randomize);
   }
 
+  // ============================================================
+  // PRESET SYSTEM
+  // ============================================================
+
+  // Factory presets with normalized values (0-1)
+  const factoryPresets = {
+    'Init': {
+      osc_a_position: 0, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0,
+      osc_b_position: 0, osc_b_level: 0, osc_b_pan: 0.5, osc_b_warp_amount: 0,
+      filter_cutoff: 1, filter_resonance: 0, filter_drive: 0, filter_env_depth: 0,
+      amp_attack: 0.001, amp_decay: 0.01, amp_sustain: 1, amp_release: 0.02,
+      filt_attack: 0.001, filt_decay: 0.01, filt_sustain: 0.5, filt_release: 0.02,
+      sub_level: 0, noise_level: 0,
+      fx_distortion_mix: 0, fx_chorus_mix: 0, fx_reverb_mix: 0, fx_delay_mix: 0
+    },
+    'Serum Lead': {
+      osc_a_position: 0.3, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0.2,
+      osc_b_position: 0.5, osc_b_level: 0.7, osc_b_pan: 0.5, osc_b_warp_amount: 0.3,
+      filter_cutoff: 0.6, filter_resonance: 0.3, filter_drive: 0.2, filter_env_depth: 0.4,
+      amp_attack: 0.001, amp_decay: 0.15, amp_sustain: 0.7, amp_release: 0.1,
+      filt_attack: 0.001, filt_decay: 0.2, filt_sustain: 0.3, filt_release: 0.15,
+      sub_level: 0.2, noise_level: 0,
+      fx_distortion_mix: 0.1, fx_chorus_mix: 0.2, fx_reverb_mix: 0.15, fx_delay_mix: 0.1
+    },
+    'Fat Bass': {
+      osc_a_position: 0.1, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0.4,
+      osc_b_position: 0.2, osc_b_level: 0.8, osc_b_pan: 0.5, osc_b_warp_amount: 0.5,
+      filter_cutoff: 0.35, filter_resonance: 0.4, filter_drive: 0.5, filter_env_depth: 0.6,
+      amp_attack: 0.001, amp_decay: 0.2, amp_sustain: 0.6, amp_release: 0.08,
+      filt_attack: 0.001, filt_decay: 0.25, filt_sustain: 0.2, filt_release: 0.1,
+      sub_level: 0.6, noise_level: 0,
+      fx_distortion_mix: 0.3, fx_chorus_mix: 0, fx_reverb_mix: 0, fx_delay_mix: 0
+    },
+    'Ethereal Pad': {
+      osc_a_position: 0.4, osc_a_level: 0.7, osc_a_pan: 0.3, osc_a_warp_amount: 0.1,
+      osc_b_position: 0.6, osc_b_level: 0.7, osc_b_pan: 0.7, osc_b_warp_amount: 0.15,
+      filter_cutoff: 0.5, filter_resonance: 0.2, filter_drive: 0, filter_env_depth: 0.2,
+      amp_attack: 0.4, amp_decay: 0.3, amp_sustain: 0.8, amp_release: 0.5,
+      filt_attack: 0.5, filt_decay: 0.4, filt_sustain: 0.6, filt_release: 0.6,
+      sub_level: 0.1, noise_level: 0.05,
+      fx_distortion_mix: 0, fx_chorus_mix: 0.4, fx_reverb_mix: 0.5, fx_delay_mix: 0.3
+    },
+    'Pluck': {
+      osc_a_position: 0.2, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0.1,
+      osc_b_position: 0.3, osc_b_level: 0.5, osc_b_pan: 0.5, osc_b_warp_amount: 0.2,
+      filter_cutoff: 0.7, filter_resonance: 0.25, filter_drive: 0.1, filter_env_depth: 0.5,
+      amp_attack: 0.001, amp_decay: 0.3, amp_sustain: 0, amp_release: 0.15,
+      filt_attack: 0.001, filt_decay: 0.25, filt_sustain: 0, filt_release: 0.2,
+      sub_level: 0, noise_level: 0.02,
+      fx_distortion_mix: 0, fx_chorus_mix: 0.15, fx_reverb_mix: 0.25, fx_delay_mix: 0.2
+    },
+    'Growl Bass': {
+      osc_a_position: 0.5, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0.7,
+      osc_b_position: 0.6, osc_b_level: 0.9, osc_b_pan: 0.5, osc_b_warp_amount: 0.8,
+      filter_cutoff: 0.4, filter_resonance: 0.5, filter_drive: 0.6, filter_env_depth: 0.7,
+      amp_attack: 0.001, amp_decay: 0.15, amp_sustain: 0.7, amp_release: 0.1,
+      filt_attack: 0.001, filt_decay: 0.2, filt_sustain: 0.3, filt_release: 0.15,
+      sub_level: 0.4, noise_level: 0,
+      fx_distortion_mix: 0.5, fx_chorus_mix: 0, fx_reverb_mix: 0, fx_delay_mix: 0
+    },
+    'Supersaw': {
+      osc_a_position: 0.8, osc_a_level: 1, osc_a_pan: 0.3, osc_a_warp_amount: 0,
+      osc_b_position: 0.8, osc_b_level: 1, osc_b_pan: 0.7, osc_b_warp_amount: 0,
+      filter_cutoff: 0.75, filter_resonance: 0.15, filter_drive: 0.1, filter_env_depth: 0.2,
+      amp_attack: 0.01, amp_decay: 0.2, amp_sustain: 0.8, amp_release: 0.15,
+      filt_attack: 0.01, filt_decay: 0.15, filt_sustain: 0.5, filt_release: 0.2,
+      sub_level: 0.15, noise_level: 0,
+      fx_distortion_mix: 0.05, fx_chorus_mix: 0.3, fx_reverb_mix: 0.2, fx_delay_mix: 0.1,
+      unison_detune: 0.3
+    },
+    'Bell': {
+      osc_a_position: 0.15, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0.3,
+      osc_b_position: 0.4, osc_b_level: 0.6, osc_b_pan: 0.5, osc_b_warp_amount: 0.4,
+      filter_cutoff: 0.8, filter_resonance: 0.1, filter_drive: 0, filter_env_depth: 0.3,
+      amp_attack: 0.001, amp_decay: 0.6, amp_sustain: 0.1, amp_release: 0.4,
+      filt_attack: 0.001, filt_decay: 0.5, filt_sustain: 0.2, filt_release: 0.5,
+      sub_level: 0, noise_level: 0,
+      fx_distortion_mix: 0, fx_chorus_mix: 0.1, fx_reverb_mix: 0.4, fx_delay_mix: 0.25
+    },
+    'Wobble': {
+      osc_a_position: 0.3, osc_a_level: 1, osc_a_pan: 0.5, osc_a_warp_amount: 0.5,
+      osc_b_position: 0.4, osc_b_level: 0.8, osc_b_pan: 0.5, osc_b_warp_amount: 0.6,
+      filter_cutoff: 0.5, filter_resonance: 0.6, filter_drive: 0.4, filter_env_depth: 0,
+      amp_attack: 0.001, amp_decay: 0.1, amp_sustain: 0.9, amp_release: 0.1,
+      filt_attack: 0.001, filt_decay: 0.1, filt_sustain: 0.9, filt_release: 0.1,
+      sub_level: 0.3, noise_level: 0,
+      fx_distortion_mix: 0.2, fx_chorus_mix: 0, fx_reverb_mix: 0.1, fx_delay_mix: 0
+    },
+    'Ambient': {
+      osc_a_position: 0.25, osc_a_level: 0.6, osc_a_pan: 0.2, osc_a_warp_amount: 0.05,
+      osc_b_position: 0.35, osc_b_level: 0.6, osc_b_pan: 0.8, osc_b_warp_amount: 0.1,
+      filter_cutoff: 0.45, filter_resonance: 0.15, filter_drive: 0, filter_env_depth: 0.15,
+      amp_attack: 0.6, amp_decay: 0.5, amp_sustain: 0.7, amp_release: 0.7,
+      filt_attack: 0.7, filt_decay: 0.6, filt_sustain: 0.5, filt_release: 0.8,
+      sub_level: 0.1, noise_level: 0.08,
+      fx_distortion_mix: 0, fx_chorus_mix: 0.35, fx_reverb_mix: 0.6, fx_delay_mix: 0.4
+    }
+  };
+
+  // User presets stored in localStorage
+  let userPresets = {};
+
+  function loadUserPresets() {
+    try {
+      const stored = localStorage.getItem('codox_user_presets');
+      if (stored) userPresets = JSON.parse(stored);
+    } catch (e) {
+      console.warn('Could not load user presets:', e);
+    }
+  }
+
+  function saveUserPresets() {
+    try {
+      localStorage.setItem('codox_user_presets', JSON.stringify(userPresets));
+    } catch (e) {
+      console.warn('Could not save user presets:', e);
+    }
+  }
+
+  function getCurrentState() {
+    const state = {};
+    document.querySelectorAll('.knob[data-param]').forEach(knob => {
+      const paramId = knob.dataset.param;
+      const sliderState = sliderStates[paramId];
+      if (sliderState) {
+        state[paramId] = sliderState.getNormalisedValue();
+      } else {
+        const input = document.getElementById(paramId);
+        if (input) state[paramId] = parseFloat(input.value) || 0;
+      }
+    });
+    return state;
+  }
+
+  function applyState(state) {
+    for (const [paramId, value] of Object.entries(state)) {
+      const sliderState = sliderStates[paramId];
+      if (sliderState) {
+        sliderState.setNormalisedValue(value);
+      }
+      // Also update local UI
+      const input = document.getElementById(paramId);
+      const knob = document.querySelector(`.knob[data-param="${paramId}"]`);
+      if (input) input.value = value;
+      if (knob) updateKnobVisual(knob, value);
+    }
+    console.log('Applied preset state');
+  }
+
   function loadPreset(name) {
     console.log('Loading preset:', name);
-    // Preset loading would be handled by JUCE backend
+
+    // Check factory presets first
+    if (factoryPresets[name]) {
+      applyState(factoryPresets[name]);
+      return;
+    }
+
+    // Check user presets
+    if (userPresets[name]) {
+      applyState(userPresets[name]);
+      return;
+    }
+
+    console.warn('Preset not found:', name);
   }
 
   function savePreset() {
     const name = prompt('Enter preset name:');
-    if (name) console.log('Saving preset:', name);
+    if (!name || name.trim() === '') return;
+
+    // Don't overwrite factory presets
+    if (factoryPresets[name]) {
+      alert('Cannot overwrite factory preset. Choose a different name.');
+      return;
+    }
+
+    // Save current state
+    userPresets[name] = getCurrentState();
+    saveUserPresets();
+
+    // Add to dropdown if not already there
+    const select = document.getElementById('preset_select');
+    let found = false;
+    for (const opt of select.options) {
+      if (opt.value === name) { found = true; break; }
+    }
+    if (!found) {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name + ' *';  // Mark as user preset
+      select.appendChild(option);
+    }
+
+    // Select the saved preset
+    select.value = name;
+
+    console.log('Saved preset:', name);
+    alert('Preset saved: ' + name);
   }
 
   function randomize() {
-    document.querySelectorAll('.knob[data-param]').forEach(knob => {
-      const paramId = knob.dataset.param;
-      const input = document.getElementById(paramId);
-      if (input && !paramId.includes('master')) {
-        const value = Math.random();
-        input.value = value;
-        updateKnobVisual(knob, value);
-      }
-    });
+    // Randomize most parameters but keep some sensible
+    const randomState = {
+      osc_a_position: Math.random(),
+      osc_a_level: 0.7 + Math.random() * 0.3,
+      osc_a_pan: 0.3 + Math.random() * 0.4,
+      osc_a_warp_amount: Math.random() * 0.6,
+      osc_b_position: Math.random(),
+      osc_b_level: Math.random() * 0.8,
+      osc_b_pan: 0.3 + Math.random() * 0.4,
+      osc_b_warp_amount: Math.random() * 0.6,
+      filter_cutoff: 0.3 + Math.random() * 0.6,
+      filter_resonance: Math.random() * 0.5,
+      filter_drive: Math.random() * 0.4,
+      filter_env_depth: Math.random() * 0.6,
+      amp_attack: Math.random() * 0.3,
+      amp_decay: 0.05 + Math.random() * 0.4,
+      amp_sustain: 0.3 + Math.random() * 0.6,
+      amp_release: 0.05 + Math.random() * 0.4,
+      filt_attack: Math.random() * 0.3,
+      filt_decay: 0.05 + Math.random() * 0.4,
+      filt_sustain: Math.random() * 0.7,
+      filt_release: 0.05 + Math.random() * 0.4,
+      sub_level: Math.random() * 0.4,
+      noise_level: Math.random() * 0.15,
+      fx_distortion_mix: Math.random() * 0.3,
+      fx_chorus_mix: Math.random() * 0.4,
+      fx_reverb_mix: Math.random() * 0.5,
+      fx_delay_mix: Math.random() * 0.4,
+      unison_detune: Math.random() * 0.4
+    };
+
+    applyState(randomState);
+    console.log('Randomized parameters');
   }
+
+  // Load user presets on startup
+  loadUserPresets();
 
   // ============================================================
   // JUCE CONNECTION

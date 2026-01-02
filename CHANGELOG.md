@@ -2,6 +2,24 @@
 
 All notable changes to Codox wavetable synthesizer are documented here.
 
+## [1.0.4] - 2026-01-02
+
+### Added
+
+- **Working preset system** - Presets now actually load and save
+  - 10 factory presets: Init, Serum Lead, Fat Bass, Ethereal Pad, Pluck, Growl Bass, Supersaw, Bell, Wobble, Ambient
+  - Each preset has distinct sound characteristics
+  - User presets saved to localStorage
+  - Save button prompts for name and stores current state
+  - Factory presets protected from overwrite
+  - Randomize button creates musically useful random patches
+
+### Fixed
+
+- **Presets not loading** - loadPreset() now applies parameter values via JUCE slider states
+- **Save button not working** - savePreset() now captures all knob values and stores to localStorage
+- **Randomize not affecting sound** - Now uses applyState() to set JUCE parameters
+
 ## [1.0.3] - 2026-01-02
 
 ### Fixed
