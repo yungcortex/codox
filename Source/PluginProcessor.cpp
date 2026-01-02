@@ -646,9 +646,60 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     float sustain = ampSustainParam->load() / 100.0f; // Convert 0-100% to 0.0-1.0
     float release = ampReleaseParam->load();
 
-    // Update all voice envelopes
+    // Read oscillator A parameters
+    auto* oscA_wavetable = parameters.getRawParameterValue("osc_a_wavetable");
+    auto* oscA_position = parameters.getRawParameterValue("osc_a_position");
+    auto* oscA_level = parameters.getRawParameterValue("osc_a_level");
+    auto* oscA_pan = parameters.getRawParameterValue("osc_a_pan");
+    auto* oscA_octave = parameters.getRawParameterValue("osc_a_octave");
+    auto* oscA_semitone = parameters.getRawParameterValue("osc_a_semitone");
+    auto* oscA_fine = parameters.getRawParameterValue("osc_a_fine");
+    auto* oscA_warpMode = parameters.getRawParameterValue("osc_a_warp_mode");
+    auto* oscA_warpAmount = parameters.getRawParameterValue("osc_a_warp_amount");
+
+    // Read oscillator B parameters
+    auto* oscB_wavetable = parameters.getRawParameterValue("osc_b_wavetable");
+    auto* oscB_position = parameters.getRawParameterValue("osc_b_position");
+    auto* oscB_level = parameters.getRawParameterValue("osc_b_level");
+    auto* oscB_pan = parameters.getRawParameterValue("osc_b_pan");
+    auto* oscB_octave = parameters.getRawParameterValue("osc_b_octave");
+    auto* oscB_semitone = parameters.getRawParameterValue("osc_b_semitone");
+    auto* oscB_fine = parameters.getRawParameterValue("osc_b_fine");
+    auto* oscB_warpMode = parameters.getRawParameterValue("osc_b_warp_mode");
+    auto* oscB_warpAmount = parameters.getRawParameterValue("osc_b_warp_amount");
+
+    // Update all voices with current parameters
     for (auto& voice : voices)
+    {
+        // Update envelope
         voice.updateEnvelope(attack, decay, sustain, release);
+
+        // Update oscillator A
+        voice.updateOscillatorA(
+            static_cast<int>(oscA_wavetable->load()),
+            oscA_position->load(),
+            oscA_level->load(),
+            oscA_pan->load(),
+            static_cast<int>(oscA_octave->load()),
+            static_cast<int>(oscA_semitone->load()),
+            static_cast<int>(oscA_fine->load()),
+            static_cast<int>(oscA_warpMode->load()),
+            oscA_warpAmount->load()
+        );
+
+        // Update oscillator B
+        voice.updateOscillatorB(
+            static_cast<int>(oscB_wavetable->load()),
+            oscB_position->load(),
+            oscB_level->load(),
+            oscB_pan->load(),
+            static_cast<int>(oscB_octave->load()),
+            static_cast<int>(oscB_semitone->load()),
+            static_cast<int>(oscB_fine->load()),
+            static_cast<int>(oscB_warpMode->load()),
+            oscB_warpAmount->load()
+        );
+    }
 
     // Process MIDI events
     for (const auto metadata : midiMessages)

@@ -1,8 +1,9 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "WavetableOscillator.h"
 
-// Simple Voice class for Phase 3.1 - Basic sine oscillator with amp envelope
-// This validates the voice management architecture before implementing the full wavetable engine
+// Voice class - Phase 3.2a: Wavetable oscillator with frame interpolation
+// Replaced simple sine with full wavetable engine
 class Voice
 {
 public:
@@ -18,13 +19,14 @@ public:
         midiNote = noteNumber;
         velocity = vel;
         isActive = true;
+        sampleRate = sr;
 
-        // Calculate frequency from MIDI note
+        // Calculate base frequency from MIDI note
         frequency = 440.0f * std::pow(2.0f, (noteNumber - 69) / 12.0f);
 
-        // Reset phase
-        phase = 0.0f;
-        phaseIncrement = (2.0f * juce::MathConstants<float>::pi * frequency) / static_cast<float>(sr);
+        // Reset oscillators
+        oscA.reset();
+        oscB.reset();
 
         // Reset release flag and trigger envelope
         inRelease = false;
@@ -50,33 +52,66 @@ public:
         return midiNote;
     }
 
-    // Generate next audio sample (simple sine wave for Phase 3.1)
+    // Update oscillator A parameters
+    void updateOscillatorA(int wavetable, float position, float level, float pan,
+                           int octave, int semitone, int fine,
+                           int warpMode, float warpAmount)
+    {
+        oscA.setWavetable(wavetable);
+        oscA.setPosition(position / 100.0f); // Convert 0-100% to 0.0-1.0
+        oscA.setWarpMode(warpMode);
+        oscA.setWarpAmount(warpAmount / 100.0f); // Convert 0-100% to 0.0-1.0
+
+        // Update frequency with tuning
+        oscA.setFrequency(frequency, octave - 4, semitone, fine, sampleRate); // octave param is index 0-8, convert to -4 to +4
+
+        // Store level and pan for mixing
+        oscA_level = level / 100.0f; // Convert 0-100% to 0.0-1.0
+        oscA_pan = pan / 100.0f; // Convert -100 to +100 to -1.0 to +1.0
+    }
+
+    // Update oscillator B parameters
+    void updateOscillatorB(int wavetable, float position, float level, float pan,
+                           int octave, int semitone, int fine,
+                           int warpMode, float warpAmount)
+    {
+        oscB.setWavetable(wavetable);
+        oscB.setPosition(position / 100.0f);
+        oscB.setWarpMode(warpMode);
+        oscB.setWarpAmount(warpAmount / 100.0f);
+
+        oscB.setFrequency(frequency, octave - 4, semitone, fine, sampleRate);
+
+        oscB_level = level / 100.0f;
+        oscB_pan = pan / 100.0f;
+    }
+
+    // Generate next audio sample (wavetable oscillators with mixing and panning)
     float getNextSample()
     {
         if (!isActive)
             return 0.0f;
 
-        // Simple sine oscillator
-        float sample = std::sin(phase);
+        // Generate samples from both oscillators
+        float sampleA = oscA.getNextSample() * oscA_level;
+        float sampleB = oscB.getNextSample() * oscB_level;
+
+        // Mix oscillators (stereo panning applied later, for now sum to mono)
+        // TODO Phase 3.2d: Apply constant-power panning
+        float mixedSample = sampleA + sampleB;
 
         // Apply velocity
-        sample *= velocity;
+        mixedSample *= velocity;
 
-        // Apply amp envelope - get envelope value
+        // Apply amp envelope
         float envValue = ampEnvelope.getNextSample();
-        sample *= envValue;
+        mixedSample *= envValue;
 
-        // Advance phase
-        phase += phaseIncrement;
-        if (phase >= 2.0f * juce::MathConstants<float>::pi)
-            phase -= 2.0f * juce::MathConstants<float>::pi;
-
-        // Check if envelope is finished - ADSR returns 0 after release phase completes
-        // Only check after noteOff has been called (inRelease flag)
+        // Check if envelope finished
         if (inRelease && envValue < 0.0001f)
             isActive = false;
 
-        return sample;
+        return mixedSample;
     }
 
     // Update envelope parameters
@@ -86,13 +121,17 @@ public:
     }
 
     // Prepare to play (update sample rate)
-    void prepareToPlay(double sampleRate)
+    void prepareToPlay(double sr)
     {
+        sampleRate = sr;
         ampEnvelope.setSampleRate(sampleRate);
 
-        // Recalculate phase increment if voice is active
+        // Update oscillator frequencies with new sample rate
         if (isActive)
-            phaseIncrement = (2.0f * juce::MathConstants<float>::pi * frequency) / static_cast<float>(sampleRate);
+        {
+            // Recalculate frequencies (tuning parameters stored in oscillators)
+            // This will be called during voice update cycle
+        }
     }
 
     // Reset voice state
@@ -103,8 +142,15 @@ public:
         midiNote = -1;
         velocity = 0.0f;
         frequency = 0.0f;
-        phase = 0.0f;
-        phaseIncrement = 0.0f;
+        sampleRate = 44100.0;
+
+        oscA_level = 1.0f;
+        oscA_pan = 0.0f;
+        oscB_level = 1.0f;
+        oscB_pan = 0.0f;
+
+        oscA.reset();
+        oscB.reset();
         ampEnvelope.reset();
     }
 
@@ -114,8 +160,17 @@ private:
     int midiNote = -1;
     float velocity = 0.0f;
     float frequency = 0.0f;
-    float phase = 0.0f;
-    float phaseIncrement = 0.0f;
+    double sampleRate = 44100.0;
+
+    // Oscillators (Phase 3.2a: Wavetable oscillators)
+    WavetableOscillator oscA;
+    WavetableOscillator oscB;
+
+    // Oscillator levels and panning
+    float oscA_level = 1.0f;
+    float oscA_pan = 0.0f;
+    float oscB_level = 1.0f;
+    float oscB_pan = 0.0f;
 
     juce::ADSR ampEnvelope;
 };
