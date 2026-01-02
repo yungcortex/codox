@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 #include "Voice.h"
+#include "EffectsChain.h"
+#include "LFO.h"
 
 class CodoxAudioProcessor : public juce::AudioProcessor
 {
@@ -43,8 +45,22 @@ private:
     std::vector<std::unique_ptr<Voice>> voices;
     int nextVoiceIndex = 0; // Round-robin voice allocation
 
+    // Phase 3.5: Effects Chain
+    EffectsChain effectsChain;
+
+    // Phase 3.6: LFOs (4 global LFOs - NOT per-voice)
+    // NOTE: v1.0 has NO routing (no mod matrix) - LFOs generate signals but don't modulate anything
+    LFO lfo1;
+    LFO lfo2;
+    LFO lfo3;
+    LFO lfo4;
+
+    // Phase 3.6: Glide/Portamento state
+    float glideTime = 0.0f; // Current glide time parameter (0-10 seconds)
+    int lastMidiNote = -1; // Last triggered MIDI note (for glide transitions)
+
     // Helper methods
-    void allocateVoice(int midiNote, float velocity, double sampleRate);
+    void allocateVoice(int midiNote, float velocity, double sampleRate, float glideTime = 0.0f);
     void releaseVoice(int midiNote);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CodoxAudioProcessor)

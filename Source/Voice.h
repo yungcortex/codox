@@ -26,15 +26,34 @@ public:
     }
 
     // Note-on: trigger voice
-    void noteOn(int noteNumber, float vel, double sr)
+    void noteOn(int noteNumber, float vel, double sr, float glideTimeSeconds = 0.0f)
     {
         midiNote = noteNumber;
         velocity = vel;
         isActive = true;
         sampleRate = sr;
 
-        // Calculate base frequency from MIDI note
-        frequency = 440.0f * std::pow(2.0f, (noteNumber - 69) / 12.0f);
+        // Calculate target frequency from MIDI note
+        float targetFreq = 440.0f * std::pow(2.0f, (noteNumber - 69) / 12.0f);
+
+        // Phase 3.6: Glide/Portamento
+        if (glideTimeSeconds > 0.0f && frequency > 0.0f)
+        {
+            // Glide from current frequency to target frequency
+            targetFrequency = targetFreq;
+            glideActive = true;
+
+            // Calculate glide coefficient (exponential smoothing)
+            // Formula: coeff = 1.0 - exp(-1.0 / (glideTime * sampleRate))
+            glideCoefficient = 1.0f - std::exp(-1.0f / (glideTimeSeconds * static_cast<float>(sampleRate)));
+        }
+        else
+        {
+            // No glide: instant frequency change
+            frequency = targetFreq;
+            targetFrequency = targetFreq;
+            glideActive = false;
+        }
 
         // Reset all unison oscillators
         for (int i = 0; i < maxUnisonVoices; ++i)
@@ -214,6 +233,22 @@ public:
             return;
         }
 
+        // Phase 3.6: Update glide (smooth frequency transition)
+        if (glideActive)
+        {
+            frequency += (targetFrequency - frequency) * glideCoefficient;
+
+            // Stop gliding when very close to target (within 0.1%)
+            if (std::abs(frequency - targetFrequency) < (targetFrequency * 0.001f))
+            {
+                frequency = targetFrequency;
+                glideActive = false;
+            }
+
+            // Update sub oscillator frequency (sub tracks main frequency)
+            subOsc.setFrequency(frequency, sampleRate);
+        }
+
         // Initialize accumulator for unison voices
         float leftMix = 0.0f;
         float rightMix = 0.0f;
@@ -386,6 +421,11 @@ private:
     // Pre-calculated detune and pan factors for each unison voice
     std::array<float, maxUnisonVoices> detuneFactors;
     std::array<float, maxUnisonVoices> panFactors;
+
+    // Phase 3.6: Glide/Portamento
+    float targetFrequency = 0.0f; // Target frequency for glide
+    float glideCoefficient = 0.0f; // Exponential smoothing coefficient
+    bool glideActive = false; // Whether glide is currently active
 
     // Calculate detune and pan factors for current unison count
     void calculateDetuneFactors()

@@ -620,11 +620,18 @@ CodoxAudioProcessor::~CodoxAudioProcessor()
 //==============================================================================
 void CodoxAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    juce::ignoreUnused(samplesPerBlock);
-
     // Prepare all voices
     for (auto& voice : voices)
         voice->prepareToPlay(sampleRate);
+
+    // Phase 3.5: Prepare effects chain
+    effectsChain.prepareToPlay(sampleRate, samplesPerBlock);
+
+    // Phase 3.6: Prepare LFOs
+    lfo1.prepareToPlay(sampleRate);
+    lfo2.prepareToPlay(sampleRate);
+    lfo3.prepareToPlay(sampleRate);
+    lfo4.prepareToPlay(sampleRate);
 }
 
 void CodoxAudioProcessor::releaseResources()
@@ -632,6 +639,15 @@ void CodoxAudioProcessor::releaseResources()
     // Reset all voices
     for (auto& voice : voices)
         voice->reset();
+
+    // Phase 3.5: Reset effects chain
+    effectsChain.reset();
+
+    // Phase 3.6: Reset LFOs
+    lfo1.reset();
+    lfo2.reset();
+    lfo3.reset();
+    lfo4.reset();
 }
 
 void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -700,6 +716,60 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     // Read unison parameters (Phase 3.4)
     auto* unison_voices = parameters.getRawParameterValue("unison_voices");
     auto* unison_detune = parameters.getRawParameterValue("unison_detune");
+
+    // Phase 3.6: Read LFO parameters
+    auto* lfo1_shape = parameters.getRawParameterValue("lfo1_shape");
+    auto* lfo1_rate = parameters.getRawParameterValue("lfo1_rate");
+    auto* lfo1_sync = parameters.getRawParameterValue("lfo1_sync");
+
+    auto* lfo2_shape = parameters.getRawParameterValue("lfo2_shape");
+    auto* lfo2_rate = parameters.getRawParameterValue("lfo2_rate");
+    auto* lfo2_sync = parameters.getRawParameterValue("lfo2_sync");
+
+    auto* lfo3_shape = parameters.getRawParameterValue("lfo3_shape");
+    auto* lfo3_rate = parameters.getRawParameterValue("lfo3_rate");
+    auto* lfo3_sync = parameters.getRawParameterValue("lfo3_sync");
+
+    auto* lfo4_shape = parameters.getRawParameterValue("lfo4_shape");
+    auto* lfo4_rate = parameters.getRawParameterValue("lfo4_rate");
+    auto* lfo4_sync = parameters.getRawParameterValue("lfo4_sync");
+
+    // Phase 3.6: Update LFOs (NOTE: v1.0 has NO routing - LFOs generate but don't modulate)
+    lfo1.setShape(static_cast<int>(lfo1_shape->load()));
+    lfo1.setRate(lfo1_rate->load());
+    lfo1.setTempoSync(lfo1_sync->load() > 0.5f);
+
+    lfo2.setShape(static_cast<int>(lfo2_shape->load()));
+    lfo2.setRate(lfo2_rate->load());
+    lfo2.setTempoSync(lfo2_sync->load() > 0.5f);
+
+    lfo3.setShape(static_cast<int>(lfo3_shape->load()));
+    lfo3.setRate(lfo3_rate->load());
+    lfo3.setTempoSync(lfo3_sync->load() > 0.5f);
+
+    lfo4.setShape(static_cast<int>(lfo4_shape->load()));
+    lfo4.setRate(lfo4_rate->load());
+    lfo4.setTempoSync(lfo4_sync->load() > 0.5f);
+
+    // Phase 3.5: Read effects mix parameters
+    auto* fx_distortion_mix = parameters.getRawParameterValue("fx_distortion_mix");
+    auto* fx_chorus_mix = parameters.getRawParameterValue("fx_chorus_mix");
+    auto* fx_phaser_mix = parameters.getRawParameterValue("fx_phaser_mix");
+    auto* fx_flanger_mix = parameters.getRawParameterValue("fx_flanger_mix");
+    auto* fx_delay_mix = parameters.getRawParameterValue("fx_delay_mix");
+    auto* fx_reverb_mix = parameters.getRawParameterValue("fx_reverb_mix");
+    auto* fx_eq_mix = parameters.getRawParameterValue("fx_eq_mix");
+    auto* fx_compressor_mix = parameters.getRawParameterValue("fx_compressor_mix");
+
+    // Phase 3.5: Update effects chain mix parameters
+    effectsChain.setDistortionMix(fx_distortion_mix->load() / 100.0f); // Convert 0-100% to 0.0-1.0
+    effectsChain.setChorusMix(fx_chorus_mix->load() / 100.0f);
+    effectsChain.setPhaserMix(fx_phaser_mix->load() / 100.0f);
+    effectsChain.setFlangerMix(fx_flanger_mix->load() / 100.0f);
+    effectsChain.setDelayMix(fx_delay_mix->load() / 100.0f);
+    effectsChain.setReverbMix(fx_reverb_mix->load() / 100.0f);
+    effectsChain.setEQMix(fx_eq_mix->load() / 100.0f);
+    effectsChain.setCompressorMix(fx_compressor_mix->load() / 100.0f);
 
     // Update all voices with current parameters
     for (auto& voice : voices)
@@ -772,6 +842,10 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         );
     }
 
+    // Phase 3.6: Read glide time parameter
+    auto* glide_time = parameters.getRawParameterValue("glide_time");
+    float glideTimeSeconds = glide_time->load(); // 0-10 seconds
+
     // Process MIDI events
     for (const auto metadata : midiMessages)
     {
@@ -781,7 +855,7 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         {
             int note = message.getNoteNumber();
             float velocity = message.getVelocity() / 127.0f;
-            allocateVoice(note, velocity, getSampleRate());
+            allocateVoice(note, velocity, getSampleRate(), glideTimeSeconds);
         }
         else if (message.isNoteOff())
         {
@@ -816,6 +890,9 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
             }
         }
 
+        // Phase 3.5: Process through effects chain (AFTER voice summation, BEFORE master volume)
+        effectsChain.processStereo(leftMix, rightMix);
+
         // Apply master volume
         leftMix *= masterVolumeLinear;
         rightMix *= masterVolumeLinear;
@@ -829,24 +906,31 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         // If more than 2 channels, copy left to extra channels
         for (int channel = 2; channel < numChannels; ++channel)
             buffer.setSample(channel, sample, leftMix);
+
+        // Phase 3.6: Generate LFO samples (NOTE: v1.0 has NO routing - LFOs run but don't modulate)
+        // This advances LFO phase for each sample, keeping LFOs in sync with audio rate
+        lfo1.getNextSample();
+        lfo2.getNextSample();
+        lfo3.getNextSample();
+        lfo4.getNextSample();
     }
 }
 
-// Voice allocation: Round-robin with voice stealing
-void CodoxAudioProcessor::allocateVoice(int midiNote, float velocity, double sr)
+// Voice allocation: Round-robin with voice stealing (Phase 3.6: Added glide support)
+void CodoxAudioProcessor::allocateVoice(int midiNote, float velocity, double sr, float glideTimeParam)
 {
     // First, try to find a free voice
     for (auto& voice : voices)
     {
         if (!voice->isPlaying())
         {
-            voice->noteOn(midiNote, velocity, sr);
+            voice->noteOn(midiNote, velocity, sr, glideTimeParam);
             return;
         }
     }
 
     // No free voices - steal oldest voice (round-robin)
-    voices[static_cast<size_t>(nextVoiceIndex)]->noteOn(midiNote, velocity, sr);
+    voices[static_cast<size_t>(nextVoiceIndex)]->noteOn(midiNote, velocity, sr, glideTimeParam);
     nextVoiceIndex = (nextVoiceIndex + 1) % numVoices;
 }
 
