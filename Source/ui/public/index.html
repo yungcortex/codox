@@ -6,18 +6,20 @@
 <title>Codox v2.0</title>
 <style>
 :root {
-  --bg-dark: #0d0d0d;
-  --bg-panel: #1a1a1a;
-  --bg-module: #222;
+  --bg-dark: #0a0a0a;
+  --bg-panel: #151515;
+  --bg-module: #1a1a1a;
+  --bg-input: #222;
   --accent: #00d4aa;
   --accent-dim: #009977;
   --text: #e0e0e0;
-  --text-dim: #888;
+  --text-dim: #777;
   --orange: #ff8c42;
   --purple: #9b59b6;
   --blue: #3498db;
   --red: #e74c3c;
   --yellow: #f1c40f;
+  --green: #2ecc71;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,418 +33,295 @@ body {
   user-select: none;
 }
 
-.plugin-frame {
-  width: 1000px;
-  height: 700px;
-  background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+.plugin {
+  width: 1100px;
+  height: 720px;
+  background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%);
   display: flex;
   flex-direction: column;
-  opacity: 0;
-  transition: opacity 0.3s;
 }
-
-.plugin-frame.loaded { opacity: 1; }
 
 /* ===== HEADER ===== */
 .header {
   display: flex;
   align-items: center;
-  padding: 8px 15px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid #333;
-  gap: 15px;
-  height: 50px;
+  padding: 8px 16px;
+  background: #111;
+  border-bottom: 1px solid #2a2a2a;
+  height: 48px;
+  gap: 12px;
 }
 
 .logo {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--accent);
-  letter-spacing: 2px;
-  text-shadow: 0 0 10px var(--accent);
-}
-
-.version {
-  font-size: 10px;
-  color: var(--text-dim);
-  margin-left: -10px;
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px var(--accent);
 }
 
 .preset-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
+  margin-left: 20px;
 }
 
 .preset-nav {
-  background: #333;
-  border: none;
+  background: #222;
+  border: 1px solid #333;
   color: var(--text);
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 4px;
+  font-size: 12px;
 }
-
-.preset-nav:hover { background: #444; }
+.preset-nav:hover { background: #333; border-color: var(--accent); }
 
 #preset_select {
-  background: #222;
-  border: 1px solid #444;
+  background: #1a1a1a;
+  border: 1px solid #333;
   color: var(--text);
-  padding: 5px 10px;
-  width: 180px;
-  border-radius: 3px;
-  cursor: pointer;
+  padding: 6px 12px;
+  width: 200px;
+  border-radius: 4px;
 }
 
 .preset-btn {
-  background: #333;
-  border: 1px solid #444;
+  background: #222;
+  border: 1px solid #333;
   color: var(--text);
-  padding: 5px 12px;
+  padding: 6px 14px;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 10px;
+  font-weight: 600;
 }
-
-.preset-btn:hover { background: var(--accent); color: #000; }
+.preset-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
 
 .master-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+.master-label { color: var(--text-dim); font-size: 9px; text-transform: uppercase; }
+
+/* ===== NAVIGATION TABS ===== */
+.nav-tabs {
+  display: flex;
+  background: #0d0d0d;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0 16px;
 }
 
-.master-label { color: var(--text-dim); font-size: 10px; }
+.nav-tab {
+  padding: 10px 24px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
 
 /* ===== MAIN LAYOUT ===== */
-.main-content {
-  display: grid;
-  grid-template-columns: 280px 1fr 280px;
-  gap: 10px;
-  padding: 10px;
+.main {
+  display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-/* ===== LEFT PANEL - OSCILLATORS ===== */
-.left-panel {
+/* Left side: Tab content */
+.tab-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Right side: Always visible (Filter, Envelopes, LFOs) */
+.sidebar {
+  width: 320px;
+  background: #0d0d0d;
+  border-left: 1px solid #2a2a2a;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+/* ===== MODULES ===== */
+.module {
+  background: var(--bg-module);
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  padding: 12px;
+}
+
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.module-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ===== OSC PAGE ===== */
+.osc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .osc-module {
   background: var(--bg-module);
-  border-radius: 6px;
-  padding: 10px;
-  border: 1px solid #333;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  padding: 14px;
 }
 
 .osc-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .osc-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
-
+.osc-title.a { color: var(--accent); }
 .osc-title.b { color: var(--orange); }
 .osc-title.sub { color: var(--purple); }
 .osc-title.noise { color: var(--text-dim); }
 
 .osc-wave {
   background: #111;
-  border-radius: 4px;
-  height: 50px;
-  margin-bottom: 8px;
+  border-radius: 6px;
+  height: 80px;
+  margin-bottom: 12px;
+  border: 1px solid #222;
 }
 
 .osc-controls {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-.osc-controls.small {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-select {
-  background: #333;
-  border: 1px solid #444;
-  color: var(--text);
-  padding: 4px;
-  border-radius: 3px;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-/* ===== CENTER PANEL ===== */
-.center-panel {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-/* Filter Section */
-.filter-module {
-  background: var(--bg-module);
-  border-radius: 6px;
-  padding: 10px;
-  border: 1px solid #333;
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.filter-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--orange);
-}
-
-.filter-display {
-  background: #111;
-  border-radius: 4px;
-  height: 50px;
-  margin-bottom: 8px;
-}
-
-.filter-controls {
+.osc-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
 }
 
-/* Envelope Row */
-.env-row {
+.sub-noise-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.env-module {
-  background: var(--bg-module);
-  border-radius: 6px;
-  padding: 8px;
-  border: 1px solid #333;
-}
-
-.env-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.env-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--purple);
-}
-
-.env-display {
-  background: #111;
-  border-radius: 4px;
-  height: 35px;
-  margin-bottom: 6px;
-}
-
-.env-controls {
+/* ===== FX PAGE ===== */
+.fx-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-}
-
-/* LFO Row */
-.lfo-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.lfo-module {
-  background: var(--bg-module);
-  border-radius: 6px;
-  padding: 6px;
-  border: 1px solid #333;
-}
-
-.lfo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.lfo-title {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--blue);
-}
-
-.lfo-display {
-  background: #111;
-  border-radius: 4px;
-  height: 30px;
-  margin-bottom: 4px;
-}
-
-.lfo-controls {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-.lfo-controls select {
-  flex: 1;
-  font-size: 9px;
-  padding: 2px;
-}
-
-/* Macros */
-.macro-section {
-  background: var(--bg-module);
-  border-radius: 6px;
-  padding: 8px;
-  border: 1px solid #333;
-}
-
-.macro-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--yellow);
-  margin-bottom: 6px;
-}
-
-.macro-row {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
-}
-
-/* ===== RIGHT PANEL - FX RACK ===== */
-.right-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.fx-rack {
-  background: var(--bg-module);
-  border-radius: 6px;
-  padding: 8px;
-  border: 1px solid #333;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.fx-rack-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #333;
-}
-
-.fx-rack-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--red);
-}
-
-#fx-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .fx-unit {
-  background: #1a1a1a;
-  border-radius: 4px;
-  padding: 8px;
-  border: 1px solid #333;
+  background: var(--bg-module);
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  padding: 12px;
   cursor: grab;
-  transition: all 0.2s;
 }
+.fx-unit:hover { border-color: #444; }
+.fx-unit.dragging { opacity: 0.5; border-color: var(--accent); }
 
-.fx-unit:hover { border-color: var(--accent); }
-
-.fx-unit.dragging {
-  opacity: 0.5;
-  border-color: var(--accent);
-}
-
-.fx-unit-header {
+.fx-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .fx-name {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .fx-toggle {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background: #333;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
-  border: 1px solid #555;
+  border: 1px solid #444;
 }
+.fx-toggle.active { background: var(--accent); border-color: var(--accent); }
 
-.fx-toggle.active {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.fx-knobs {
+.fx-controls {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: 6px;
+}
+
+/* ===== SETTINGS PAGE ===== */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 /* ===== KNOBS ===== */
-.knob-container {
+.knob-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .knob {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   position: relative;
   cursor: pointer;
 }
-
-.knob.small { width: 26px; height: 26px; }
-.knob.large { width: 40px; height: 40px; }
+.knob.sm { width: 30px; height: 30px; }
+.knob.lg { width: 44px; height: 44px; }
 
 .knob-bg {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-  border: 2px solid #444;
+  background: linear-gradient(145deg, #252525, #1a1a1a);
+  border: 2px solid #333;
 }
 
 .knob-pointer {
@@ -460,925 +339,917 @@ select {
 .knob-label {
   font-size: 8px;
   color: var(--text-dim);
+  text-transform: uppercase;
   text-align: center;
-  white-space: nowrap;
 }
 
-/* ===== SAVE MODAL ===== */
+/* ===== SELECTS ===== */
+select {
+  background: var(--bg-input);
+  border: 1px solid #333;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+}
+select:focus { outline: none; border-color: var(--accent); }
+
+/* ===== DISPLAYS ===== */
+.env-display {
+  background: #111;
+  border-radius: 4px;
+  height: 45px;
+  margin-bottom: 8px;
+  border: 1px solid #222;
+}
+
+.lfo-display {
+  background: #111;
+  border-radius: 4px;
+  height: 35px;
+  margin-bottom: 6px;
+  border: 1px solid #222;
+}
+
+.filter-display {
+  background: #111;
+  border-radius: 4px;
+  height: 55px;
+  margin-bottom: 10px;
+  border: 1px solid #222;
+}
+
+/* ===== MACROS ===== */
+.macros-bar {
+  background: #0d0d0d;
+  border-top: 1px solid #2a2a2a;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.macros-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--yellow);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.macros-row {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+/* ===== MODAL ===== */
 .modal-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.85);
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
-
 .modal-overlay.active { display: flex; }
 
 .modal {
   background: var(--bg-panel);
   border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #444;
-  min-width: 300px;
+  padding: 24px;
+  border: 1px solid #333;
+  min-width: 320px;
 }
 
 .modal-title {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   color: var(--accent);
 }
 
 .modal-input {
   width: 100%;
-  padding: 10px;
-  background: #222;
-  border: 1px solid #444;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid #333;
   border-radius: 4px;
   color: var(--text);
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
+.modal-input:focus { outline: none; border-color: var(--accent); }
 
-.modal-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.modal-buttons {
+.modal-btns {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
 }
 
 .modal-btn {
-  padding: 8px 16px;
+  padding: 8px 18px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
+  font-weight: 600;
 }
-
-.modal-btn.primary {
-  background: var(--accent);
-  color: #000;
-}
-
-.modal-btn.secondary {
-  background: #333;
-  color: var(--text);
-}
-
-/* ===== HIDDEN INPUTS ===== */
-.hidden-inputs { display: none; }
+.modal-btn.primary { background: var(--accent); color: #000; }
+.modal-btn.secondary { background: #333; color: var(--text); }
 
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<div class="plugin-frame">
+<div class="plugin">
   <!-- HEADER -->
   <div class="header">
     <div class="logo">CODOX</div>
-    <div class="version">v2.0</div>
-
     <div class="preset-section">
-      <button class="preset-nav" id="preset_prev">◀</button>
-      <select id="preset_select">
-        <option value="Init">Init</option>
-        <option value="Serum Lead">Serum Lead</option>
-        <option value="Fat Bass">Fat Bass</option>
-        <option value="Ethereal Pad">Ethereal Pad</option>
-        <option value="Pluck">Pluck</option>
-        <option value="Growl Bass">Growl Bass</option>
-        <option value="Supersaw">Supersaw</option>
-        <option value="Bell">Bell</option>
-        <option value="Wobble">Wobble</option>
-        <option value="Ambient">Ambient</option>
-      </select>
-      <button class="preset-nav" id="preset_next">▶</button>
-      <button class="preset-btn" id="preset_save">SAVE</button>
-      <button class="preset-btn" id="preset_load">LOAD</button>
-      <button class="preset-btn" id="randomize_btn">RND</button>
+      <button class="preset-nav" id="prev_preset">◀</button>
+      <select id="preset_select"></select>
+      <button class="preset-nav" id="next_preset">▶</button>
+      <button class="preset-btn" id="save_btn">SAVE</button>
+      <button class="preset-btn" id="load_btn">LOAD</button>
+      <button class="preset-btn" id="random_btn">RND</button>
+    </div>
+    <div class="master-section">
+      <span class="master-label">Master</span>
+      <div class="knob-wrap">
+        <div class="knob" data-param="master_volume"><div class="knob-bg"></div><div class="knob-pointer"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-tab="osc">OSC</div>
+    <div class="nav-tab" data-tab="fx">FX</div>
+    <div class="nav-tab" data-tab="settings">SETTINGS</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TAB CONTENT -->
+    <div class="tab-content">
+      <!-- OSC TAB -->
+      <div class="tab-panel active" id="tab-osc">
+        <div class="osc-grid">
+          <!-- OSC A -->
+          <div class="osc-module">
+            <div class="osc-header">
+              <span class="osc-title a">OSC A</span>
+              <select id="osc_a_wavetable"><option>Basic</option><option>Analog</option><option>Digital</option><option>Spectral</option><option>FM</option><option>Additive</option></select>
+            </div>
+            <div class="osc-wave"><canvas id="wave_a" width="340" height="80"></canvas></div>
+            <div class="osc-controls">
+              <div class="knob-wrap"><div class="knob" data-param="osc_a_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="osc_a_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="osc_a_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="osc_a_warp_amount"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
+            </div>
+            <div class="osc-row">
+              <div class="knob-wrap"><select id="osc_a_octave"><option>-3</option><option>-2</option><option>-1</option><option selected>0</option><option>+1</option><option>+2</option><option>+3</option></select><span class="knob-label">Oct</span></div>
+              <div class="knob-wrap"><select id="osc_a_semitone"><option>-12</option><option>-7</option><option>-5</option><option selected>0</option><option>+5</option><option>+7</option><option>+12</option></select><span class="knob-label">Semi</span></div>
+              <div class="knob-wrap"><div class="knob sm" data-param="osc_a_fine"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Fine</span></div>
+              <div class="knob-wrap"><select id="osc_a_warp_mode"><option>Off</option><option>Sync</option><option>Bend+</option><option>Bend-</option><option>PWM</option><option>FM</option></select><span class="knob-label">Warp</span></div>
+            </div>
+          </div>
+
+          <!-- OSC B -->
+          <div class="osc-module">
+            <div class="osc-header">
+              <span class="osc-title b">OSC B</span>
+              <select id="osc_b_wavetable"><option>Basic</option><option>Analog</option><option>Digital</option><option>Spectral</option><option>FM</option><option>Additive</option></select>
+            </div>
+            <div class="osc-wave"><canvas id="wave_b" width="340" height="80"></canvas></div>
+            <div class="osc-controls">
+              <div class="knob-wrap"><div class="knob" data-param="osc_b_position"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Pos</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="osc_b_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Level</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="osc_b_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Pan</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="osc_b_warp_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Warp</span></div>
+            </div>
+            <div class="osc-row">
+              <div class="knob-wrap"><select id="osc_b_octave"><option>-3</option><option>-2</option><option>-1</option><option selected>0</option><option>+1</option><option>+2</option><option>+3</option></select><span class="knob-label">Oct</span></div>
+              <div class="knob-wrap"><select id="osc_b_semitone"><option>-12</option><option>-7</option><option>-5</option><option selected>0</option><option>+5</option><option>+7</option><option>+12</option></select><span class="knob-label">Semi</span></div>
+              <div class="knob-wrap"><div class="knob sm" data-param="osc_b_fine"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Fine</span></div>
+              <div class="knob-wrap"><select id="osc_b_warp_mode"><option>Off</option><option>Sync</option><option>Bend+</option><option>Bend-</option><option>PWM</option><option>FM</option></select><span class="knob-label">Warp</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB + NOISE -->
+        <div class="sub-noise-row">
+          <div class="module">
+            <div class="module-header">
+              <span class="module-title" style="color:var(--purple)">SUB</span>
+              <select id="sub_shape"><option>Sine</option><option>Triangle</option><option>Square</option><option>Saw</option></select>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+              <div class="knob-wrap"><div class="knob" data-param="sub_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Level</span></div>
+              <div class="knob-wrap"><select id="sub_octave"><option>-2</option><option selected>-1</option><option>0</option></select><span class="knob-label">Oct</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="sub_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Pan</span></div>
+            </div>
+          </div>
+          <div class="module">
+            <div class="module-header">
+              <span class="module-title" style="color:var(--text-dim)">NOISE</span>
+              <select id="noise_type"><option>White</option><option>Pink</option><option>Digital</option></select>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+              <div class="knob-wrap"><div class="knob" data-param="noise_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Level</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="noise_color"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Color</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="noise_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Pan</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FX TAB -->
+      <div class="tab-panel" id="tab-fx">
+        <div class="fx-grid" id="fx_container">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="settings-grid">
+          <!-- Unison -->
+          <div class="module">
+            <div class="module-header"><span class="module-title" style="color:var(--green)">UNISON</span></div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+              <div class="knob-wrap"><select id="unison_voices"><option>1</option><option>2</option><option>4</option><option>8</option><option>16</option></select><span class="knob-label">Voices</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="unison_detune"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--green)"></div></div><span class="knob-label">Detune</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="unison_blend"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--green)"></div></div><span class="knob-label">Blend</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="unison_width"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--green)"></div></div><span class="knob-label">Width</span></div>
+            </div>
+          </div>
+
+          <!-- Voice -->
+          <div class="module">
+            <div class="module-header"><span class="module-title" style="color:var(--blue)">VOICE</span></div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+              <div class="knob-wrap"><select id="polyphony"><option>Mono</option><option>Poly 4</option><option selected>Poly 8</option><option>Poly 16</option></select><span class="knob-label">Mode</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="glide_time"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div><span class="knob-label">Glide</span></div>
+              <div class="knob-wrap"><select id="glide_mode"><option>Off</option><option>Always</option><option>Legato</option></select><span class="knob-label">Glide</span></div>
+              <div class="knob-wrap"><div class="knob" data-param="pitch_bend"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div><span class="knob-label">Bend</span></div>
+            </div>
+          </div>
+
+          <!-- Master -->
+          <div class="module">
+            <div class="module-header"><span class="module-title">MASTER</span></div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+              <div class="knob-wrap"><div class="knob lg" data-param="master_volume"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Volume</span></div>
+              <div class="knob-wrap"><div class="knob lg" data-param="master_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LFOs expanded on settings page -->
+        <div class="module" style="margin-top:12px;">
+          <div class="module-header"><span class="module-title" style="color:var(--blue)">LFOs</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div>
+              <div style="font-size:10px;color:var(--blue);margin-bottom:6px;font-weight:600;">LFO 1</div>
+              <div class="lfo-display"><canvas id="lfo1_canvas" width="140" height="35"></canvas></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div class="knob-wrap"><select id="lfo1_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="lfo1_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div><span class="knob-label">Rate</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--blue);margin-bottom:6px;font-weight:600;">LFO 2</div>
+              <div class="lfo-display"><canvas id="lfo2_canvas" width="140" height="35"></canvas></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div class="knob-wrap"><select id="lfo2_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="lfo2_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div><span class="knob-label">Rate</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--blue);margin-bottom:6px;font-weight:600;">LFO 3</div>
+              <div class="lfo-display"><canvas id="lfo3_canvas" width="140" height="35"></canvas></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div class="knob-wrap"><select id="lfo3_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="lfo3_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div><span class="knob-label">Rate</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--blue);margin-bottom:6px;font-weight:600;">LFO 4</div>
+              <div class="lfo-display"><canvas id="lfo4_canvas" width="140" height="35"></canvas></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div class="knob-wrap"><select id="lfo4_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="lfo4_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div><span class="knob-label">Rate</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="master-section">
-      <span class="master-label">MASTER</span>
-      <div class="knob-container">
-        <div class="knob" data-param="master_volume">
-          <div class="knob-bg"></div>
-          <div class="knob-pointer"></div>
+    <!-- SIDEBAR: Always visible -->
+    <div class="sidebar">
+      <!-- FILTER -->
+      <div class="module">
+        <div class="module-header">
+          <span class="module-title" style="color:var(--orange)">FILTER</span>
+          <select id="filter_type"><option>LP 24</option><option>LP 12</option><option>HP 24</option><option>HP 12</option><option>BP</option><option>Notch</option></select>
+        </div>
+        <div class="filter-display"><canvas id="filter_canvas" width="290" height="55"></canvas></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div class="knob-wrap"><div class="knob lg" data-param="filter_cutoff"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Cutoff</span></div>
+          <div class="knob-wrap"><div class="knob lg" data-param="filter_resonance"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Res</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="filter_drive"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Drive</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px;">
+          <div class="knob-wrap"><div class="knob" data-param="filter_env_depth"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Env</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="filter_keytrack"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Key</span></div>
+        </div>
+      </div>
+
+      <!-- AMP ENVELOPE -->
+      <div class="module">
+        <div class="module-header"><span class="module-title" style="color:var(--purple)">AMP ENV</span></div>
+        <div class="env-display"><canvas id="amp_env_canvas" width="290" height="45"></canvas></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+          <div class="knob-wrap"><div class="knob" data-param="amp_attack"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">A</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="amp_decay"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">D</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="amp_sustain"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">S</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="amp_release"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">R</span></div>
+        </div>
+      </div>
+
+      <!-- FILTER ENVELOPE -->
+      <div class="module">
+        <div class="module-header"><span class="module-title" style="color:var(--purple)">FILTER ENV</span></div>
+        <div class="env-display"><canvas id="filt_env_canvas" width="290" height="45"></canvas></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+          <div class="knob-wrap"><div class="knob" data-param="filt_attack"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">A</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="filt_decay"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">D</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="filt_sustain"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">S</span></div>
+          <div class="knob-wrap"><div class="knob" data-param="filt_release"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">R</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
-    <!-- LEFT PANEL: OSCILLATORS -->
-    <div class="left-panel">
-      <!-- OSC A -->
-      <div class="osc-module">
-        <div class="osc-header">
-          <span class="osc-title">OSC A</span>
-          <select id="osc_a_wavetable">
-            <option value="0">Basic</option>
-            <option value="1">Analog</option>
-            <option value="2">Digital</option>
-            <option value="3">Spectral</option>
-            <option value="4">FM</option>
-            <option value="5">Additive</option>
-          </select>
-        </div>
-        <div class="osc-wave"><canvas id="osc_a_wave" width="260" height="50"></canvas></div>
-        <div class="osc-controls">
-          <div class="knob-container"><div class="knob small" data-param="osc_a_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
-          <div class="knob-container"><div class="knob small" data-param="osc_a_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
-          <div class="knob-container"><div class="knob small" data-param="osc_a_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
-          <div class="knob-container"><div class="knob small" data-param="osc_a_warp_amount"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
-        </div>
-      </div>
-
-      <!-- OSC B -->
-      <div class="osc-module">
-        <div class="osc-header">
-          <span class="osc-title b">OSC B</span>
-          <select id="osc_b_wavetable">
-            <option value="0">Basic</option>
-            <option value="1">Analog</option>
-            <option value="2">Digital</option>
-            <option value="3">Spectral</option>
-            <option value="4">FM</option>
-            <option value="5">Additive</option>
-          </select>
-        </div>
-        <div class="osc-wave"><canvas id="osc_b_wave" width="260" height="50"></canvas></div>
-        <div class="osc-controls">
-          <div class="knob-container"><div class="knob small" data-param="osc_b_position"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pos</span></div>
-          <div class="knob-container"><div class="knob small" data-param="osc_b_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
-          <div class="knob-container"><div class="knob small" data-param="osc_b_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
-          <div class="knob-container"><div class="knob small" data-param="osc_b_warp_amount"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Warp</span></div>
-        </div>
-      </div>
-
-      <!-- SUB OSC -->
-      <div class="osc-module">
-        <div class="osc-header">
-          <span class="osc-title sub">SUB</span>
-          <select id="sub_shape">
-            <option value="0">Sine</option>
-            <option value="1">Square</option>
-            <option value="2">Triangle</option>
-          </select>
-        </div>
-        <div class="osc-controls small">
-          <div class="knob-container"><div class="knob small" data-param="sub_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">Level</span></div>
-          <select id="sub_octave" style="height:26px"><option>-2</option><option selected>-1</option><option>0</option></select>
-          <span style="font-size:9px;color:#666">OCT</span>
-        </div>
-      </div>
-
-      <!-- NOISE -->
-      <div class="osc-module">
-        <div class="osc-header">
-          <span class="osc-title noise">NOISE</span>
-          <select id="noise_type">
-            <option value="0">White</option>
-            <option value="1">Pink</option>
-            <option value="2">Digital</option>
-          </select>
-        </div>
-        <div class="osc-controls small">
-          <div class="knob-container"><div class="knob small" data-param="noise_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Level</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CENTER PANEL -->
-    <div class="center-panel">
-      <!-- FILTER -->
-      <div class="filter-module">
-        <div class="filter-header">
-          <span class="filter-title">FILTER</span>
-          <select id="filter_type">
-            <option value="0">LP 24dB</option>
-            <option value="1">LP 12dB</option>
-            <option value="2">HP 24dB</option>
-            <option value="3">BP 12dB</option>
-            <option value="4">Notch</option>
-          </select>
-        </div>
-        <div class="filter-display"><canvas id="filter_curve" width="380" height="50"></canvas></div>
-        <div class="filter-controls">
-          <div class="knob-container"><div class="knob" data-param="filter_cutoff"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Cutoff</span></div>
-          <div class="knob-container"><div class="knob" data-param="filter_resonance"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Res</span></div>
-          <div class="knob-container"><div class="knob" data-param="filter_drive"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Drive</span></div>
-          <div class="knob-container"><div class="knob" data-param="filter_env_depth"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Env</span></div>
-          <div class="knob-container"><div class="knob" data-param="filter_keytrack"><div class="knob-bg"></div><div class="knob-pointer" style="background:#ff8c42"></div></div><span class="knob-label">Key</span></div>
-        </div>
-      </div>
-
-      <!-- ENVELOPES -->
-      <div class="env-row">
-        <div class="env-module">
-          <div class="env-header"><span class="env-title">AMP ENV</span></div>
-          <div class="env-display"><canvas id="amp_env_display" width="180" height="35"></canvas></div>
-          <div class="env-controls">
-            <div class="knob-container"><div class="knob small" data-param="amp_attack"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">A</span></div>
-            <div class="knob-container"><div class="knob small" data-param="amp_decay"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">D</span></div>
-            <div class="knob-container"><div class="knob small" data-param="amp_sustain"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">S</span></div>
-            <div class="knob-container"><div class="knob small" data-param="amp_release"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">R</span></div>
-          </div>
-        </div>
-        <div class="env-module">
-          <div class="env-header"><span class="env-title">FILTER ENV</span></div>
-          <div class="env-display"><canvas id="filt_env_display" width="180" height="35"></canvas></div>
-          <div class="env-controls">
-            <div class="knob-container"><div class="knob small" data-param="filt_attack"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">A</span></div>
-            <div class="knob-container"><div class="knob small" data-param="filt_decay"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">D</span></div>
-            <div class="knob-container"><div class="knob small" data-param="filt_sustain"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">S</span></div>
-            <div class="knob-container"><div class="knob small" data-param="filt_release"><div class="knob-bg"></div><div class="knob-pointer" style="background:#9b59b6"></div></div><span class="knob-label">R</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LFOs -->
-      <div class="lfo-row">
-        <div class="lfo-module">
-          <div class="lfo-header"><span class="lfo-title">LFO 1</span></div>
-          <div class="lfo-display"><canvas id="lfo1_display" width="80" height="30"></canvas></div>
-          <div class="lfo-controls">
-            <select id="lfo1_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select>
-            <div class="knob-container"><div class="knob small" data-param="lfo1_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
-          </div>
-        </div>
-        <div class="lfo-module">
-          <div class="lfo-header"><span class="lfo-title">LFO 2</span></div>
-          <div class="lfo-display"><canvas id="lfo2_display" width="80" height="30"></canvas></div>
-          <div class="lfo-controls">
-            <select id="lfo2_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select>
-            <div class="knob-container"><div class="knob small" data-param="lfo2_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
-          </div>
-        </div>
-        <div class="lfo-module">
-          <div class="lfo-header"><span class="lfo-title">LFO 3</span></div>
-          <div class="lfo-display"><canvas id="lfo3_display" width="80" height="30"></canvas></div>
-          <div class="lfo-controls">
-            <select id="lfo3_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select>
-            <div class="knob-container"><div class="knob small" data-param="lfo3_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
-          </div>
-        </div>
-        <div class="lfo-module">
-          <div class="lfo-header"><span class="lfo-title">LFO 4</span></div>
-          <div class="lfo-display"><canvas id="lfo4_display" width="80" height="30"></canvas></div>
-          <div class="lfo-controls">
-            <select id="lfo4_shape"><option>Sin</option><option>Tri</option><option>Saw</option><option>Sq</option><option>S&H</option></select>
-            <div class="knob-container"><div class="knob small" data-param="lfo4_rate"><div class="knob-bg"></div><div class="knob-pointer" style="background:#3498db"></div></div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MACROS -->
-      <div class="macro-section">
-        <div class="macro-title">MACROS</div>
-        <div class="macro-row">
-          <div class="knob-container"><div class="knob" data-param="macro1"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">1</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro2"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">2</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro3"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">3</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro4"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">4</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro5"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">5</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro6"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">6</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro7"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">7</span></div>
-          <div class="knob-container"><div class="knob" data-param="macro8"><div class="knob-bg"></div><div class="knob-pointer" style="background:#f1c40f"></div></div><span class="knob-label">8</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT PANEL: FX RACK -->
-    <div class="right-panel">
-      <div class="fx-rack">
-        <div class="fx-rack-header">
-          <span class="fx-rack-title">FX CHAIN</span>
-          <span style="font-size:9px;color:#666">drag to reorder</span>
-        </div>
-        <div id="fx-container">
-          <!-- FX units rendered by JS - draggable -->
-        </div>
-      </div>
+  <!-- MACROS BAR -->
+  <div class="macros-bar">
+    <span class="macros-label">Macros</span>
+    <div class="macros-row">
+      <div class="knob-wrap"><div class="knob" data-param="macro1"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">1</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro2"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">2</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro3"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">3</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro4"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">4</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro5"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">5</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro6"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">6</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro7"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">7</span></div>
+      <div class="knob-wrap"><div class="knob" data-param="macro8"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--yellow)"></div></div><span class="knob-label">8</span></div>
     </div>
   </div>
 </div>
 
-<!-- SAVE PRESET MODAL -->
+<!-- SAVE MODAL -->
 <div class="modal-overlay" id="save_modal">
   <div class="modal">
     <div class="modal-title">Save Preset</div>
-    <input type="text" class="modal-input" id="preset_name_input" placeholder="Enter preset name...">
-    <div class="modal-buttons">
+    <input type="text" class="modal-input" id="preset_name" placeholder="Preset name...">
+    <div class="modal-btns">
       <button class="modal-btn secondary" id="modal_cancel">Cancel</button>
       <button class="modal-btn primary" id="modal_save">Save</button>
     </div>
   </div>
 </div>
 
-<!-- Hidden file input for preset loading -->
-<input type="file" id="preset_file_input" accept=".json,.codox" style="display:none">
-
-<!-- Hidden inputs for parameter state -->
-<div class="hidden-inputs">
-  <input type="hidden" id="master_volume" value="0.8">
-  <input type="hidden" id="osc_a_position" value="0"><input type="hidden" id="osc_a_level" value="1"><input type="hidden" id="osc_a_pan" value="0.5"><input type="hidden" id="osc_a_warp_amount" value="0">
-  <input type="hidden" id="osc_b_position" value="0"><input type="hidden" id="osc_b_level" value="0"><input type="hidden" id="osc_b_pan" value="0.5"><input type="hidden" id="osc_b_warp_amount" value="0">
-  <input type="hidden" id="filter_cutoff" value="1"><input type="hidden" id="filter_resonance" value="0"><input type="hidden" id="filter_drive" value="0"><input type="hidden" id="filter_env_depth" value="0.5"><input type="hidden" id="filter_keytrack" value="0">
-  <input type="hidden" id="amp_attack" value="0.01"><input type="hidden" id="amp_decay" value="0.1"><input type="hidden" id="amp_sustain" value="0.8"><input type="hidden" id="amp_release" value="0.3">
-  <input type="hidden" id="filt_attack" value="0.01"><input type="hidden" id="filt_decay" value="0.1"><input type="hidden" id="filt_sustain" value="0.5"><input type="hidden" id="filt_release" value="0.3">
-  <input type="hidden" id="lfo1_rate" value="0.5"><input type="hidden" id="lfo2_rate" value="0.5"><input type="hidden" id="lfo3_rate" value="0.5"><input type="hidden" id="lfo4_rate" value="0.5">
-  <input type="hidden" id="sub_level" value="0"><input type="hidden" id="noise_level" value="0">
-  <input type="hidden" id="macro1" value="0.5"><input type="hidden" id="macro2" value="0.5"><input type="hidden" id="macro3" value="0.5"><input type="hidden" id="macro4" value="0.5">
-  <input type="hidden" id="macro5" value="0.5"><input type="hidden" id="macro6" value="0.5"><input type="hidden" id="macro7" value="0.5"><input type="hidden" id="macro8" value="0.5">
-  <!-- FX Parameters -->
-  <input type="hidden" id="fx_distortion_mix" value="0"><input type="hidden" id="fx_distortion_drive" value="0.25">
-  <input type="hidden" id="fx_chorus_mix" value="0"><input type="hidden" id="fx_chorus_rate" value="0.5"><input type="hidden" id="fx_chorus_depth" value="0.3">
-  <input type="hidden" id="fx_phaser_mix" value="0"><input type="hidden" id="fx_phaser_rate" value="0.3"><input type="hidden" id="fx_phaser_depth" value="0.5">
-  <input type="hidden" id="fx_flanger_mix" value="0"><input type="hidden" id="fx_flanger_rate" value="0.2"><input type="hidden" id="fx_flanger_feedback" value="0.6">
-  <input type="hidden" id="fx_delay_mix" value="0"><input type="hidden" id="fx_delay_time" value="0.25"><input type="hidden" id="fx_delay_feedback" value="0.4">
-  <input type="hidden" id="fx_reverb_mix" value="0"><input type="hidden" id="fx_reverb_size" value="0.7"><input type="hidden" id="fx_reverb_decay" value="0.5">
-  <input type="hidden" id="fx_eq_mix" value="0"><input type="hidden" id="fx_eq_low" value="0.5"><input type="hidden" id="fx_eq_mid" value="0.5"><input type="hidden" id="fx_eq_high" value="0.5">
-  <input type="hidden" id="fx_compressor_mix" value="0"><input type="hidden" id="fx_compressor_threshold" value="0.5"><input type="hidden" id="fx_compressor_ratio" value="0.2">
-</div>
+<input type="file" id="file_input" accept=".json,.codox" style="display:none">
 
 <script>
-// ============================================================
-// CODOX v2.0 - Serum-Style Wavetable Synthesizer UI
-// Complete rewrite with single-page layout
-// ============================================================
-
 (function() {
-  'use strict';
+'use strict';
 
-  const canvases = {};
-  let animFrame = 0;
-  let Juce = null;
-  const sliderStates = {};
-  const comboStates = {};
+// ============================================
+// CODOX v2.0.1 - Serum-Style Wavetable Synth
+// ============================================
 
-  // FX Chain order (draggable)
-  let fxOrder = ['distortion', 'chorus', 'phaser', 'flanger', 'delay', 'reverb', 'eq', 'compressor'];
+const canvases = {};
+const sliderStates = {};
+const comboStates = {};
+let frame = 0;
 
-  // FX definitions with full parameters
-  const fxDefs = {
-    distortion: { name: 'DISTORTION', color: '#00d4aa', params: ['fx_distortion_mix', 'fx_distortion_drive'] },
-    chorus: { name: 'CHORUS', color: '#3498db', params: ['fx_chorus_mix', 'fx_chorus_rate', 'fx_chorus_depth'] },
-    phaser: { name: 'PHASER', color: '#e74c3c', params: ['fx_phaser_mix', 'fx_phaser_rate', 'fx_phaser_depth'] },
-    flanger: { name: 'FLANGER', color: '#9b59b6', params: ['fx_flanger_mix', 'fx_flanger_rate', 'fx_flanger_feedback'] },
-    delay: { name: 'DELAY', color: '#f39c12', params: ['fx_delay_mix', 'fx_delay_time', 'fx_delay_feedback'] },
-    reverb: { name: 'REVERB', color: '#1abc9c', params: ['fx_reverb_mix', 'fx_reverb_size', 'fx_reverb_decay'] },
-    eq: { name: 'EQ', color: '#e91e63', params: ['fx_eq_mix', 'fx_eq_low', 'fx_eq_mid', 'fx_eq_high'] },
-    compressor: { name: 'COMP', color: '#ff5722', params: ['fx_compressor_mix', 'fx_compressor_threshold', 'fx_compressor_ratio'] }
-  };
+// FX definitions
+const fxList = [
+  { id: 'distortion', name: 'DISTORTION', color: '#00d4aa', params: ['fx_distortion_mix', 'fx_distortion_drive'] },
+  { id: 'chorus', name: 'CHORUS', color: '#3498db', params: ['fx_chorus_mix', 'fx_chorus_rate', 'fx_chorus_depth'] },
+  { id: 'phaser', name: 'PHASER', color: '#e74c3c', params: ['fx_phaser_mix', 'fx_phaser_rate', 'fx_phaser_depth'] },
+  { id: 'flanger', name: 'FLANGER', color: '#9b59b6', params: ['fx_flanger_mix', 'fx_flanger_rate', 'fx_flanger_feedback'] },
+  { id: 'delay', name: 'DELAY', color: '#f39c12', params: ['fx_delay_mix', 'fx_delay_time', 'fx_delay_feedback', 'fx_delay_sync'] },
+  { id: 'reverb', name: 'REVERB', color: '#1abc9c', params: ['fx_reverb_mix', 'fx_reverb_size', 'fx_reverb_decay'] },
+  { id: 'eq', name: 'EQ', color: '#e91e63', params: ['fx_eq_mix', 'fx_eq_low', 'fx_eq_mid', 'fx_eq_high'] },
+  { id: 'compressor', name: 'COMPRESSOR', color: '#ff5722', params: ['fx_compressor_mix', 'fx_compressor_threshold', 'fx_compressor_ratio'] }
+];
 
-  // Initialize
-  function init() {
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    initCanvases();
-    initKnobs();
-    initFXRack();
-    initPresets();
-    initModal();
+// Factory presets
+const factoryPresets = {
+  'Init': { osc_a_level: 1, osc_b_level: 0, filter_cutoff: 1, amp_sustain: 1 },
+  'Serum Lead': { osc_a_position: 0.3, osc_a_level: 1, osc_b_position: 0.5, osc_b_level: 0.7, filter_cutoff: 0.6, filter_resonance: 0.3, amp_decay: 0.15, amp_sustain: 0.7, sub_level: 0.2, fx_chorus_mix: 0.2, fx_reverb_mix: 0.15 },
+  'Fat Bass': { osc_a_level: 1, osc_a_warp_amount: 0.4, osc_b_level: 0.8, filter_cutoff: 0.35, filter_resonance: 0.4, filter_drive: 0.5, amp_decay: 0.2, amp_sustain: 0.6, sub_level: 0.6, fx_distortion_mix: 0.3 },
+  'Ethereal Pad': { osc_a_position: 0.4, osc_a_level: 0.7, osc_b_position: 0.6, osc_b_level: 0.7, filter_cutoff: 0.5, amp_attack: 0.4, amp_sustain: 0.8, amp_release: 0.5, fx_chorus_mix: 0.4, fx_reverb_mix: 0.5, fx_delay_mix: 0.3 },
+  'Pluck': { osc_a_level: 1, osc_b_level: 0.5, filter_cutoff: 0.7, filter_env_depth: 0.5, amp_decay: 0.3, amp_sustain: 0, fx_reverb_mix: 0.25, fx_delay_mix: 0.2 },
+  'Growl Bass': { osc_a_warp_amount: 0.7, osc_b_warp_amount: 0.8, filter_cutoff: 0.4, filter_resonance: 0.5, filter_drive: 0.6, sub_level: 0.4, fx_distortion_mix: 0.5 },
+  'Supersaw': { osc_a_position: 0.8, osc_a_level: 1, osc_b_position: 0.8, osc_b_level: 1, filter_cutoff: 0.75, unison_detune: 0.4, fx_chorus_mix: 0.3, fx_reverb_mix: 0.2 },
+  'Bell': { osc_a_warp_amount: 0.3, osc_b_warp_amount: 0.4, filter_cutoff: 0.8, amp_decay: 0.6, amp_sustain: 0.1, amp_release: 0.4, fx_reverb_mix: 0.4, fx_delay_mix: 0.25 },
+  'Wobble': { osc_a_warp_amount: 0.5, osc_b_warp_amount: 0.6, filter_cutoff: 0.5, filter_resonance: 0.6, filter_drive: 0.4, sub_level: 0.3, fx_distortion_mix: 0.2 },
+  'Ambient': { osc_a_position: 0.25, osc_a_level: 0.6, osc_b_position: 0.35, osc_b_level: 0.6, filter_cutoff: 0.45, amp_attack: 0.6, amp_sustain: 0.7, amp_release: 0.7, noise_level: 0.08, fx_chorus_mix: 0.35, fx_reverb_mix: 0.6, fx_delay_mix: 0.4 }
+};
 
-    document.querySelector('.plugin-frame').classList.add('loaded');
-    requestAnimationFrame(animate);
-    connectJUCE();
-    console.log('Codox v2.0 initialized');
-  }
+let userPresets = {};
+try { const s = localStorage.getItem('codox_presets'); if (s) userPresets = JSON.parse(s); } catch(e) {}
 
-  // Canvas setup
-  function initCanvases() {
-    ['osc_a_wave', 'osc_b_wave', 'filter_curve', 'amp_env_display', 'filt_env_display',
-     'lfo1_display', 'lfo2_display', 'lfo3_display', 'lfo4_display'].forEach(id => {
-      const canvas = document.getElementById(id);
-      if (canvas) {
-        canvases[id] = { canvas, ctx: canvas.getContext('2d'), w: canvas.width, h: canvas.height };
-      }
+// Init
+function init() {
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  initCanvases();
+  initTabs();
+  initKnobs();
+  initFX();
+  initPresets();
+  initModal();
+  connectJUCE();
+  requestAnimationFrame(animate);
+  console.log('Codox v2.0.1 ready');
+}
+
+// Canvases
+function initCanvases() {
+  ['wave_a', 'wave_b', 'filter_canvas', 'amp_env_canvas', 'filt_env_canvas',
+   'lfo1_canvas', 'lfo2_canvas', 'lfo3_canvas', 'lfo4_canvas'].forEach(id => {
+    const c = document.getElementById(id);
+    if (c) canvases[id] = { el: c, ctx: c.getContext('2d'), w: c.width, h: c.height };
+  });
+}
+
+// Tabs
+function initTabs() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
     });
-  }
+  });
+}
 
-  // Animation loop
-  function animate() {
-    animFrame++;
-    const phase = animFrame * 0.02;
-    drawOscillator('osc_a_wave', getSelectValue('osc_a_wavetable'), phase, getInputValue('osc_a_position'));
-    drawOscillator('osc_b_wave', getSelectValue('osc_b_wavetable'), phase * 1.1, getInputValue('osc_b_position'));
-    drawFilter(getInputValue('filter_cutoff'), getInputValue('filter_resonance'));
-    drawEnvelope('amp_env_display', getInputValue('amp_attack'), getInputValue('amp_decay'), getInputValue('amp_sustain'), getInputValue('amp_release'));
-    drawEnvelope('filt_env_display', getInputValue('filt_attack'), getInputValue('filt_decay'), getInputValue('filt_sustain'), getInputValue('filt_release'));
-    drawLFO('lfo1_display', getSelectValue('lfo1_shape'), phase * 0.5);
-    drawLFO('lfo2_display', getSelectValue('lfo2_shape'), phase * 0.7);
-    drawLFO('lfo3_display', getSelectValue('lfo3_shape'), phase * 0.3);
-    drawLFO('lfo4_display', getSelectValue('lfo4_shape'), phase * 0.4);
-    requestAnimationFrame(animate);
-  }
+// Animation
+function animate() {
+  frame++;
+  const t = frame * 0.02;
+  drawWave('wave_a', getVal('osc_a_wavetable'), t, getKnob('osc_a_position'));
+  drawWave('wave_b', getVal('osc_b_wavetable'), t * 1.1, getKnob('osc_b_position'));
+  drawFilter(getKnob('filter_cutoff'), getKnob('filter_resonance'));
+  drawEnv('amp_env_canvas', getKnob('amp_attack'), getKnob('amp_decay'), getKnob('amp_sustain'), getKnob('amp_release'));
+  drawEnv('filt_env_canvas', getKnob('filt_attack'), getKnob('filt_decay'), getKnob('filt_sustain'), getKnob('filt_release'));
+  drawLFO('lfo1_canvas', getVal('lfo1_shape'), t * 0.5);
+  drawLFO('lfo2_canvas', getVal('lfo2_shape'), t * 0.7);
+  drawLFO('lfo3_canvas', getVal('lfo3_shape'), t * 0.3);
+  drawLFO('lfo4_canvas', getVal('lfo4_shape'), t * 0.4);
+  requestAnimationFrame(animate);
+}
 
-  // Oscillator visualization
-  function drawOscillator(id, type, phase, position) {
-    const c = canvases[id]; if (!c) return;
-    const { ctx, w, h } = c;
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = 'rgba(0, 212, 170, 0.1)';
-    for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(0, h*i/6); ctx.lineTo(w, h*i/6); ctx.stroke(); }
-
-    for (let layer = 4; layer >= 0; layer--) {
-      const alpha = 0.2 + (5 - layer) * 0.16;
-      ctx.strokeStyle = `rgba(0, 212, 170, ${alpha})`;
-      ctx.lineWidth = layer === 0 ? 2 : 1;
-      ctx.beginPath();
-      for (let x = 0; x <= w; x++) {
-        const t = (x / w + phase + layer * 0.1) % 1;
-        let y = getWaveValue(type, t, position + layer * 0.1);
-        const py = h / 2 - y * h * 0.35 + layer * 3;
-        x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
-      }
-      ctx.stroke();
-    }
-  }
-
-  function getWaveValue(type, t, pos) {
-    switch (type) {
-      case 0: return Math.sin(t * Math.PI * 4) * (1 - pos) + (1 - 2 * ((t * 2) % 1)) * pos;
-      case 1: let saw = 0; for (let h = 1; h <= 8; h++) saw += Math.sin(t * Math.PI * 4 * h) / h; return saw * 0.5;
-      case 2: return Math.sin(t * Math.PI * 4 + pos * Math.sin(t * Math.PI * 16)) * 0.9;
-      case 3: return Math.sin(t * Math.PI * 4) * Math.cos(t * Math.PI * 2 * (1 + pos * 3));
-      case 4: return Math.sin(t * Math.PI * 4 + pos * 4 * Math.sin(t * Math.PI * 8));
-      case 5: let add = 0; for (let h = 1; h <= 6; h++) add += Math.sin(t * Math.PI * 4 * h) * (1 - pos + pos * ((h % 2) * 2 - 1)); return add * 0.3;
-      default: return Math.sin(t * Math.PI * 4);
-    }
-  }
-
-  // Filter visualization
-  function drawFilter(cutoff, resonance) {
-    const c = canvases['filter_curve']; if (!c) return;
-    const { ctx, w, h } = c;
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = 'rgba(255, 140, 66, 0.15)';
-    ctx.beginPath(); ctx.moveTo(0, h);
-    for (let x = 0; x <= w; x++) {
-      const freq = x / w;
-      let gain = freq <= cutoff * 0.9 ? 1 : Math.pow(1 - (freq - cutoff * 0.9) / (1 - cutoff * 0.9), 2);
-      gain += resonance * 0.8 * Math.exp(-Math.pow(freq - cutoff * 0.9, 2) * 100);
-      ctx.lineTo(x, h - gain * h * 0.85);
-    }
-    ctx.lineTo(w, h); ctx.fill();
-    ctx.strokeStyle = '#ff8c42'; ctx.lineWidth = 2;
+function drawWave(id, type, phase, pos) {
+  const c = canvases[id]; if (!c) return;
+  const { ctx, w, h } = c;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(0,212,170,0.1)';
+  for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(0, h*i/5); ctx.lineTo(w, h*i/5); ctx.stroke(); }
+  for (let layer = 3; layer >= 0; layer--) {
+    ctx.strokeStyle = `rgba(0,212,170,${0.2 + (4 - layer) * 0.2})`;
+    ctx.lineWidth = layer === 0 ? 2 : 1;
     ctx.beginPath();
     for (let x = 0; x <= w; x++) {
-      const freq = x / w;
-      let gain = freq <= cutoff * 0.9 ? 1 : Math.pow(1 - (freq - cutoff * 0.9) / (1 - cutoff * 0.9), 2);
-      gain += resonance * 0.8 * Math.exp(-Math.pow(freq - cutoff * 0.9, 2) * 100);
-      x === 0 ? ctx.moveTo(x, h - gain * h * 0.85) : ctx.lineTo(x, h - gain * h * 0.85);
-    }
-    ctx.stroke();
-  }
-
-  // Envelope visualization
-  function drawEnvelope(id, a, d, s, r) {
-    const c = canvases[id]; if (!c) return;
-    const { ctx, w, h } = c;
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = 'rgba(155, 89, 182, 0.2)';
-    ctx.beginPath();
-    let x = 2; ctx.moveTo(x, h - 2);
-    x += a * 0.3 * w; ctx.lineTo(x, 2);
-    x += d * 0.25 * w; ctx.lineTo(x, 2 + (1 - s) * (h - 4));
-    x += 0.2 * w; ctx.lineTo(x, 2 + (1 - s) * (h - 4));
-    x += r * 0.25 * w; ctx.lineTo(x, h - 2);
-    ctx.lineTo(2, h - 2); ctx.fill();
-    ctx.strokeStyle = '#9b59b6'; ctx.lineWidth = 2;
-    ctx.beginPath(); x = 2; ctx.moveTo(x, h - 2);
-    x += a * 0.3 * w; ctx.lineTo(x, 2);
-    x += d * 0.25 * w; ctx.lineTo(x, 2 + (1 - s) * (h - 4));
-    x += 0.2 * w; ctx.lineTo(x, 2 + (1 - s) * (h - 4));
-    x += r * 0.25 * w; ctx.lineTo(x, h - 2);
-    ctx.stroke();
-  }
-
-  // LFO visualization
-  function drawLFO(id, shape, phase) {
-    const c = canvases[id]; if (!c) return;
-    const { ctx, w, h } = c;
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = '#3498db'; ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    for (let x = 0; x <= w; x++) {
-      const t = (x / w + phase) % 1;
-      let y = 0;
-      switch (shape) {
-        case 0: y = Math.sin(t * Math.PI * 2); break;
-        case 1: y = Math.abs(((t * 2) % 2) - 1) * 2 - 1; break;
-        case 2: y = 1 - 2 * (t % 1); break;
-        case 3: y = t < 0.5 ? 1 : -1; break;
-        case 4: y = Math.random() * 2 - 1; break;
-      }
-      const py = h / 2 - y * h * 0.4;
+      const tt = (x / w + phase + layer * 0.08) % 1;
+      let y = waveFunc(type, tt, pos + layer * 0.05);
+      const py = h / 2 - y * h * 0.38 + layer * 2;
       x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
     }
     ctx.stroke();
   }
+}
 
-  // Knob handling
-  function initKnobs() {
-    let activeKnob = null, startY = 0, startValue = 0;
+function waveFunc(type, t, p) {
+  switch (type) {
+    case 0: return Math.sin(t * Math.PI * 4) * (1 - p) + (1 - 2 * ((t * 2) % 1)) * p;
+    case 1: let s = 0; for (let h = 1; h <= 8; h++) s += Math.sin(t * Math.PI * 4 * h) / h; return s * 0.5;
+    case 2: return Math.sin(t * Math.PI * 4 + p * Math.sin(t * Math.PI * 16)) * 0.9;
+    case 3: return Math.sin(t * Math.PI * 4) * Math.cos(t * Math.PI * 2 * (1 + p * 3));
+    case 4: return Math.sin(t * Math.PI * 4 + p * 4 * Math.sin(t * Math.PI * 8));
+    case 5: let a = 0; for (let h = 1; h <= 6; h++) a += Math.sin(t * Math.PI * 4 * h) * (1 - p + p * ((h % 2) * 2 - 1)); return a * 0.3;
+    default: return Math.sin(t * Math.PI * 4);
+  }
+}
 
-    document.querySelectorAll('.knob[data-param]').forEach(knob => {
-      const paramId = knob.dataset.param;
-      const input = document.getElementById(paramId);
-      if (!input) return;
-      updateKnobVisual(knob, parseFloat(input.value) || 0.5);
+function drawFilter(cutoff, res) {
+  const c = canvases['filter_canvas']; if (!c) return;
+  const { ctx, w, h } = c;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(255,140,66,0.12)';
+  ctx.beginPath(); ctx.moveTo(0, h);
+  for (let x = 0; x <= w; x++) {
+    const f = x / w;
+    let g = f <= cutoff * 0.9 ? 1 : Math.pow(Math.max(0, 1 - (f - cutoff * 0.9) / (1 - cutoff * 0.9 + 0.01)), 2);
+    g += res * 0.8 * Math.exp(-Math.pow(f - cutoff * 0.9, 2) * 100);
+    ctx.lineTo(x, h - g * h * 0.85);
+  }
+  ctx.lineTo(w, h); ctx.fill();
+  ctx.strokeStyle = '#ff8c42'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let x = 0; x <= w; x++) {
+    const f = x / w;
+    let g = f <= cutoff * 0.9 ? 1 : Math.pow(Math.max(0, 1 - (f - cutoff * 0.9) / (1 - cutoff * 0.9 + 0.01)), 2);
+    g += res * 0.8 * Math.exp(-Math.pow(f - cutoff * 0.9, 2) * 100);
+    x === 0 ? ctx.moveTo(x, h - g * h * 0.85) : ctx.lineTo(x, h - g * h * 0.85);
+  }
+  ctx.stroke();
+}
 
-      knob.addEventListener('mousedown', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        activeKnob = { knob, input, paramId };
-        startY = e.clientY;
-        const state = sliderStates[paramId];
-        startValue = state ? state.getNormalisedValue() : (parseFloat(input.value) || 0);
-        document.body.style.cursor = 'ns-resize';
-      });
+function drawEnv(id, a, d, s, r) {
+  const c = canvases[id]; if (!c) return;
+  const { ctx, w, h } = c;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(155,89,182,0.15)';
+  ctx.beginPath();
+  let x = 2; ctx.moveTo(x, h - 2);
+  x += a * 0.3 * w; ctx.lineTo(x, 3);
+  x += d * 0.25 * w; ctx.lineTo(x, 3 + (1 - s) * (h - 6));
+  x += 0.2 * w; ctx.lineTo(x, 3 + (1 - s) * (h - 6));
+  x += r * 0.25 * w; ctx.lineTo(x, h - 2);
+  ctx.lineTo(2, h - 2); ctx.fill();
+  ctx.strokeStyle = '#9b59b6'; ctx.lineWidth = 2;
+  ctx.beginPath(); x = 2; ctx.moveTo(x, h - 2);
+  x += a * 0.3 * w; ctx.lineTo(x, 3);
+  x += d * 0.25 * w; ctx.lineTo(x, 3 + (1 - s) * (h - 6));
+  x += 0.2 * w; ctx.lineTo(x, 3 + (1 - s) * (h - 6));
+  x += r * 0.25 * w; ctx.lineTo(x, h - 2);
+  ctx.stroke();
+}
 
-      knob.addEventListener('dblclick', e => {
-        e.stopPropagation();
-        const state = sliderStates[paramId];
-        if (state) state.setNormalisedValue(0.5);
-        input.value = 0.5;
-        updateKnobVisual(knob, 0.5);
-      });
-    });
+function drawLFO(id, shape, phase) {
+  const c = canvases[id]; if (!c) return;
+  const { ctx, w, h } = c;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = '#3498db'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x = 0; x <= w; x++) {
+    const t = (x / w + phase) % 1;
+    let y = 0;
+    switch (shape) {
+      case 0: y = Math.sin(t * Math.PI * 2); break;
+      case 1: y = Math.abs(((t * 2) % 2) - 1) * 2 - 1; break;
+      case 2: y = 1 - 2 * (t % 1); break;
+      case 3: y = t < 0.5 ? 1 : -1; break;
+      default: y = Math.random() * 2 - 1;
+    }
+    const py = h / 2 - y * h * 0.4;
+    x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+  }
+  ctx.stroke();
+}
 
-    document.addEventListener('mousemove', e => {
-      if (!activeKnob) return;
+// Knobs
+function initKnobs() {
+  let active = null, startY = 0, startVal = 0;
+
+  document.querySelectorAll('.knob[data-param]').forEach(k => {
+    const p = k.dataset.param;
+    updateKnob(k, 0.5);
+
+    k.addEventListener('mousedown', e => {
       e.preventDefault();
-      const deltaY = startY - e.clientY;
-      const sensitivity = e.shiftKey ? 0.001 : 0.006;
-      let newValue = Math.max(0, Math.min(1, startValue + deltaY * sensitivity));
-      const state = sliderStates[activeKnob.paramId];
-      if (state) state.setNormalisedValue(newValue);
-      activeKnob.input.value = newValue;
-      updateKnobVisual(activeKnob.knob, newValue);
+      e.stopPropagation();
+      active = { el: k, param: p };
+      startY = e.clientY;
+      startVal = sliderStates[p] ? sliderStates[p].getNormalisedValue() : 0.5;
+      document.body.style.cursor = 'ns-resize';
     });
 
-    document.addEventListener('mouseup', () => {
-      if (activeKnob) { document.body.style.cursor = ''; activeKnob = null; }
+    k.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      const s = sliderStates[p];
+      if (s) s.setNormalisedValue(0.5);
+      updateKnob(k, 0.5);
     });
-  }
+  });
 
-  function updateKnobVisual(knob, value) {
-    const pointer = knob.querySelector('.knob-pointer');
-    if (pointer) pointer.style.transform = `rotate(${-135 + value * 270}deg)`;
-  }
+  document.addEventListener('mousemove', e => {
+    if (!active) return;
+    const dy = startY - e.clientY;
+    const sens = e.shiftKey ? 0.001 : 0.005;
+    let v = Math.max(0, Math.min(1, startVal + dy * sens));
+    const s = sliderStates[active.param];
+    if (s) s.setNormalisedValue(v);
+    updateKnob(active.el, v);
+  });
 
-  // FX Rack with drag-drop
-  function initFXRack() {
-    renderFXChain();
-  }
+  document.addEventListener('mouseup', () => {
+    if (active) { document.body.style.cursor = ''; active = null; }
+  });
+}
 
-  function renderFXChain() {
-    const container = document.getElementById('fx-container');
-    container.innerHTML = '';
+function updateKnob(k, v) {
+  const ptr = k.querySelector('.knob-pointer');
+  if (ptr) ptr.style.transform = `translateX(-50%) rotate(${-135 + v * 270}deg)`;
+}
 
-    fxOrder.forEach(fxId => {
-      const def = fxDefs[fxId];
-      const unit = document.createElement('div');
-      unit.className = 'fx-unit';
-      unit.dataset.fx = fxId;
-      unit.draggable = true;
+function getKnob(p) {
+  const s = sliderStates[p];
+  return s ? s.getNormalisedValue() : 0.5;
+}
 
-      const paramLabels = { mix: 'Mix', drive: 'Drive', rate: 'Rate', depth: 'Depth', feedback: 'Fdbk', time: 'Time', size: 'Size', decay: 'Decay', low: 'Low', mid: 'Mid', high: 'High', threshold: 'Thrs', ratio: 'Ratio' };
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.selectedIndex : 0;
+}
 
-      let knobsHtml = def.params.map(p => {
-        const label = Object.keys(paramLabels).find(k => p.includes(k)) || 'Mix';
-        return `<div class="knob-container"><div class="knob small" data-param="${p}"><div class="knob-bg"></div><div class="knob-pointer" style="background:${def.color}"></div></div><span class="knob-label">${paramLabels[label]}</span></div>`;
-      }).join('');
+// FX
+function initFX() {
+  const container = document.getElementById('fx_container');
+  container.innerHTML = '';
 
-      unit.innerHTML = `
-        <div class="fx-unit-header">
-          <span class="fx-name" style="color:${def.color}">${def.name}</span>
-          <div class="fx-toggle${getInputValue(def.params[0]) > 0 ? ' active' : ''}" data-fx="${fxId}"></div>
-        </div>
-        <div class="fx-knobs">${knobsHtml}</div>
-      `;
+  fxList.forEach(fx => {
+    const unit = document.createElement('div');
+    unit.className = 'fx-unit';
+    unit.dataset.fx = fx.id;
+    unit.draggable = true;
 
-      // Drag events
-      unit.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', fxId);
-        unit.classList.add('dragging');
-      });
+    const labels = { mix: 'Mix', drive: 'Drive', rate: 'Rate', depth: 'Depth', feedback: 'Fdbk', time: 'Time', size: 'Size', decay: 'Decay', low: 'Low', mid: 'Mid', high: 'High', threshold: 'Thrs', ratio: 'Ratio', sync: 'Sync' };
 
-      unit.addEventListener('dragend', () => unit.classList.remove('dragging'));
+    let knobsHtml = fx.params.map(p => {
+      const lbl = Object.keys(labels).find(k => p.includes(k)) || 'Mix';
+      if (p.includes('sync')) {
+        return `<div class="knob-wrap"><select id="${p}" style="width:50px"><option>Off</option><option>On</option></select><span class="knob-label">${labels[lbl]}</span></div>`;
+      }
+      return `<div class="knob-wrap"><div class="knob sm" data-param="${p}"><div class="knob-bg"></div><div class="knob-pointer" style="background:${fx.color}"></div></div><span class="knob-label">${labels[lbl]}</span></div>`;
+    }).join('');
 
-      unit.addEventListener('dragover', e => {
-        e.preventDefault();
-        const dragging = container.querySelector('.dragging');
-        if (dragging && dragging !== unit) {
-          const rect = unit.getBoundingClientRect();
-          const mid = rect.top + rect.height / 2;
-          if (e.clientY < mid) {
-            container.insertBefore(dragging, unit);
-          } else {
-            container.insertBefore(dragging, unit.nextSibling);
-          }
-        }
-      });
+    unit.innerHTML = `
+      <div class="fx-header">
+        <span class="fx-name" style="color:${fx.color}">${fx.name}</span>
+        <div class="fx-toggle" data-fx="${fx.id}"></div>
+      </div>
+      <div class="fx-controls">${knobsHtml}</div>
+    `;
 
-      unit.addEventListener('drop', e => {
-        e.preventDefault();
-        fxOrder = Array.from(container.children).map(el => el.dataset.fx);
-        console.log('FX order updated:', fxOrder);
-      });
-
-      // Toggle click
-      const toggle = unit.querySelector('.fx-toggle');
-      toggle.addEventListener('click', e => {
-        e.stopPropagation();
-        const mixParam = def.params[0];
-        const isActive = toggle.classList.contains('active');
-        const state = sliderStates[mixParam];
-        const input = document.getElementById(mixParam);
-        const knob = unit.querySelector(`.knob[data-param="${mixParam}"]`);
-
-        if (isActive) {
-          if (state) state.setNormalisedValue(0);
-          if (input) input.value = 0;
-          if (knob) updateKnobVisual(knob, 0);
-          toggle.classList.remove('active');
-        } else {
-          if (state) state.setNormalisedValue(0.5);
-          if (input) input.value = 0.5;
-          if (knob) updateKnobVisual(knob, 0.5);
-          toggle.classList.add('active');
-        }
-      });
-
-      container.appendChild(unit);
+    // Toggle
+    const toggle = unit.querySelector('.fx-toggle');
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      const mixP = fx.params[0];
+      const isOn = toggle.classList.contains('active');
+      const s = sliderStates[mixP];
+      const knob = unit.querySelector(`.knob[data-param="${mixP}"]`);
+      if (isOn) {
+        if (s) s.setNormalisedValue(0);
+        if (knob) updateKnob(knob, 0);
+        toggle.classList.remove('active');
+      } else {
+        if (s) s.setNormalisedValue(0.5);
+        if (knob) updateKnob(knob, 0.5);
+        toggle.classList.add('active');
+      }
     });
 
-    // Re-init knobs for FX
-    document.querySelectorAll('#fx-container .knob[data-param]').forEach(knob => {
-      const paramId = knob.dataset.param;
-      const input = document.getElementById(paramId);
-      if (input) updateKnobVisual(knob, parseFloat(input.value) || 0);
-
-      knob.addEventListener('mousedown', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        const startY = e.clientY;
-        const state = sliderStates[paramId];
-        let startValue = state ? state.getNormalisedValue() : (parseFloat(input.value) || 0);
-
-        const onMove = ev => {
-          const deltaY = startY - ev.clientY;
-          const sensitivity = ev.shiftKey ? 0.001 : 0.006;
-          let newValue = Math.max(0, Math.min(1, startValue + deltaY * sensitivity));
-          if (state) state.setNormalisedValue(newValue);
-          input.value = newValue;
-          updateKnobVisual(knob, newValue);
-
-          // Update toggle if mix param
-          if (paramId.endsWith('_mix')) {
-            const fxId = paramId.replace('fx_', '').replace('_mix', '');
-            const toggle = document.querySelector(`.fx-toggle[data-fx="${fxId}"]`);
-            if (toggle) toggle.classList.toggle('active', newValue > 0.01);
-          }
-        };
-
-        const onUp = () => {
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
-          document.body.style.cursor = '';
-        };
-
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-        document.body.style.cursor = 'ns-resize';
-      });
+    // Drag
+    unit.addEventListener('dragstart', e => { e.dataTransfer.setData('text', fx.id); unit.classList.add('dragging'); });
+    unit.addEventListener('dragend', () => unit.classList.remove('dragging'));
+    unit.addEventListener('dragover', e => {
+      e.preventDefault();
+      const dragging = container.querySelector('.dragging');
+      if (dragging && dragging !== unit) {
+        const rect = unit.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) container.insertBefore(dragging, unit);
+        else container.insertBefore(dragging, unit.nextSibling);
+      }
     });
-  }
 
-  // Presets
-  const factoryPresets = {
-    'Init': { osc_a_position: 0, osc_a_level: 1, osc_b_level: 0, filter_cutoff: 1, filter_resonance: 0, amp_attack: 0.001, amp_decay: 0.01, amp_sustain: 1, amp_release: 0.02 },
-    'Serum Lead': { osc_a_position: 0.3, osc_a_level: 1, osc_a_warp_amount: 0.2, osc_b_position: 0.5, osc_b_level: 0.7, osc_b_warp_amount: 0.3, filter_cutoff: 0.6, filter_resonance: 0.3, filter_drive: 0.2, filter_env_depth: 0.4, amp_attack: 0.001, amp_decay: 0.15, amp_sustain: 0.7, amp_release: 0.1, sub_level: 0.2, fx_distortion_mix: 0.1, fx_chorus_mix: 0.2, fx_reverb_mix: 0.15 },
-    'Fat Bass': { osc_a_position: 0.1, osc_a_level: 1, osc_a_warp_amount: 0.4, osc_b_position: 0.2, osc_b_level: 0.8, osc_b_warp_amount: 0.5, filter_cutoff: 0.35, filter_resonance: 0.4, filter_drive: 0.5, filter_env_depth: 0.6, amp_attack: 0.001, amp_decay: 0.2, amp_sustain: 0.6, amp_release: 0.08, sub_level: 0.6, fx_distortion_mix: 0.3, fx_distortion_drive: 0.4 },
-    'Ethereal Pad': { osc_a_position: 0.4, osc_a_level: 0.7, osc_a_pan: 0.3, osc_b_position: 0.6, osc_b_level: 0.7, osc_b_pan: 0.7, filter_cutoff: 0.5, filter_resonance: 0.2, amp_attack: 0.4, amp_decay: 0.3, amp_sustain: 0.8, amp_release: 0.5, sub_level: 0.1, noise_level: 0.05, fx_chorus_mix: 0.4, fx_reverb_mix: 0.5, fx_delay_mix: 0.3 },
-    'Pluck': { osc_a_position: 0.2, osc_a_level: 1, osc_b_position: 0.3, osc_b_level: 0.5, filter_cutoff: 0.7, filter_resonance: 0.25, filter_env_depth: 0.5, amp_attack: 0.001, amp_decay: 0.3, amp_sustain: 0, amp_release: 0.15, noise_level: 0.02, fx_chorus_mix: 0.15, fx_reverb_mix: 0.25, fx_delay_mix: 0.2 },
-    'Growl Bass': { osc_a_position: 0.5, osc_a_level: 1, osc_a_warp_amount: 0.7, osc_b_position: 0.6, osc_b_level: 0.9, osc_b_warp_amount: 0.8, filter_cutoff: 0.4, filter_resonance: 0.5, filter_drive: 0.6, filter_env_depth: 0.7, amp_attack: 0.001, amp_decay: 0.15, amp_sustain: 0.7, amp_release: 0.1, sub_level: 0.4, fx_distortion_mix: 0.5, fx_distortion_drive: 0.6 },
-    'Supersaw': { osc_a_position: 0.8, osc_a_level: 1, osc_a_pan: 0.3, osc_b_position: 0.8, osc_b_level: 1, osc_b_pan: 0.7, filter_cutoff: 0.75, filter_resonance: 0.15, amp_attack: 0.01, amp_decay: 0.2, amp_sustain: 0.8, amp_release: 0.15, sub_level: 0.15, fx_chorus_mix: 0.3, fx_reverb_mix: 0.2, fx_delay_mix: 0.1 },
-    'Bell': { osc_a_position: 0.15, osc_a_level: 1, osc_a_warp_amount: 0.3, osc_b_position: 0.4, osc_b_level: 0.6, osc_b_warp_amount: 0.4, filter_cutoff: 0.8, filter_resonance: 0.1, amp_attack: 0.001, amp_decay: 0.6, amp_sustain: 0.1, amp_release: 0.4, fx_chorus_mix: 0.1, fx_reverb_mix: 0.4, fx_delay_mix: 0.25 },
-    'Wobble': { osc_a_position: 0.3, osc_a_level: 1, osc_a_warp_amount: 0.5, osc_b_position: 0.4, osc_b_level: 0.8, osc_b_warp_amount: 0.6, filter_cutoff: 0.5, filter_resonance: 0.6, filter_drive: 0.4, amp_attack: 0.001, amp_decay: 0.1, amp_sustain: 0.9, amp_release: 0.1, sub_level: 0.3, fx_distortion_mix: 0.2 },
-    'Ambient': { osc_a_position: 0.25, osc_a_level: 0.6, osc_a_pan: 0.2, osc_b_position: 0.35, osc_b_level: 0.6, osc_b_pan: 0.8, filter_cutoff: 0.45, filter_resonance: 0.15, amp_attack: 0.6, amp_decay: 0.5, amp_sustain: 0.7, amp_release: 0.7, sub_level: 0.1, noise_level: 0.08, fx_chorus_mix: 0.35, fx_reverb_mix: 0.6, fx_delay_mix: 0.4 }
-  };
+    container.appendChild(unit);
+  });
 
-  let userPresets = {};
-  try { const s = localStorage.getItem('codox_user_presets'); if (s) userPresets = JSON.parse(s); } catch(e) {}
+  // Reinit knobs for FX
+  document.querySelectorAll('#fx_container .knob[data-param]').forEach(k => {
+    const p = k.dataset.param;
+    updateKnob(k, 0);
 
-  function initPresets() {
-    const select = document.getElementById('preset_select');
-    const prevBtn = document.getElementById('preset_prev');
-    const nextBtn = document.getElementById('preset_next');
-    const saveBtn = document.getElementById('preset_save');
-    const loadBtn = document.getElementById('preset_load');
-    const randomBtn = document.getElementById('randomize_btn');
+    k.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const startY = e.clientY;
+      const s = sliderStates[p];
+      let startVal = s ? s.getNormalisedValue() : 0;
 
-    prevBtn.addEventListener('click', () => { if (select.selectedIndex > 0) { select.selectedIndex--; loadPreset(select.value); }});
-    nextBtn.addEventListener('click', () => { if (select.selectedIndex < select.options.length - 1) { select.selectedIndex++; loadPreset(select.value); }});
-    select.addEventListener('change', () => loadPreset(select.value));
-    saveBtn.addEventListener('click', openSaveModal);
-    loadBtn.addEventListener('click', () => document.getElementById('preset_file_input').click());
-    randomBtn.addEventListener('click', randomize);
-
-    // File input for loading presets
-    document.getElementById('preset_file_input').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        try {
-          const preset = JSON.parse(ev.target.result);
-          applyState(preset);
-          console.log('Loaded preset from file:', file.name);
-        } catch (err) {
-          console.error('Failed to load preset:', err);
+      const move = ev => {
+        const dy = startY - ev.clientY;
+        const sens = ev.shiftKey ? 0.001 : 0.005;
+        let v = Math.max(0, Math.min(1, startVal + dy * sens));
+        if (s) s.setNormalisedValue(v);
+        updateKnob(k, v);
+        // Update toggle
+        if (p.endsWith('_mix')) {
+          const fxId = p.replace('fx_', '').replace('_mix', '');
+          const tog = document.querySelector(`.fx-toggle[data-fx="${fxId}"]`);
+          if (tog) tog.classList.toggle('active', v > 0.01);
         }
       };
-      reader.readAsText(file);
+
+      const up = () => {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        document.body.style.cursor = '';
+      };
+
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+      document.body.style.cursor = 'ns-resize';
     });
+  });
+}
 
-    // Add user presets to dropdown
-    Object.keys(userPresets).forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name + ' *';
-      select.appendChild(opt);
-    });
+// Presets
+function initPresets() {
+  const sel = document.getElementById('preset_select');
+  sel.innerHTML = '';
+  Object.keys(factoryPresets).forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    sel.appendChild(o);
+  });
+  Object.keys(userPresets).forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n + ' *';
+    sel.appendChild(o);
+  });
+
+  sel.addEventListener('change', () => loadPreset(sel.value));
+  document.getElementById('prev_preset').addEventListener('click', () => { if (sel.selectedIndex > 0) { sel.selectedIndex--; loadPreset(sel.value); }});
+  document.getElementById('next_preset').addEventListener('click', () => { if (sel.selectedIndex < sel.options.length - 1) { sel.selectedIndex++; loadPreset(sel.value); }});
+  document.getElementById('random_btn').addEventListener('click', randomize);
+  document.getElementById('load_btn').addEventListener('click', () => document.getElementById('file_input').click());
+
+  document.getElementById('file_input').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => { try { applyPreset(JSON.parse(ev.target.result)); } catch(err) { console.error(err); }};
+    r.readAsText(f);
+  });
+}
+
+function loadPreset(name) {
+  if (factoryPresets[name]) applyPreset(factoryPresets[name]);
+  else if (userPresets[name]) applyPreset(userPresets[name]);
+}
+
+function applyPreset(data) {
+  for (const [p, v] of Object.entries(data)) {
+    const s = sliderStates[p];
+    if (s) s.setNormalisedValue(v);
+    const k = document.querySelector(`.knob[data-param="${p}"]`);
+    if (k) updateKnob(k, v);
   }
+  // Refresh FX toggles
+  fxList.forEach(fx => {
+    const v = data[fx.params[0]] || 0;
+    const tog = document.querySelector(`.fx-toggle[data-fx="${fx.id}"]`);
+    if (tog) tog.classList.toggle('active', v > 0.01);
+  });
+}
 
-  function loadPreset(name) {
-    if (factoryPresets[name]) { applyState(factoryPresets[name]); return; }
-    if (userPresets[name]) { applyState(userPresets[name]); return; }
-  }
+function getCurrentState() {
+  const state = {};
+  document.querySelectorAll('.knob[data-param]').forEach(k => {
+    const p = k.dataset.param;
+    const s = sliderStates[p];
+    state[p] = s ? s.getNormalisedValue() : 0.5;
+  });
+  return state;
+}
 
-  function applyState(state) {
-    for (const [paramId, value] of Object.entries(state)) {
-      const s = sliderStates[paramId];
-      if (s) s.setNormalisedValue(value);
-      const input = document.getElementById(paramId);
-      if (input) input.value = value;
-      const knob = document.querySelector(`.knob[data-param="${paramId}"]`);
-      if (knob) updateKnobVisual(knob, value);
-    }
-    renderFXChain(); // Refresh FX toggles
-  }
+function randomize() {
+  applyPreset({
+    osc_a_position: Math.random(), osc_a_level: 0.7 + Math.random() * 0.3, osc_a_warp_amount: Math.random() * 0.6,
+    osc_b_position: Math.random(), osc_b_level: Math.random() * 0.8, osc_b_warp_amount: Math.random() * 0.6,
+    filter_cutoff: 0.3 + Math.random() * 0.6, filter_resonance: Math.random() * 0.5, filter_drive: Math.random() * 0.4,
+    amp_attack: Math.random() * 0.3, amp_decay: 0.05 + Math.random() * 0.4, amp_sustain: 0.3 + Math.random() * 0.6, amp_release: 0.05 + Math.random() * 0.4,
+    sub_level: Math.random() * 0.4, noise_level: Math.random() * 0.15,
+    fx_distortion_mix: Math.random() * 0.3, fx_chorus_mix: Math.random() * 0.4, fx_reverb_mix: Math.random() * 0.5, fx_delay_mix: Math.random() * 0.4
+  });
+}
 
-  function getCurrentState() {
-    const state = {};
-    document.querySelectorAll('.knob[data-param]').forEach(knob => {
-      const paramId = knob.dataset.param;
-      const s = sliderStates[paramId];
-      state[paramId] = s ? s.getNormalisedValue() : (parseFloat(document.getElementById(paramId)?.value) || 0);
-    });
-    return state;
-  }
+// Modal
+function initModal() {
+  const modal = document.getElementById('save_modal');
+  const input = document.getElementById('preset_name');
 
-  function randomize() {
-    applyState({
-      osc_a_position: Math.random(), osc_a_level: 0.7 + Math.random() * 0.3, osc_a_pan: 0.3 + Math.random() * 0.4, osc_a_warp_amount: Math.random() * 0.6,
-      osc_b_position: Math.random(), osc_b_level: Math.random() * 0.8, osc_b_pan: 0.3 + Math.random() * 0.4, osc_b_warp_amount: Math.random() * 0.6,
-      filter_cutoff: 0.3 + Math.random() * 0.6, filter_resonance: Math.random() * 0.5, filter_drive: Math.random() * 0.4, filter_env_depth: Math.random() * 0.6,
-      amp_attack: Math.random() * 0.3, amp_decay: 0.05 + Math.random() * 0.4, amp_sustain: 0.3 + Math.random() * 0.6, amp_release: 0.05 + Math.random() * 0.4,
-      sub_level: Math.random() * 0.4, noise_level: Math.random() * 0.15,
-      fx_distortion_mix: Math.random() * 0.3, fx_chorus_mix: Math.random() * 0.4, fx_reverb_mix: Math.random() * 0.5, fx_delay_mix: Math.random() * 0.4
-    });
-  }
-
-  // Modal for saving presets
-  function initModal() {
-    const modal = document.getElementById('save_modal');
-    const input = document.getElementById('preset_name_input');
-    const cancelBtn = document.getElementById('modal_cancel');
-    const saveBtn = document.getElementById('modal_save');
-
-    cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
-
-    saveBtn.addEventListener('click', () => {
-      const name = input.value.trim();
-      if (!name) return;
-      if (factoryPresets[name]) { input.value = ''; input.placeholder = 'Cannot overwrite factory preset!'; return; }
-
-      userPresets[name] = getCurrentState();
-      try { localStorage.setItem('codox_user_presets', JSON.stringify(userPresets)); } catch(e) {}
-
-      // Add to dropdown if new
-      const select = document.getElementById('preset_select');
-      let found = false;
-      for (const opt of select.options) if (opt.value === name) { found = true; break; }
-      if (!found) {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name + ' *';
-        select.appendChild(opt);
-      }
-      select.value = name;
-
-      // Also save to file
-      const blob = new Blob([JSON.stringify(userPresets[name], null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name + '.codox';
-      a.click();
-      URL.revokeObjectURL(url);
-
-      modal.classList.remove('active');
-      input.value = '';
-    });
-  }
-
-  function openSaveModal() {
-    const modal = document.getElementById('save_modal');
-    const input = document.getElementById('preset_name_input');
+  document.getElementById('save_btn').addEventListener('click', () => {
     input.value = '';
-    input.placeholder = 'Enter preset name...';
     modal.classList.add('active');
     setTimeout(() => input.focus(), 100);
-  }
+  });
 
-  // JUCE connection
-  async function connectJUCE() {
+  document.getElementById('modal_cancel').addEventListener('click', () => modal.classList.remove('active'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+
+  document.getElementById('modal_save').addEventListener('click', () => {
+    const name = input.value.trim();
+    if (!name) return;
+    if (factoryPresets[name]) { input.placeholder = 'Cannot overwrite factory!'; input.value = ''; return; }
+
+    userPresets[name] = getCurrentState();
+    try { localStorage.setItem('codox_presets', JSON.stringify(userPresets)); } catch(e) {}
+
+    // Add to dropdown
+    const sel = document.getElementById('preset_select');
+    let found = false;
+    for (const o of sel.options) if (o.value === name) { found = true; break; }
+    if (!found) {
+      const o = document.createElement('option');
+      o.value = name; o.textContent = name + ' *';
+      sel.appendChild(o);
+    }
+    sel.value = name;
+
+    // Download file
+    const blob = new Blob([JSON.stringify(userPresets[name], null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name + '.codox'; a.click();
+    URL.revokeObjectURL(url);
+
+    modal.classList.remove('active');
+  });
+}
+
+// JUCE connection
+async function connectJUCE() {
+  try {
+    const m = await import('./js/juce/index.js');
+    if (window.__JUCE__ && window.__JUCE__.backend) {
+      bindParams(m);
+      console.log('JUCE connected');
+    }
+  } catch(e) { setTimeout(connectJUCE, 500); }
+}
+
+function bindParams(Juce) {
+  document.querySelectorAll('.knob[data-param]').forEach(k => {
+    const p = k.dataset.param;
     try {
-      const module = await import('./js/juce/index.js');
-      if (window.__JUCE__ && window.__JUCE__.backend) {
-        bindParameters(module);
-        console.log('Connected to JUCE backend');
+      const s = Juce.getSliderState(p);
+      if (s) {
+        sliderStates[p] = s;
+        s.valueChangedEvent.addListener(() => {
+          const v = s.getNormalisedValue();
+          updateKnob(k, v);
+          if (p.endsWith('_mix') && p.startsWith('fx_')) {
+            const fxId = p.replace('fx_', '').replace('_mix', '');
+            const tog = document.querySelector(`.fx-toggle[data-fx="${fxId}"]`);
+            if (tog) tog.classList.toggle('active', v > 0.01);
+          }
+        });
+        updateKnob(k, s.getNormalisedValue());
       }
-    } catch (e) { setTimeout(connectJUCE, 500); }
-  }
+    } catch(e) {}
+  });
 
-  function bindParameters(Juce) {
-    document.querySelectorAll('.knob[data-param]').forEach(knob => {
-      const paramId = knob.dataset.param;
-      const input = document.getElementById(paramId);
-      if (!input) return;
-      try {
-        const state = Juce.getSliderState(paramId);
-        if (state) {
-          sliderStates[paramId] = state;
-          state.valueChangedEvent.addListener(() => {
-            const v = state.getNormalisedValue();
-            input.value = v;
-            updateKnobVisual(knob, v);
-            if (paramId.endsWith('_mix') && paramId.startsWith('fx_')) {
-              const fxId = paramId.replace('fx_', '').replace('_mix', '');
-              const toggle = document.querySelector(`.fx-toggle[data-fx="${fxId}"]`);
-              if (toggle) toggle.classList.toggle('active', v > 0.01);
-            }
-          });
-          const v = state.getNormalisedValue();
-          input.value = v;
-          updateKnobVisual(knob, v);
-        }
-      } catch (e) {}
-    });
+  // Combos
+  ['osc_a_wavetable', 'osc_b_wavetable', 'osc_a_octave', 'osc_b_octave', 'osc_a_semitone', 'osc_b_semitone',
+   'osc_a_warp_mode', 'osc_b_warp_mode', 'filter_type', 'sub_shape', 'sub_octave', 'noise_type',
+   'lfo1_shape', 'lfo2_shape', 'lfo3_shape', 'lfo4_shape', 'unison_voices', 'polyphony', 'glide_mode'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    try {
+      const s = Juce.getComboBoxState(id);
+      if (s) {
+        comboStates[id] = s;
+        s.valueChangedEvent.addListener(() => el.selectedIndex = s.getChoiceIndex());
+        el.addEventListener('change', () => s.setChoiceIndex(el.selectedIndex));
+        el.selectedIndex = s.getChoiceIndex();
+      }
+    } catch(e) {}
+  });
+}
 
-    ['osc_a_wavetable', 'osc_b_wavetable', 'osc_a_octave', 'osc_b_octave', 'filter_type',
-     'lfo1_shape', 'lfo2_shape', 'lfo3_shape', 'lfo4_shape', 'sub_shape', 'sub_octave', 'noise_type'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      try {
-        const state = Juce.getComboBoxState(id);
-        if (state) {
-          comboStates[id] = state;
-          state.valueChangedEvent.addListener(() => el.selectedIndex = state.getChoiceIndex());
-          el.addEventListener('change', () => state.setChoiceIndex(el.selectedIndex));
-          el.selectedIndex = state.getChoiceIndex();
-        }
-      } catch (e) {}
-    });
-  }
-
-  // Utilities
-  function getInputValue(id) { const el = document.getElementById(id); return el ? parseFloat(el.value) || 0 : 0; }
-  function getSelectValue(id) { const el = document.getElementById(id); return el ? parseInt(el.value) || el.selectedIndex || 0 : 0; }
-
-  // Init
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-  setTimeout(() => { const f = document.querySelector('.plugin-frame'); if (f && !f.classList.contains('loaded')) init(); }, 500);
+// Start
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
 })();
 </script>
 </body>
