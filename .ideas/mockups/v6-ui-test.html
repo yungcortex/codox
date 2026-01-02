@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codox UI Mockup v6</title>
+
+  <style>
+    /* CRITICAL: WebView constraints */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      /* Native application feel */
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+      overflow: hidden;
+
+      /* Center the plugin frame */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Fixed-size frame matching plugin spec */
+    .plugin-frame {
+      width: 1200px;
+      height: 800px;
+      border: 2px solid #444;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+      position: relative;
+      background: #1a1a1a;
+    }
+
+    /* Main container */
+    .container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      color: #ffffff;
+    }
+
+    /* Section styling */
+    .section {
+      position: absolute;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 8px;
+    }
+
+    .section-label {
+      position: absolute;
+      font-size: 11px;
+      font-weight: bold;
+      color: #999;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Header section */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 45px;
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* Oscillator sections */
+    .osc-section {
+      background: rgba(78, 205, 196, 0.05);
+      border-color: rgba(78, 205, 196, 0.2);
+    }
+
+    .osc-a {
+      left: 10px;
+      top: 50px;
+      width: 340px;
+      height: 225px;
+    }
+
+    .osc-b {
+      left: 360px;
+      top: 50px;
+      width: 340px;
+      height: 225px;
+    }
+
+    /* Sub + Noise section */
+    .sub-noise {
+      left: 710px;
+      top: 50px;
+      width: 190px;
+      height: 225px;
+      background: rgba(255, 140, 66, 0.05);
+      border-color: rgba(255, 140, 66, 0.2);
+    }
+
+    /* Filter section */
+    .filter-section {
+      left: 910px;
+      top: 50px;
+      width: 280px;
+      height: 225px;
+      background: rgba(255, 140, 66, 0.05);
+      border-color: rgba(255, 140, 66, 0.2);
+    }
+
+    /* Envelope sections */
+    .amp-env {
+      left: 10px;
+      top: 290px;
+      width: 340px;
+      height: 190px;
+      background: rgba(78, 205, 196, 0.05);
+      border-color: rgba(78, 205, 196, 0.2);
+    }
+
+    .filt-env {
+      left: 360px;
+      top: 290px;
+      width: 340px;
+      height: 190px;
+      background: rgba(255, 140, 66, 0.05);
+      border-color: rgba(255, 140, 66, 0.2);
+    }
+
+    /* LFO section */
+    .lfo-section {
+      left: 710px;
+      top: 290px;
+      width: 480px;
+      height: 190px;
+      background: rgba(78, 205, 196, 0.05);
+      border-color: rgba(78, 205, 196, 0.2);
+    }
+
+    /* Macros + Voice section */
+    .macros-voice {
+      left: 710px;
+      top: 490px;
+      width: 480px;
+      height: 190px;
+      background: rgba(255, 140, 66, 0.05);
+      border-color: rgba(255, 140, 66, 0.2);
+    }
+
+    /* Effects bar */
+    .effects-bar {
+      left: 10px;
+      top: 690px;
+      width: 1180px;
+      height: 105px;
+      background: rgba(78, 205, 196, 0.05);
+      border-color: rgba(78, 205, 196, 0.2);
+    }
+
+    /* Control styling */
+    button {
+      padding: 4px 12px;
+      background: #333;
+      border: 1px solid #555;
+      border-radius: 3px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    select {
+      padding: 4px 8px;
+      background: #2a2a2a;
+      border: 1px solid #555;
+      border-radius: 3px;
+      color: #fff;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-track {
+      background: #333;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #4ecdc4;
+      border-radius: 50%;
+      margin-top: -5px;
+    }
+
+    input[type="checkbox"] {
+      width: 30px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    /* Canvas displays */
+    canvas {
+      border-radius: 3px;
+      background: #0a0a0a;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Control labels */
+    .control-label {
+      font-size: 10px;
+      color: #999;
+      text-align: center;
+      margin-top: 3px;
+    }
+
+    /* Position absolute controls */
+    .positioned-control {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Debug monitor */
+    .debug-monitor {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      padding: 8px 12px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      min-width: 150px;
+      pointer-events: none;
+      z-index: 10000;
+    }
+
+    .debug-label {
+      color: #666;
+      font-size: 9px;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+
+    .debug-param {
+      font-weight: bold;
+      color: #0f0;
+    }
+
+    .debug-value {
+      color: #fff;
+      margin-top: 2px;
+    }
+
+    .debug-normalized {
+      color: #888;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed-size plugin frame -->
+  <div class="plugin-frame">
+    <div class="container">
+
+      <!-- HEADER -->
+      <div class="header">
+        <button id="preset_prev">◀</button>
+        <select id="preset_name">
+          <option>Init Preset</option>
+          <option>Bass Monster</option>
+          <option>Evolving Pad</option>
+          <option>Lead Saw</option>
+        </select>
+        <button id="preset_next">▶</button>
+        <button id="randomize">RANDOMIZE</button>
+        <div style="margin-left: auto; display: flex; gap: 5px; align-items: center;">
+          <span style="font-size: 11px; color: #999;">MASTER</span>
+          <input type="range" id="master_volume" min="0" max="1" step="0.01" value="0.5" style="width: 130px;">
+        </div>
+      </div>
+
+      <!-- OSCILLATOR A -->
+      <div class="section osc-section osc-a">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">OSCILLATOR A</div>
+
+        <!-- Wavetable display -->
+        <canvas id="osc_a_waveform_display" width="140" height="80" style="position: absolute; left: 180px; top: 10px;"></canvas>
+
+        <div style="position: absolute; left: 10px; top: 25px;">
+          <select id="osc_a_wavetable">
+            <option>Basic</option>
+            <option>Analog</option>
+            <option>Digital</option>
+            <option>Vocal</option>
+          </select>
+        </div>
+
+        <div class="positioned-control" style="left: 10px; top: 90px;">
+          <input type="range" id="osc_a_position" min="0" max="1" step="0.01" value="0" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Pos</div>
+        </div>
+
+        <div class="positioned-control" style="left: 75px; top: 90px;">
+          <input type="range" id="osc_a_level" min="0" max="1" step="0.01" value="1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Lvl</div>
+        </div>
+
+        <div class="positioned-control" style="left: 140px; top: 90px;">
+          <input type="range" id="osc_a_pan" min="0" max="1" step="0.01" value="0.5" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Pan</div>
+        </div>
+
+        <div style="position: absolute; left: 10px; top: 160px; display: flex; gap: 10px;">
+          <div>
+            <select id="osc_a_octave">
+              <option>-4</option><option>-3</option><option>-2</option><option>-1</option>
+              <option selected>0</option>
+              <option>+1</option><option>+2</option><option>+3</option><option>+4</option>
+            </select>
+            <div class="control-label">Oct</div>
+          </div>
+        </div>
+
+        <div style="position: absolute; left: 200px; top: 90px;">
+          <select id="osc_a_warp_mode">
+            <option>Sync</option>
+            <option>Bend+</option>
+            <option>FM</option>
+            <option>AM</option>
+            <option>PWM</option>
+          </select>
+          <div class="control-label">Warp Mode</div>
+        </div>
+      </div>
+
+      <!-- OSCILLATOR B -->
+      <div class="section osc-section osc-b">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">OSCILLATOR B</div>
+
+        <!-- Wavetable display -->
+        <canvas id="osc_b_waveform_display" width="140" height="80" style="position: absolute; left: 180px; top: 10px;"></canvas>
+
+        <div style="position: absolute; left: 10px; top: 25px;">
+          <select id="osc_b_wavetable">
+            <option>Basic</option>
+            <option>Analog</option>
+            <option>Digital</option>
+            <option>Vocal</option>
+          </select>
+        </div>
+
+        <div class="positioned-control" style="left: 10px; top: 90px;">
+          <input type="range" id="osc_b_position" min="0" max="1" step="0.01" value="0" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Pos</div>
+        </div>
+
+        <div class="positioned-control" style="left: 75px; top: 90px;">
+          <input type="range" id="osc_b_level" min="0" max="1" step="0.01" value="1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Lvl</div>
+        </div>
+
+        <div class="positioned-control" style="left: 140px; top: 90px;">
+          <input type="range" id="osc_b_pan" min="0" max="1" step="0.01" value="0.5" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Pan</div>
+        </div>
+
+        <div style="position: absolute; left: 200px; top: 90px;">
+          <select id="osc_b_warp_mode">
+            <option>Sync</option>
+            <option>Bend+</option>
+            <option>FM</option>
+            <option>AM</option>
+            <option>PWM</option>
+          </select>
+          <div class="control-label">Warp Mode</div>
+        </div>
+      </div>
+
+      <!-- SUB + NOISE -->
+      <div class="section sub-noise">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">SUB + NOISE</div>
+
+        <div style="position: absolute; left: 10px; top: 25px;">
+          <select id="sub_shape">
+            <option>Sine</option>
+            <option>Triangle</option>
+            <option>Square</option>
+          </select>
+          <div class="control-label">Shape</div>
+        </div>
+
+        <div style="position: absolute; left: 105px; top: 25px;">
+          <select id="noise_type">
+            <option>White</option>
+            <option>Pink</option>
+            <option>Digital</option>
+          </select>
+          <div class="control-label">Type</div>
+        </div>
+      </div>
+
+      <!-- FILTER -->
+      <div class="section filter-section">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">FILTER</div>
+
+        <!-- Filter curve display -->
+        <canvas id="filter_curve_display" width="50" height="90" style="position: absolute; left: 220px; top: 30px;"></canvas>
+
+        <div style="position: absolute; left: 10px; top: 25px;">
+          <select id="filter_type">
+            <option>LP 24dB</option>
+            <option>LP 12dB</option>
+            <option>HP 24dB</option>
+            <option>BP 12dB</option>
+            <option>Notch</option>
+          </select>
+          <div class="control-label">Filter Type</div>
+        </div>
+
+        <div class="positioned-control" style="left: 20px; top: 70px;">
+          <input type="range" id="filter_cutoff" min="0" max="1" step="0.01" value="1" style="width: 70px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Cutoff</div>
+        </div>
+
+        <div class="positioned-control" style="left: 110px; top: 85px;">
+          <input type="range" id="filter_resonance" min="0" max="1" step="0.01" value="0" style="width: 40px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Res</div>
+        </div>
+
+        <div class="positioned-control" style="left: 165px; top: 85px;">
+          <input type="range" id="filter_drive" min="0" max="1" step="0.01" value="0" style="width: 40px; transform: rotate(-90deg); transform-origin: center;">
+          <div class="control-label">Drive</div>
+        </div>
+      </div>
+
+      <!-- AMP ENVELOPE -->
+      <div class="section amp-env">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">AMP ENVELOPE</div>
+
+        <!-- ADSR curve display -->
+        <canvas id="amp_adsr_display" width="310" height="80" style="position: absolute; left: 10px; top: 20px;"></canvas>
+
+        <div style="position: absolute; left: 20px; top: 110px; display: flex; gap: 15px;">
+          <div>
+            <input type="range" id="amp_attack" min="0" max="1" step="0.01" value="0.01" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Attack</div>
+          </div>
+          <div>
+            <input type="range" id="amp_decay" min="0" max="1" step="0.01" value="0.1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Decay</div>
+          </div>
+          <div>
+            <input type="range" id="amp_sustain" min="0" max="1" step="0.01" value="1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Sustain</div>
+          </div>
+          <div>
+            <input type="range" id="amp_release" min="0" max="1" step="0.01" value="0.2" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Release</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER ENVELOPE -->
+      <div class="section filt-env">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">FILTER ENVELOPE</div>
+
+        <!-- ADSR curve display -->
+        <canvas id="filt_adsr_display" width="310" height="80" style="position: absolute; left: 10px; top: 20px;"></canvas>
+
+        <div style="position: absolute; left: 20px; top: 110px; display: flex; gap: 15px;">
+          <div>
+            <input type="range" id="filt_attack" min="0" max="1" step="0.01" value="0.01" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Attack</div>
+          </div>
+          <div>
+            <input type="range" id="filt_decay" min="0" max="1" step="0.01" value="0.1" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Decay</div>
+          </div>
+          <div>
+            <input type="range" id="filt_sustain" min="0" max="1" step="0.01" value="0.5" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Sustain</div>
+          </div>
+          <div>
+            <input type="range" id="filt_release" min="0" max="1" step="0.01" value="0.2" style="width: 50px; transform: rotate(-90deg); transform-origin: center;">
+            <div class="control-label">Release</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LFOs -->
+      <div class="section lfo-section">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">LFOS</div>
+
+        <div style="display: flex; gap: 20px; padding: 10px;">
+          <!-- LFO 1 -->
+          <div>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <select id="lfo1_shape">
+                <option>Sine</option>
+                <option>Triangle</option>
+                <option>Saw</option>
+                <option>Square</option>
+                <option>S&H</option>
+              </select>
+              <canvas id="lfo1_waveform_preview" width="50" height="30"></canvas>
+            </div>
+            <div class="control-label">LFO1</div>
+          </div>
+
+          <!-- LFO 2 -->
+          <div>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <select id="lfo2_shape">
+                <option>Sine</option>
+                <option>Triangle</option>
+                <option>Saw</option>
+                <option>Square</option>
+                <option>S&H</option>
+              </select>
+              <canvas id="lfo2_waveform_preview" width="50" height="30"></canvas>
+            </div>
+            <div class="control-label">LFO2</div>
+          </div>
+
+          <!-- LFO 3 -->
+          <div>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <select id="lfo3_shape">
+                <option>Sine</option>
+                <option>Triangle</option>
+                <option>Saw</option>
+                <option>Square</option>
+                <option>S&H</option>
+              </select>
+              <canvas id="lfo3_waveform_preview" width="50" height="30"></canvas>
+            </div>
+            <div class="control-label">LFO3</div>
+          </div>
+
+          <!-- LFO 4 -->
+          <div>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <select id="lfo4_shape">
+                <option>Sine</option>
+                <option>Triangle</option>
+                <option>Saw</option>
+                <option>Square</option>
+                <option>S&H</option>
+              </select>
+              <canvas id="lfo4_waveform_preview" width="50" height="30"></canvas>
+            </div>
+            <div class="control-label">LFO4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EFFECTS BAR -->
+      <div class="section effects-bar">
+        <div class="section-label" style="top: -8px; left: 10px; background: #1a1a1a; padding: 0 5px;">EFFECTS</div>
+
+        <div style="display: flex; gap: 30px; padding: 20px; justify-content: space-around;">
+          <div><input type="range" id="fx_distortion_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Dist</div></div>
+          <div><input type="range" id="fx_chorus_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Chorus</div></div>
+          <div><input type="range" id="fx_phaser_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Phaser</div></div>
+          <div><input type="range" id="fx_flanger_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Flanger</div></div>
+          <div><input type="range" id="fx_delay_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Delay</div></div>
+          <div><input type="range" id="fx_reverb_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Reverb</div></div>
+          <div><input type="range" id="fx_eq_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">EQ</div></div>
+          <div><input type="range" id="fx_compressor_mix" min="0" max="1" step="0.01" value="0" style="width: 30px; transform: rotate(-90deg);"><div class="control-label">Comp</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Debug monitor -->
+  <div class="debug-monitor">
+    <div class="debug-label">PARAMETER MONITOR</div>
+    <div class="debug-param" id="debugParam">—</div>
+    <div class="debug-value" id="debugValue">—</div>
+    <div class="debug-normalized" id="debugNormalized">—</div>
+  </div>
+
+  <script>
+    // Mock JUCE backend for browser testing
+    window.Juce = {
+      getSliderState: (id) => ({
+        normalisedValue: 0.5,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getToggleState: (id) => ({
+        value: false,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getComboBoxState: (id) => ({
+        selectedId: 0,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      })
+    };
+
+    // Disable context menu (REQUIRED)
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      return false;
+    });
+
+    // Update debug monitor
+    function updateDebugMonitor(paramId, value, normalizedValue) {
+      document.getElementById('debugParam').textContent = paramId;
+      document.getElementById('debugValue').textContent = value.toFixed(2);
+      document.getElementById('debugNormalized').textContent = `${(normalizedValue * 100).toFixed(1)}%`;
+    }
+
+    // ===== WAVETABLE VISUALIZATION =====
+    function drawWaveform(canvas, type, phase) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Grid lines (subtle)
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, h/2);
+      ctx.lineTo(w, h/2);
+      ctx.stroke();
+
+      // Waveform
+      const color = canvas.id.includes('osc_a') ? '#4ecdc4' : '#ff8c42';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+
+      for (let x = 0; x < w; x++) {
+        const t = (x / w) * Math.PI * 4 + phase;
+        let y;
+
+        if (type === 'Basic') y = Math.sin(t);
+        else if (type === 'Analog') y = Math.sin(t) + Math.sin(t * 2) * 0.3;
+        else if (type === 'Digital') y = Math.sin(t) > 0 ? 1 : -1;
+        else if (type === 'Vocal') y = Math.sin(t) * Math.sin(t * 3) * 0.7;
+        else y = Math.sin(t);
+
+        const screenY = (1 - y) * h / 2 * 0.8 + h * 0.1;
+        if (x === 0) ctx.moveTo(x, screenY);
+        else ctx.lineTo(x, screenY);
+      }
+      ctx.stroke();
+    }
+
+    // ===== ADSR VISUALIZATION =====
+    function drawADSR(canvas, a, d, s, r) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Grid
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, h * i / 4);
+        ctx.lineTo(w, h * i / 4);
+        ctx.stroke();
+      }
+
+      // Calculate points
+      const attackEnd = w * 0.25 * a;
+      const decayEnd = attackEnd + w * 0.25 * d;
+      const sustainLevel = h * (1 - s * 0.8) + h * 0.1;
+      const sustainEnd = w * 0.7;
+      const releaseEnd = sustainEnd + w * 0.3 * r;
+
+      // Draw curve
+      const color = canvas.id.includes('amp') ? '#4ecdc4' : '#ff8c42';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+
+      ctx.beginPath();
+      ctx.moveTo(0, h - 5);
+      ctx.lineTo(attackEnd, h * 0.1); // Attack peak
+      ctx.lineTo(decayEnd, sustainLevel); // Decay to sustain
+      ctx.lineTo(sustainEnd, sustainLevel); // Sustain hold
+      ctx.lineTo(releaseEnd, h - 5); // Release
+      ctx.stroke();
+
+      // Draw points
+      ctx.fillStyle = '#ff8c42';
+      [[attackEnd, h*0.1], [decayEnd, sustainLevel], [sustainEnd, sustainLevel]].forEach(([x,y]) => {
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // ===== FILTER CURVE VISUALIZATION =====
+    function drawFilterCurve(canvas, cutoff, resonance, type) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      const color = '#ff8c42';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6;
+
+      ctx.beginPath();
+      const cutoffX = cutoff * w * 0.8 + w * 0.1;
+
+      if (type.startsWith('LP')) {
+        ctx.moveTo(0, h * 0.2);
+        ctx.lineTo(cutoffX - 10, h * 0.2);
+        ctx.quadraticCurveTo(cutoffX, h * 0.2 - resonance * h * 0.3, cutoffX + 5, h * 0.5);
+        ctx.lineTo(w, h - 5);
+      } else if (type.startsWith('HP')) {
+        ctx.moveTo(0, h - 5);
+        ctx.lineTo(cutoffX - 5, h * 0.5);
+        ctx.quadraticCurveTo(cutoffX, h * 0.2 - resonance * h * 0.3, cutoffX + 10, h * 0.2);
+        ctx.lineTo(w, h * 0.2);
+      } else if (type.startsWith('BP')) {
+        ctx.moveTo(0, h - 5);
+        ctx.lineTo(cutoffX - 10, h * 0.5);
+        ctx.quadraticCurveTo(cutoffX, h * 0.2 - resonance * h * 0.3, cutoffX + 10, h * 0.5);
+        ctx.lineTo(w, h - 5);
+      }
+      ctx.stroke();
+    }
+
+    // ===== LFO SHAPE VISUALIZATION =====
+    function drawLFOShape(canvas, shape) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = '#4ecdc4';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#4ecdc4';
+      ctx.shadowBlur = 4;
+      ctx.beginPath();
+
+      for (let x = 0; x < w; x++) {
+        const t = (x / w) * Math.PI * 2;
+        let y;
+
+        if (shape === 'Sine') y = Math.sin(t);
+        else if (shape === 'Triangle') y = Math.abs(((t % (Math.PI*2)) / Math.PI) - 1) * 2 - 1;
+        else if (shape === 'Saw') y = ((t % (Math.PI*2)) / Math.PI) - 1;
+        else if (shape === 'Square') y = Math.sin(t) > 0 ? 1 : -1;
+        else if (shape === 'S&H') y = Math.random() * 2 - 1;
+        else y = Math.sin(t);
+
+        const screenY = (1 - y) * h / 2 * 0.8 + h * 0.1;
+        if (x === 0) ctx.moveTo(x, screenY);
+        else ctx.lineTo(x, screenY);
+      }
+      ctx.stroke();
+    }
+
+    // ===== ANIMATION LOOP =====
+    let phase = 0;
+    function animate() {
+      phase += 0.02;
+
+      // Update wavetables
+      const oscAType = document.getElementById('osc_a_wavetable').value;
+      const oscBType = document.getElementById('osc_b_wavetable').value;
+      drawWaveform(document.getElementById('osc_a_waveform_display'), oscAType, phase);
+      drawWaveform(document.getElementById('osc_b_waveform_display'), oscBType, phase);
+
+      requestAnimationFrame(animate);
+    }
+
+    // ===== INITIALIZE =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // Start animation
+      animate();
+
+      // Initialize ADSR displays
+      drawADSR(document.getElementById('amp_adsr_display'), 0.01, 0.1, 1.0, 0.2);
+      drawADSR(document.getElementById('filt_adsr_display'), 0.01, 0.1, 0.5, 0.2);
+
+      // Initialize filter curve
+      drawFilterCurve(document.getElementById('filter_curve_display'), 1.0, 0, 'LP 24dB');
+
+      // Initialize LFO shapes
+      drawLFOShape(document.getElementById('lfo1_waveform_preview'), 'Sine');
+      drawLFOShape(document.getElementById('lfo2_waveform_preview'), 'Sine');
+      drawLFOShape(document.getElementById('lfo3_waveform_preview'), 'Sine');
+      drawLFOShape(document.getElementById('lfo4_waveform_preview'), 'Sine');
+
+      // ===== PARAMETER BINDINGS =====
+      // AMP ADSR
+      ['amp_attack', 'amp_decay', 'amp_sustain', 'amp_release'].forEach(id => {
+        document.getElementById(id).addEventListener('input', (e) => {
+          const a = parseFloat(document.getElementById('amp_attack').value);
+          const d = parseFloat(document.getElementById('amp_decay').value);
+          const s = parseFloat(document.getElementById('amp_sustain').value);
+          const r = parseFloat(document.getElementById('amp_release').value);
+          drawADSR(document.getElementById('amp_adsr_display'), a, d, s, r);
+          updateDebugMonitor(id, e.target.value, e.target.value);
+        });
+      });
+
+      // FILTER ADSR
+      ['filt_attack', 'filt_decay', 'filt_sustain', 'filt_release'].forEach(id => {
+        document.getElementById(id).addEventListener('input', (e) => {
+          const a = parseFloat(document.getElementById('filt_attack').value);
+          const d = parseFloat(document.getElementById('filt_decay').value);
+          const s = parseFloat(document.getElementById('filt_sustain').value);
+          const r = parseFloat(document.getElementById('filt_release').value);
+          drawADSR(document.getElementById('filt_adsr_display'), a, d, s, r);
+          updateDebugMonitor(id, e.target.value, e.target.value);
+        });
+      });
+
+      // Filter curve
+      ['filter_cutoff', 'filter_resonance'].forEach(id => {
+        document.getElementById(id).addEventListener('input', (e) => {
+          const cutoff = parseFloat(document.getElementById('filter_cutoff').value);
+          const res = parseFloat(document.getElementById('filter_resonance').value);
+          const type = document.getElementById('filter_type').value;
+          drawFilterCurve(document.getElementById('filter_curve_display'), cutoff, res, type);
+          updateDebugMonitor(id, e.target.value, e.target.value);
+        });
+      });
+
+      document.getElementById('filter_type').addEventListener('change', (e) => {
+        const cutoff = parseFloat(document.getElementById('filter_cutoff').value);
+        const res = parseFloat(document.getElementById('filter_resonance').value);
+        drawFilterCurve(document.getElementById('filter_curve_display'), cutoff, res, e.target.value);
+        updateDebugMonitor('filter_type', e.target.value, 0);
+      });
+
+      // LFO shapes
+      ['lfo1_shape', 'lfo2_shape', 'lfo3_shape', 'lfo4_shape'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+          const canvasId = id.replace('_shape', '_waveform_preview');
+          drawLFOShape(document.getElementById(canvasId), e.target.value);
+          updateDebugMonitor(id, e.target.value, 0);
+        });
+      });
+
+      console.log('Codox v6 UI initialized with visualizations');
+    });
+  </script>
+</body>
+</html>
