@@ -1,0 +1,56 @@
+# ============================================================================
+# Codox - WebView UI Configuration (v6)
+# ============================================================================
+# APPEND this snippet to plugins/Codox/CMakeLists.txt during Stage 3 integration
+#
+# CRITICAL: This configuration is required for WebView functionality
+# - Adds juce_gui_extra module (contains WebBrowserComponent)
+# - Defines JUCE_WEB_BROWSER=1 (enables WebView features)
+# - Bundles UI resources (HTML, JavaScript) as binary data
+# ============================================================================
+
+# WebView UI Resources (HTML + JavaScript)
+juce_add_binary_data(${PRODUCT_NAME}_UIResources
+    SOURCES
+        Source/ui/public/index.html
+        Source/ui/public/js/juce/index.js
+        # Add any additional CSS, images, fonts here
+)
+
+# Link UI resources to plugin target
+target_link_libraries(${PRODUCT_NAME}
+    PRIVATE
+        ${PRODUCT_NAME}_UIResources
+        juce::juce_gui_extra  # REQUIRED: WebBrowserComponent lives here
+)
+
+# Enable WebView and configure options
+target_compile_definitions(${PRODUCT_NAME}
+    PUBLIC
+        JUCE_WEB_BROWSER=1              # Enable WebBrowserComponent
+        JUCE_USE_CURL=0                 # Disable CURL (not needed for local resources)
+        JUCE_CATCH_UNHANDLED_EXCEPTIONS=1  # Enable exception catching
+)
+
+# ============================================================================
+# NOTES:
+#
+# 1. Resource Provider:
+#    PluginEditor.cpp serves files from _binary_*_start pointers
+#    MIME types must be correct (especially "application/javascript" for .js)
+#
+# 2. Window Dimensions:
+#    Editor window is 1200x800 pixels (from v6-ui.yaml)
+#    WebView fills entire editor bounds
+#
+# 3. Binary Data:
+#    juce_add_binary_data generates C symbols:
+#    - _binary_index_html_start / _binary_index_html_size
+#    - _binary_index_js_start / _binary_index_js_size
+#
+# 4. Platform-Specific:
+#    - macOS: Uses WKWebView (built-in)
+#    - Windows: Uses WebView2 (requires Edge WebView2 Runtime)
+#    - Linux: Uses WebKitGTK (install libwebkit2gtk-4.0-dev)
+#
+# ============================================================================

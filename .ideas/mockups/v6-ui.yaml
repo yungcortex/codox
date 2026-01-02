@@ -1,3 +1,7 @@
+finalized: true
+version: 6
+date_finalized: 2026-01-01
+
 window:
   width: 1200
   height: 800
