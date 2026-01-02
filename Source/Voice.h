@@ -86,7 +86,7 @@ public:
         oscB_pan = pan / 100.0f;
     }
 
-    // Generate next audio sample (wavetable oscillators with mixing and panning)
+    // Generate next audio sample (mono - for backward compatibility)
     float getNextSample()
     {
         if (!isActive)
@@ -96,8 +96,7 @@ public:
         float sampleA = oscA.getNextSample() * oscA_level;
         float sampleB = oscB.getNextSample() * oscB_level;
 
-        // Mix oscillators (stereo panning applied later, for now sum to mono)
-        // TODO Phase 3.2d: Apply constant-power panning
+        // Mix oscillators (mono sum)
         float mixedSample = sampleA + sampleB;
 
         // Apply velocity
@@ -112,6 +111,54 @@ public:
             isActive = false;
 
         return mixedSample;
+    }
+
+    // Generate next stereo sample pair (Phase 3.2d - constant-power panning)
+    void getNextSampleStereo(float& leftOut, float& rightOut)
+    {
+        if (!isActive)
+        {
+            leftOut = 0.0f;
+            rightOut = 0.0f;
+            return;
+        }
+
+        // Generate samples from both oscillators
+        float sampleA = oscA.getNextSample() * oscA_level;
+        float sampleB = oscB.getNextSample() * oscB_level;
+
+        // Constant-power panning for Osc A
+        // Convert pan from -1..1 to 0..1 range
+        float panA = (oscA_pan + 1.0f) * 0.5f;
+        // Apply constant-power law using cos/sin (maintains perceived loudness)
+        float gainL_A = std::cos(panA * juce::MathConstants<float>::halfPi);
+        float gainR_A = std::sin(panA * juce::MathConstants<float>::halfPi);
+
+        // Constant-power panning for Osc B
+        float panB = (oscB_pan + 1.0f) * 0.5f;
+        float gainL_B = std::cos(panB * juce::MathConstants<float>::halfPi);
+        float gainR_B = std::sin(panB * juce::MathConstants<float>::halfPi);
+
+        // Mix oscillators with panning applied
+        float leftMix = (sampleA * gainL_A) + (sampleB * gainL_B);
+        float rightMix = (sampleA * gainR_A) + (sampleB * gainR_B);
+
+        // Apply velocity
+        leftMix *= velocity;
+        rightMix *= velocity;
+
+        // Apply amp envelope
+        float envValue = ampEnvelope.getNextSample();
+        leftMix *= envValue;
+        rightMix *= envValue;
+
+        // Check if envelope finished
+        if (inRelease && envValue < 0.0001f)
+            isActive = false;
+
+        // Output stereo samples
+        leftOut = leftMix;
+        rightOut = rightMix;
     }
 
     // Update envelope parameters

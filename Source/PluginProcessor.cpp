@@ -719,30 +719,45 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         }
     }
 
-    // Generate audio from all active voices
+    // Generate audio from all active voices (Phase 3.2d - stereo with constant-power panning)
     const int numSamples = buffer.getNumSamples();
     const int numChannels = buffer.getNumChannels();
 
+    // Read master volume parameter
+    auto* masterVolumeParam = parameters.getRawParameterValue("master_volume");
+    float masterVolumeDB = masterVolumeParam->load();
+    float masterVolumeLinear = juce::Decibels::decibelsToGain(masterVolumeDB);
+
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        float mixedSample = 0.0f;
+        float leftMix = 0.0f;
+        float rightMix = 0.0f;
 
-        // Sum all active voices
+        // Sum all active voices (stereo)
         for (auto& voice : voices)
         {
             if (voice.isPlaying())
-                mixedSample += voice.getNextSample();
+            {
+                float voiceLeft, voiceRight;
+                voice.getNextSampleStereo(voiceLeft, voiceRight);
+                leftMix += voiceLeft;
+                rightMix += voiceRight;
+            }
         }
 
         // Apply master volume
-        auto* masterVolumeParam = parameters.getRawParameterValue("master_volume");
-        float masterVolumeDB = masterVolumeParam->load();
-        float masterVolumeLinear = juce::Decibels::decibelsToGain(masterVolumeDB);
-        mixedSample *= masterVolumeLinear;
+        leftMix *= masterVolumeLinear;
+        rightMix *= masterVolumeLinear;
 
-        // Write to all output channels (stereo)
-        for (int channel = 0; channel < numChannels; ++channel)
-            buffer.setSample(channel, sample, mixedSample);
+        // Write to output channels
+        if (numChannels >= 1)
+            buffer.setSample(0, sample, leftMix);
+        if (numChannels >= 2)
+            buffer.setSample(1, sample, rightMix);
+
+        // If more than 2 channels, copy left to extra channels
+        for (int channel = 2; channel < numChannels; ++channel)
+            buffer.setSample(channel, sample, leftMix);
     }
 }
 
