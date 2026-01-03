@@ -103,6 +103,19 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
             loadPresetFromFile();
             completion({});
         })
+        // v2.1: Modulation matrix route setting
+        .withNativeFunction("setModRoute", [this](const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion completion) {
+            if (args.size() >= 3) {
+                int sourceId = static_cast<int>(args[0]);
+                juce::String destParamId = args[1].toString();
+                float depth = static_cast<float>(args[2]);
+
+                // Add route to modulation matrix
+                auto source = static_cast<ModSource>(sourceId);
+                audioProcessor.modMatrix.addRoute(source, destParamId, depth, true); // bipolar by default
+            }
+            completion({});
+        })
         .withOptionsFrom(masterVolumeRelay)
         .withOptionsFrom(oscAWavetableRelay)
         .withOptionsFrom(oscAPositionRelay)

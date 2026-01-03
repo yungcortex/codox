@@ -5,6 +5,7 @@
 #include "Voice.h"
 #include "EffectsChain.h"
 #include "LFO.h"
+#include "ModulationMatrix.h"
 
 class CodoxAudioProcessor : public juce::AudioProcessor
 {
@@ -36,6 +37,12 @@ public:
 
     juce::AudioProcessorValueTreeState parameters;
 
+    // Modulation matrix - public for WebView access
+    ModulationMatrix modMatrix;
+
+    // Get modulated parameter value (applies all active modulations)
+    float getModulatedParam(const juce::String& paramId);
+
 private:
     // Parameter layout creation
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
@@ -58,6 +65,12 @@ private:
     // Phase 3.6: Glide/Portamento state
     float glideTime = 0.0f; // Current glide time parameter (0-10 seconds)
     int lastMidiNote = -1; // Last triggered MIDI note (for glide transitions)
+
+    // v2.1: MIDI state for modulation sources
+    float currentModWheel = 0.0f;      // CC1 (0-1)
+    float currentPitchBend = 0.0f;     // -1 to +1
+    float currentAftertouch = 0.0f;    // 0-1
+    float currentVelocity = 0.0f;      // Last note velocity (0-1)
 
     // Helper methods
     void allocateVoice(int midiNote, float velocity, double sampleRate, float glideTime = 0.0f);

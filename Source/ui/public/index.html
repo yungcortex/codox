@@ -343,6 +343,110 @@ body {
   text-align: center;
 }
 
+/* ===== MODULATION RING (Serum-style) ===== */
+.knob-mod-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.knob.has-mod .knob-mod-ring {
+  opacity: 1;
+}
+
+/* SVG ring for modulation depth visualization */
+.mod-ring-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mod-ring-arc {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--blue));
+}
+
+/* Modulation indicator dot */
+.knob-mod-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--blue);
+  border-radius: 50%;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px var(--blue);
+  display: none;
+}
+
+.knob.has-mod .knob-mod-dot {
+  display: block;
+}
+
+/* Drag target highlight */
+.knob.mod-drag-target {
+  outline: 2px dashed var(--blue);
+  outline-offset: 4px;
+}
+
+.knob.mod-drag-target .knob-bg {
+  border-color: var(--blue);
+}
+
+/* Mod source drag indicator */
+.mod-source-dragging {
+  opacity: 0.5;
+}
+
+/* LFO/Env drag handles */
+.mod-source-handle {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 8px;
+  background: var(--blue);
+  border-radius: 4px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.module:hover .mod-source-handle {
+  opacity: 0.6;
+}
+
+.mod-source-handle:hover {
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1.2);
+}
+
+.mod-source-handle:active {
+  cursor: grabbing;
+}
+
+/* Modulation drag ghost */
+#mod-drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  background: var(--blue);
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  display: none;
+}
+
 /* ===== SELECTS ===== */
 select {
   background: var(--bg-input);
@@ -1449,10 +1553,82 @@ function initFX() {
 }
 
 // Matrix (Modulation)
+// Source name to C++ ModSource enum mapping
+const modSourceMap = {
+  'LFO 1': 0, 'LFO 2': 1, 'LFO 3': 2, 'LFO 4': 3,
+  'Env 1': 4, 'Env 2': 5, 'Vel': 6, 'Note': 8,
+  'Macro 1': 11, 'Macro 2': 12, 'Macro 3': 13, 'Macro 4': 14
+};
+
+// Destination name to parameter ID mapping
+const modDestMap = {
+  'Filter Cutoff': 'filter_cutoff',
+  'Filter Res': 'filter_resonance',
+  'OSC A Pos': 'osc_a_position',
+  'OSC B Pos': 'osc_b_position',
+  'OSC A Level': 'osc_a_level',
+  'OSC B Level': 'osc_b_level',
+  'Pan': 'osc_a_pan',
+  'Volume': 'master_volume',
+  'OSC A Warp': 'osc_a_warp_amount',
+  'OSC B Warp': 'osc_b_warp_amount',
+  'Sub Level': 'sub_level',
+  'Noise Level': 'noise_level'
+};
+
+// Send modulation route to C++
+function sendModRoute(source, dest, amount, bypass) {
+  if (window.__JUCE__ && window.__JUCE__.backend) {
+    const sourceId = modSourceMap[source] ?? 0;
+    const destParam = modDestMap[dest] ?? 'filter_cutoff';
+    const depth = bypass ? 0 : (amount - 0.5) * 2; // Convert 0-1 to -1 to +1
+    window.__JUCE__.backend.setModRoute(sourceId, destParam, depth);
+  }
+}
+
+// Collect and send all routes
+function syncAllModRoutes() {
+  const rows = document.querySelectorAll('.mod-row:not(.mod-header-row)');
+  rows.forEach((row, index) => {
+    const sourceSelect = row.querySelector('.mod-source-cell select');
+    const destSelect = row.querySelector('.mod-dest-cell select');
+    const knob = row.querySelector('.knob');
+    const bypass = row.querySelector('.mod-bypass');
+
+    if (sourceSelect && destSelect && knob) {
+      const source = sourceSelect.value;
+      const dest = destSelect.value;
+      const amount = getKnobValue(knob);
+      const isBypassed = bypass && !bypass.classList.contains('active');
+      sendModRoute(source, dest, amount, isBypassed);
+    }
+  });
+}
+
+function getKnobValue(knob) {
+  const ptr = knob.querySelector('.knob-pointer');
+  if (!ptr) return 0.5;
+  const transform = ptr.style.transform || '';
+  const match = transform.match(/rotate\((-?\d+(?:\.\d+)?)deg\)/);
+  if (match) {
+    const deg = parseFloat(match[1]);
+    return (deg + 135) / 270; // Convert -135 to +135 to 0-1
+  }
+  return 0.5;
+}
+
 function initMatrix() {
   // Bypass toggles
   document.querySelectorAll('.mod-bypass').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('active');
+      syncAllModRoutes();
+    });
+  });
+
+  // Source/dest select change handlers
+  document.querySelectorAll('.mod-row:not(.mod-header-row) select').forEach(sel => {
+    sel.addEventListener('change', () => syncAllModRoutes());
   });
 
   // Matrix row drag and drop
@@ -1505,19 +1681,29 @@ function initMatrix() {
       `;
       grid.appendChild(newRow);
 
-      // Add bypass listener to new row
+      // Add listeners to new row
       newRow.querySelector('.mod-bypass').addEventListener('click', e => {
         e.target.classList.toggle('active');
+        syncAllModRoutes();
       });
 
-      // Add drag listeners
+      newRow.querySelectorAll('select').forEach(sel => {
+        sel.addEventListener('change', () => syncAllModRoutes());
+      });
+
       newRow.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text', '');
         newRow.classList.add('dragging');
       });
       newRow.addEventListener('dragend', () => newRow.classList.remove('dragging'));
+
+      // Sync after adding new route
+      syncAllModRoutes();
     });
   }
+
+  // Initial sync after JUCE connection
+  setTimeout(syncAllModRoutes, 1000);
 }
 
 // Presets

@@ -1247,14 +1247,44 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         {
             int note = message.getNoteNumber();
             float velocity = message.getVelocity() / 127.0f;
+            currentVelocity = velocity; // Store for modulation
             allocateVoice(note, velocity, getSampleRate(), glideTimeSeconds);
+
+            // Update Note modulation source (normalized 0-1 across MIDI range)
+            modMatrix.setSourceValue(ModSource::Note, note / 127.0f);
         }
         else if (message.isNoteOff())
         {
             int note = message.getNoteNumber();
             releaseVoice(note);
         }
+        else if (message.isController())
+        {
+            int cc = message.getControllerNumber();
+            float value = message.getControllerValue() / 127.0f;
+
+            if (cc == 1) // Mod Wheel
+            {
+                currentModWheel = value;
+                modMatrix.setSourceValue(ModSource::ModWheel, value);
+            }
+        }
+        else if (message.isPitchWheel())
+        {
+            // Pitch bend: 0-16383, center at 8192
+            int bendValue = message.getPitchWheelValue();
+            currentPitchBend = (bendValue - 8192) / 8192.0f; // -1 to +1
+            modMatrix.setSourceValue(ModSource::PitchBend, currentPitchBend);
+        }
+        else if (message.isChannelPressure())
+        {
+            currentAftertouch = message.getChannelPressureValue() / 127.0f;
+            modMatrix.setSourceValue(ModSource::Aftertouch, currentAftertouch);
+        }
     }
+
+    // Update velocity modulation source (persists until next note)
+    modMatrix.setSourceValue(ModSource::Velocity, currentVelocity);
 
     // Generate audio from all active voices (Phase 3.2d - stereo with constant-power panning)
     const int numSamples = buffer.getNumSamples();
@@ -1265,8 +1295,60 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     float masterVolumeDB = masterVolumeParam->load();
     float masterVolumeLinear = juce::Decibels::decibelsToGain(masterVolumeDB);
 
+    // Read macro values for modulation sources (outside sample loop for efficiency)
+    auto* macro1Param = parameters.getRawParameterValue("macro1");
+    auto* macro2Param = parameters.getRawParameterValue("macro2");
+    auto* macro3Param = parameters.getRawParameterValue("macro3");
+    auto* macro4Param = parameters.getRawParameterValue("macro4");
+    auto* macro5Param = parameters.getRawParameterValue("macro5");
+    auto* macro6Param = parameters.getRawParameterValue("macro6");
+    auto* macro7Param = parameters.getRawParameterValue("macro7");
+    auto* macro8Param = parameters.getRawParameterValue("macro8");
+
+    // Update macro modulation sources (0-100% -> 0-1)
+    modMatrix.setSourceValue(ModSource::Macro1, macro1Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro2, macro2Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro3, macro3Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro4, macro4Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro5, macro5Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro6, macro6Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro7, macro7Param->load() / 100.0f);
+    modMatrix.setSourceValue(ModSource::Macro8, macro8Param->load() / 100.0f);
+
     for (int sample = 0; sample < numSamples; ++sample)
     {
+        // v2.1: Update LFO modulation sources (LFOs output -1 to +1)
+        float lfo1Val = lfo1.getNextSample();
+        float lfo2Val = lfo2.getNextSample();
+        float lfo3Val = lfo3.getNextSample();
+        float lfo4Val = lfo4.getNextSample();
+
+        modMatrix.setSourceValue(ModSource::LFO1, lfo1Val);
+        modMatrix.setSourceValue(ModSource::LFO2, lfo2Val);
+        modMatrix.setSourceValue(ModSource::LFO3, lfo3Val);
+        modMatrix.setSourceValue(ModSource::LFO4, lfo4Val);
+
+        // v2.1: Get modulated filter cutoff (if modulation is assigned)
+        float modulatedCutoff = modMatrix.hasModulation("filter_cutoff")
+            ? getModulatedParam("filter_cutoff")
+            : filter_cutoff->load();
+
+        // Update filter with modulated cutoff for all voices
+        for (auto& voice : voices)
+        {
+            if (voice->isPlaying())
+            {
+                voice->updateFilter(
+                    static_cast<int>(filter_type->load()),
+                    modulatedCutoff,  // Use modulated value
+                    filter_resonance->load(),
+                    filter_drive->load(),
+                    filter_env_depth->load(),
+                    filter_keytrack->load()
+                );
+            }
+        }
+
         float leftMix = 0.0f;
         float rightMix = 0.0f;
 
@@ -1298,13 +1380,6 @@ void CodoxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         // If more than 2 channels, copy left to extra channels
         for (int channel = 2; channel < numChannels; ++channel)
             buffer.setSample(channel, sample, leftMix);
-
-        // Phase 3.6: Generate LFO samples (NOTE: v1.0 has NO routing - LFOs run but don't modulate)
-        // This advances LFO phase for each sample, keeping LFOs in sync with audio rate
-        lfo1.getNextSample();
-        lfo2.getNextSample();
-        lfo3.getNextSample();
-        lfo4.getNextSample();
     }
 }
 
@@ -1336,6 +1411,19 @@ void CodoxAudioProcessor::releaseVoice(int midiNote)
     }
 }
 
+// Get modulated parameter value (applies all active modulations)
+float CodoxAudioProcessor::getModulatedParam(const juce::String& paramId)
+{
+    auto* param = parameters.getParameter(paramId);
+    if (!param)
+        return 0.0f;
+
+    float baseValue = parameters.getRawParameterValue(paramId)->load();
+    auto range = param->getNormalisableRange();
+
+    return modMatrix.getModulatedValue(paramId, baseValue, range.start, range.end);
+}
+
 juce::AudioProcessorEditor* CodoxAudioProcessor::createEditor()
 {
     return new CodoxAudioProcessorEditor(*this);
@@ -1344,6 +1432,10 @@ juce::AudioProcessorEditor* CodoxAudioProcessor::createEditor()
 void CodoxAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
+
+    // v2.1: Save modulation matrix state
+    state.appendChild(modMatrix.getState(), nullptr);
+
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
     copyXmlToBinary(*xml, destData);
 }
@@ -1353,7 +1445,15 @@ void CodoxAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
 
     if (xmlState != nullptr && xmlState->hasTagName(parameters.state.getType()))
-        parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+    {
+        auto state = juce::ValueTree::fromXml(*xmlState);
+        parameters.replaceState(state);
+
+        // v2.1: Restore modulation matrix state
+        auto modMatrixState = state.getChildWithName("ModMatrix");
+        if (modMatrixState.isValid())
+            modMatrix.setState(modMatrixState);
+    }
 }
 
 //==============================================================================

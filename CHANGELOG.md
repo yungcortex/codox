@@ -2,6 +2,34 @@
 
 All notable changes to Codox wavetable synthesizer are documented here.
 
+## [2.1.0] - 2026-01-03
+
+### Added
+
+- **Serum-style Modulation Matrix** - Full modulation routing system
+  - **ModulationMatrix C++ engine** - Efficient routing with up to 64 simultaneous routes
+  - **Modulation sources:** LFO 1-4, Filter Env, Amp Env, Velocity, Mod Wheel, Note, Aftertouch, Pitch Bend, Macros 1-8
+  - **Modulation destinations:** Filter Cutoff (more coming in v2.2)
+  - **Bipolar/unipolar modulation** with adjustable depth (-100% to +100%)
+  - **MIDI CC support:** Mod Wheel (CC1), Pitch Bend, Channel Aftertouch
+  - **Matrix UI tab** - Visual modulation routing with source/destination dropdowns
+  - **Modulation state saved with presets** - Routes persist in plugin state
+
+### Technical Details
+
+- New `ModulationMatrix.h` class for centralized modulation routing
+- Per-sample LFO value updates for smooth modulation
+- Thread-safe source value updates
+- JSON serialization for preset save/load
+- WebView native function bridge for `setModRoute()`
+
+### Coming in v2.2
+
+- Blue ring indicators on knobs showing modulation depth
+- Drag-to-assign from LFO/Env displays to knobs
+- More modulation destinations (OSC position, levels, FX params)
+- Modulation curve shaping (linear, exponential, S-curve)
+
 ## [2.0.0] - 2026-01-02
 
 ### Breaking Changes
