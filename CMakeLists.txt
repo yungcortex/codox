@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
-project(Codox VERSION 1.0.0)
+project(Codox VERSION 2.1.0)
 
 # JUCE is already added by root CMakeLists.txt - do not add again
 
 # Plugin formats: VST3, AU, Standalone
 juce_add_plugin(Codox
-    COMPANY_NAME "PluginFreedom"
-    PLUGIN_MANUFACTURER_CODE Plfr
+    COMPANY_NAME "Cody Littlefield"
+    PLUGIN_MANUFACTURER_CODE Cdlt
     PLUGIN_CODE Codx
     FORMATS VST3 AU Standalone
     PRODUCT_NAME "Codox"

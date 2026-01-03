@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Codox v2.0</title>
+<title>Codox v2.1</title>
 <style>
 :root {
   --bg-dark: #0a0a0a;
@@ -456,7 +456,10 @@ select:focus { outline: none; border-color: var(--accent); }
   cursor: pointer;
   font-size: 11px;
   font-weight: 600;
+  transition: transform 0.1s, opacity 0.1s;
 }
+.modal-btn:hover { opacity: 0.9; }
+.modal-btn:active { transform: scale(0.96); }
 .modal-btn.primary { background: var(--accent); color: #000; }
 .modal-btn.secondary { background: #333; color: var(--text); }
 
@@ -465,6 +468,167 @@ select:focus { outline: none; border-color: var(--accent); }
 ::-webkit-scrollbar-track { background: #111; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+/* ===== MIX TAB (Serum 2 style routing) ===== */
+.routing-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.routing-row {
+  display: grid;
+  grid-template-columns: 80px 60px 1fr 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  background: #161616;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+}
+.routing-row:hover { border-color: #444; }
+
+.routing-source {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.routing-path {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.routing-line {
+  flex: 1;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.routing-arrow {
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.routing-knobs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.routing-dest {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.routing-select {
+  background: #222;
+  border: 1px solid #333;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  cursor: pointer;
+}
+.routing-select:hover { border-color: var(--accent); }
+
+.fx-bus {
+  background: #161616;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #2a2a2a;
+}
+
+.bus-meter {
+  height: 8px;
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bus-level {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.1s;
+}
+
+/* ===== MATRIX TAB (Serum 2 style modulation) ===== */
+.mod-matrix-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mod-row {
+  display: grid;
+  grid-template-columns: 120px 140px 70px 70px 60px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #161616;
+  border-radius: 4px;
+  border: 1px solid #2a2a2a;
+  cursor: grab;
+}
+.mod-row:hover { border-color: #444; }
+.mod-row.dragging { opacity: 0.5; border-color: var(--blue); }
+
+.mod-header-row {
+  background: transparent;
+  border: none;
+  cursor: default;
+  padding: 4px 12px;
+}
+
+.mod-header-row .mod-cell {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mod-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mod-source-cell,
+.mod-dest-cell {
+  justify-content: flex-start;
+}
+
+.mod-select {
+  background: #222;
+  border: 1px solid #333;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+.mod-select:hover { border-color: var(--accent); }
+.mod-select:focus { outline: none; border-color: var(--accent); }
+
+.mod-curve {
+  width: 50px;
+}
+
+.mod-bypass {
+  width: 14px;
+  height: 14px;
+  background: #333;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid #444;
+}
+.mod-bypass:hover { border-color: var(--accent); }
+.mod-bypass.active { background: var(--blue); border-color: var(--blue); }
 
 .hidden { display: none !important; }
 </style>
@@ -491,11 +655,13 @@ select:focus { outline: none; border-color: var(--accent); }
     </div>
   </div>
 
-  <!-- NAV TABS -->
+  <!-- NAV TABS (Serum 2 style: OSC, MIX, FX, MATRIX, GLOBAL) -->
   <div class="nav-tabs">
     <div class="nav-tab active" data-tab="osc">OSC</div>
+    <div class="nav-tab" data-tab="mix">MIX</div>
     <div class="nav-tab" data-tab="fx">FX</div>
-    <div class="nav-tab" data-tab="settings">SETTINGS</div>
+    <div class="nav-tab" data-tab="matrix">MATRIX</div>
+    <div class="nav-tab" data-tab="global">GLOBAL</div>
   </div>
 
   <!-- MAIN -->
@@ -575,6 +741,110 @@ select:focus { outline: none; border-color: var(--accent); }
         </div>
       </div>
 
+      <!-- MIX TAB (Serum 2 style routing) -->
+      <div class="tab-panel" id="tab-mix">
+        <div class="module" style="margin-bottom:12px;">
+          <div class="module-header"><span class="module-title" style="color:var(--accent)">SIGNAL ROUTING</span></div>
+          <div class="routing-grid">
+            <!-- OSC A routing -->
+            <div class="routing-row">
+              <div class="routing-source" style="color:var(--accent)">OSC A</div>
+              <div class="routing-path">
+                <div class="routing-line"></div>
+                <div class="routing-arrow">→</div>
+              </div>
+              <div class="routing-knobs">
+                <div class="knob-wrap"><div class="knob sm" data-param="osc_a_to_filt"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Filter</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="osc_a_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="osc_a_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+              <div class="routing-dest">
+                <select class="routing-select"><option>MAIN</option><option>BUS 1</option><option>BUS 2</option></select>
+              </div>
+            </div>
+            <!-- OSC B routing -->
+            <div class="routing-row">
+              <div class="routing-source" style="color:var(--orange)">OSC B</div>
+              <div class="routing-path">
+                <div class="routing-line" style="background:var(--orange)"></div>
+                <div class="routing-arrow" style="color:var(--orange)">→</div>
+              </div>
+              <div class="routing-knobs">
+                <div class="knob-wrap"><div class="knob sm" data-param="osc_b_to_filt"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Filter</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="osc_b_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="osc_b_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+              <div class="routing-dest">
+                <select class="routing-select"><option>MAIN</option><option>BUS 1</option><option>BUS 2</option></select>
+              </div>
+            </div>
+            <!-- SUB routing -->
+            <div class="routing-row">
+              <div class="routing-source" style="color:var(--purple)">SUB</div>
+              <div class="routing-path">
+                <div class="routing-line" style="background:var(--purple)"></div>
+                <div class="routing-arrow" style="color:var(--purple)">→</div>
+              </div>
+              <div class="routing-knobs">
+                <div class="knob-wrap"><div class="knob sm" data-param="sub_to_filt"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Filter</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="sub_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="sub_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+              <div class="routing-dest">
+                <select class="routing-select"><option>MAIN</option><option>BUS 1</option><option>BUS 2</option></select>
+              </div>
+            </div>
+            <!-- NOISE routing -->
+            <div class="routing-row">
+              <div class="routing-source" style="color:var(--text-dim)">NOISE</div>
+              <div class="routing-path">
+                <div class="routing-line" style="background:#666"></div>
+                <div class="routing-arrow" style="color:#666">→</div>
+              </div>
+              <div class="routing-knobs">
+                <div class="knob-wrap"><div class="knob sm" data-param="noise_to_filt"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Filter</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="noise_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="noise_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:#888"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+              <div class="routing-dest">
+                <select class="routing-select"><option>MAIN</option><option>BUS 1</option><option>BUS 2</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FX Routing Section -->
+        <div class="module">
+          <div class="module-header"><span class="module-title" style="color:var(--blue)">FX ROUTING</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <div class="fx-bus">
+              <div style="color:var(--accent);font-size:10px;font-weight:700;margin-bottom:8px;">MAIN BUS</div>
+              <div class="bus-meter"><div class="bus-level" style="width:70%"></div></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <div class="knob-wrap"><div class="knob sm" data-param="main_level"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="main_pan"><div class="knob-bg"></div><div class="knob-pointer"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+            </div>
+            <div class="fx-bus">
+              <div style="color:var(--orange);font-size:10px;font-weight:700;margin-bottom:8px;">BUS 1</div>
+              <div class="bus-meter"><div class="bus-level" style="width:45%;background:var(--orange)"></div></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <div class="knob-wrap"><div class="knob sm" data-param="bus1_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="bus1_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+            </div>
+            <div class="fx-bus">
+              <div style="color:var(--purple);font-size:10px;font-weight:700;margin-bottom:8px;">BUS 2</div>
+              <div class="bus-meter"><div class="bus-level" style="width:30%;background:var(--purple)"></div></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <div class="knob-wrap"><div class="knob sm" data-param="bus2_level"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Level</span></div>
+                <div class="knob-wrap"><div class="knob sm" data-param="bus2_pan"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div><span class="knob-label">Pan</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- FX TAB -->
       <div class="tab-panel" id="tab-fx">
         <div class="fx-grid" id="fx_container">
@@ -582,8 +852,100 @@ select:focus { outline: none; border-color: var(--accent); }
         </div>
       </div>
 
-      <!-- SETTINGS TAB -->
-      <div class="tab-panel" id="tab-settings">
+      <!-- MATRIX TAB (Serum 2 style modulation) -->
+      <div class="tab-panel" id="tab-matrix">
+        <div class="module">
+          <div class="module-header">
+            <span class="module-title" style="color:var(--blue)">MODULATION MATRIX</span>
+            <button class="preset-btn" id="add_mod_btn">+ ADD MOD</button>
+          </div>
+          <div class="mod-matrix-grid">
+            <!-- Header row -->
+            <div class="mod-row mod-header-row">
+              <div class="mod-cell mod-source-cell">SOURCE</div>
+              <div class="mod-cell mod-dest-cell">DESTINATION</div>
+              <div class="mod-cell mod-amount-cell">AMOUNT</div>
+              <div class="mod-cell mod-curve-cell">CURVE</div>
+              <div class="mod-cell mod-bypass-cell">BYPASS</div>
+            </div>
+            <!-- LFO 1 → Filter Cutoff -->
+            <div class="mod-row" draggable="true">
+              <div class="mod-cell mod-source-cell">
+                <select class="mod-select"><option>LFO 1</option><option>LFO 2</option><option>LFO 3</option><option>LFO 4</option><option>Env 1</option><option>Env 2</option><option>Vel</option><option>Note</option><option>Macro 1</option><option>Macro 2</option></select>
+              </div>
+              <div class="mod-cell mod-dest-cell">
+                <select class="mod-select"><option>Filter Cutoff</option><option>Filter Res</option><option>OSC A Pos</option><option>OSC B Pos</option><option>OSC A Level</option><option>OSC B Level</option><option>Pan</option><option>Volume</option></select>
+              </div>
+              <div class="mod-cell mod-amount-cell">
+                <div class="knob-wrap"><div class="knob sm" data-param="mod1_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--blue)"></div></div></div>
+              </div>
+              <div class="mod-cell mod-curve-cell">
+                <select class="mod-select mod-curve"><option>Lin</option><option>Exp</option><option>Log</option><option>S</option></select>
+              </div>
+              <div class="mod-cell mod-bypass-cell">
+                <div class="mod-bypass active"></div>
+              </div>
+            </div>
+            <!-- LFO 2 → OSC A Position -->
+            <div class="mod-row" draggable="true">
+              <div class="mod-cell mod-source-cell">
+                <select class="mod-select"><option>LFO 1</option><option selected>LFO 2</option><option>LFO 3</option><option>LFO 4</option><option>Env 1</option><option>Env 2</option><option>Vel</option><option>Note</option><option>Macro 1</option><option>Macro 2</option></select>
+              </div>
+              <div class="mod-cell mod-dest-cell">
+                <select class="mod-select"><option>Filter Cutoff</option><option>Filter Res</option><option selected>OSC A Pos</option><option>OSC B Pos</option><option>OSC A Level</option><option>OSC B Level</option><option>Pan</option><option>Volume</option></select>
+              </div>
+              <div class="mod-cell mod-amount-cell">
+                <div class="knob-wrap"><div class="knob sm" data-param="mod2_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--orange)"></div></div></div>
+              </div>
+              <div class="mod-cell mod-curve-cell">
+                <select class="mod-select mod-curve"><option>Lin</option><option>Exp</option><option>Log</option><option>S</option></select>
+              </div>
+              <div class="mod-cell mod-bypass-cell">
+                <div class="mod-bypass active"></div>
+              </div>
+            </div>
+            <!-- Env 2 → Filter Resonance -->
+            <div class="mod-row" draggable="true">
+              <div class="mod-cell mod-source-cell">
+                <select class="mod-select"><option>LFO 1</option><option>LFO 2</option><option>LFO 3</option><option>LFO 4</option><option>Env 1</option><option selected>Env 2</option><option>Vel</option><option>Note</option><option>Macro 1</option><option>Macro 2</option></select>
+              </div>
+              <div class="mod-cell mod-dest-cell">
+                <select class="mod-select"><option>Filter Cutoff</option><option selected>Filter Res</option><option>OSC A Pos</option><option>OSC B Pos</option><option>OSC A Level</option><option>OSC B Level</option><option>Pan</option><option>Volume</option></select>
+              </div>
+              <div class="mod-cell mod-amount-cell">
+                <div class="knob-wrap"><div class="knob sm" data-param="mod3_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--purple)"></div></div></div>
+              </div>
+              <div class="mod-cell mod-curve-cell">
+                <select class="mod-select mod-curve"><option>Lin</option><option selected>Exp</option><option>Log</option><option>S</option></select>
+              </div>
+              <div class="mod-cell mod-bypass-cell">
+                <div class="mod-bypass"></div>
+              </div>
+            </div>
+            <!-- Velocity → Volume -->
+            <div class="mod-row" draggable="true">
+              <div class="mod-cell mod-source-cell">
+                <select class="mod-select"><option>LFO 1</option><option>LFO 2</option><option>LFO 3</option><option>LFO 4</option><option>Env 1</option><option>Env 2</option><option selected>Vel</option><option>Note</option><option>Macro 1</option><option>Macro 2</option></select>
+              </div>
+              <div class="mod-cell mod-dest-cell">
+                <select class="mod-select"><option>Filter Cutoff</option><option>Filter Res</option><option>OSC A Pos</option><option>OSC B Pos</option><option>OSC A Level</option><option>OSC B Level</option><option>Pan</option><option selected>Volume</option></select>
+              </div>
+              <div class="mod-cell mod-amount-cell">
+                <div class="knob-wrap"><div class="knob sm" data-param="mod4_amount"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--green)"></div></div></div>
+              </div>
+              <div class="mod-cell mod-curve-cell">
+                <select class="mod-select mod-curve"><option>Lin</option><option>Exp</option><option>Log</option><option>S</option></select>
+              </div>
+              <div class="mod-cell mod-bypass-cell">
+                <div class="mod-bypass active"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GLOBAL TAB (was SETTINGS) -->
+      <div class="tab-panel" id="tab-global">
         <div class="settings-grid">
           <!-- Unison -->
           <div class="module">
@@ -739,7 +1101,8 @@ select:focus { outline: none; border-color: var(--accent); }
 'use strict';
 
 // ============================================
-// CODOX v2.0.1 - Serum-Style Wavetable Synth
+// CODOX v2.1.0 - Serum 2-Style Wavetable Synth
+// 5 Tabs: OSC, MIX, FX, MATRIX, GLOBAL
 // ============================================
 
 const canvases = {};
@@ -783,11 +1146,12 @@ function init() {
   initTabs();
   initKnobs();
   initFX();
+  initMatrix();
   initPresets();
   initModal();
   connectJUCE();
   requestAnimationFrame(animate);
-  console.log('Codox v2.0.1 ready');
+  console.log('Codox v2.1.0 ready');
 }
 
 // Canvases
@@ -1084,6 +1448,78 @@ function initFX() {
   });
 }
 
+// Matrix (Modulation)
+function initMatrix() {
+  // Bypass toggles
+  document.querySelectorAll('.mod-bypass').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+  });
+
+  // Matrix row drag and drop
+  const rows = document.querySelectorAll('.mod-row:not(.mod-header-row)');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text', '');
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      const dragging = document.querySelector('.mod-row.dragging');
+      if (dragging && dragging !== row) {
+        const parent = row.parentElement;
+        const rect = row.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) {
+          parent.insertBefore(dragging, row);
+        } else {
+          parent.insertBefore(dragging, row.nextSibling);
+        }
+      }
+    });
+  });
+
+  // Add mod button
+  const addBtn = document.getElementById('add_mod_btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const grid = document.querySelector('.mod-matrix-grid');
+      const newRow = document.createElement('div');
+      newRow.className = 'mod-row';
+      newRow.draggable = true;
+      newRow.innerHTML = `
+        <div class="mod-cell mod-source-cell">
+          <select class="mod-select"><option>LFO 1</option><option>LFO 2</option><option>LFO 3</option><option>LFO 4</option><option>Env 1</option><option>Env 2</option><option>Vel</option><option>Note</option><option>Macro 1</option><option>Macro 2</option></select>
+        </div>
+        <div class="mod-cell mod-dest-cell">
+          <select class="mod-select"><option>Filter Cutoff</option><option>Filter Res</option><option>OSC A Pos</option><option>OSC B Pos</option><option>OSC A Level</option><option>OSC B Level</option><option>Pan</option><option>Volume</option></select>
+        </div>
+        <div class="mod-cell mod-amount-cell">
+          <div class="knob-wrap"><div class="knob sm" data-param="mod_new"><div class="knob-bg"></div><div class="knob-pointer" style="background:var(--accent)"></div></div></div>
+        </div>
+        <div class="mod-cell mod-curve-cell">
+          <select class="mod-select mod-curve"><option>Lin</option><option>Exp</option><option>Log</option><option>S</option></select>
+        </div>
+        <div class="mod-cell mod-bypass-cell">
+          <div class="mod-bypass active"></div>
+        </div>
+      `;
+      grid.appendChild(newRow);
+
+      // Add bypass listener to new row
+      newRow.querySelector('.mod-bypass').addEventListener('click', e => {
+        e.target.classList.toggle('active');
+      });
+
+      // Add drag listeners
+      newRow.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text', '');
+        newRow.classList.add('dragging');
+      });
+      newRow.addEventListener('dragend', () => newRow.classList.remove('dragging'));
+    });
+  }
+}
+
 // Presets
 function initPresets() {
   const sel = document.getElementById('preset_select');
@@ -1103,8 +1539,14 @@ function initPresets() {
   document.getElementById('prev_preset').addEventListener('click', () => { if (sel.selectedIndex > 0) { sel.selectedIndex--; loadPreset(sel.value); }});
   document.getElementById('next_preset').addEventListener('click', () => { if (sel.selectedIndex < sel.options.length - 1) { sel.selectedIndex++; loadPreset(sel.value); }});
   document.getElementById('random_btn').addEventListener('click', randomize);
-  document.getElementById('load_btn').addEventListener('click', () => document.getElementById('file_input').click());
+  document.getElementById('load_btn').addEventListener('click', () => {
+    // Call native C++ function to open file dialog
+    if (window.__JUCE__ && window.__JUCE__.backend) {
+      window.__JUCE__.backend.loadPresetFromFile();
+    }
+  });
 
+  // Keep file_input as fallback for drag-drop or direct file selection
   document.getElementById('file_input').addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return;
     const r = new FileReader();
@@ -1133,6 +1575,19 @@ function applyPreset(data) {
   });
 }
 
+// Called from C++ after loading a preset file
+// Must be global so C++ evaluateJavascript can call it
+window.applyPresetFromFile = function(jsonString) {
+  try {
+    const data = JSON.parse(jsonString);
+    applyPreset(data);
+    showToast('Preset loaded!');
+  } catch(err) {
+    console.error('Failed to parse preset:', err);
+    showToast('Failed to load preset');
+  }
+};
+
 function getCurrentState() {
   const state = {};
   document.querySelectorAll('.knob[data-param]').forEach(k => {
@@ -1158,23 +1613,33 @@ function randomize() {
 function initModal() {
   const modal = document.getElementById('save_modal');
   const input = document.getElementById('preset_name');
+  const saveBtn = document.getElementById('modal_save');
 
-  document.getElementById('save_btn').addEventListener('click', () => {
-    input.value = '';
-    modal.classList.add('active');
-    setTimeout(() => input.focus(), 100);
-  });
-
-  document.getElementById('modal_cancel').addEventListener('click', () => modal.classList.remove('active'));
-  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
-
-  document.getElementById('modal_save').addEventListener('click', () => {
+  // Save preset function
+  function doSavePreset() {
     const name = input.value.trim();
-    if (!name) return;
-    if (factoryPresets[name]) { input.placeholder = 'Cannot overwrite factory!'; input.value = ''; return; }
+    if (!name) {
+      input.focus();
+      return;
+    }
+    if (factoryPresets[name]) {
+      input.placeholder = 'Cannot overwrite factory!';
+      input.value = '';
+      input.focus();
+      return;
+    }
 
-    userPresets[name] = getCurrentState();
-    try { localStorage.setItem('codox_presets', JSON.stringify(userPresets)); } catch(e) {}
+    const state = getCurrentState();
+    const jsonData = JSON.stringify(state, null, 2);
+
+    // Call native C++ function to save preset file directly (no dialog)
+    if (window.__JUCE__ && window.__JUCE__.backend && typeof window.__JUCE__.backend.savePresetToFile === 'function') {
+      window.__JUCE__.backend.savePresetToFile(jsonData, name);
+    }
+
+    // Store in memory for session
+    userPresets[name] = state;
+    showToast('Preset "' + name + '" saved to ~/Documents/Codox Presets/');
 
     // Add to dropdown
     const sel = document.getElementById('preset_select');
@@ -1187,14 +1652,32 @@ function initModal() {
     }
     sel.value = name;
 
-    // Download file
-    const blob = new Blob([JSON.stringify(userPresets[name], null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name + '.codox'; a.click();
-    URL.revokeObjectURL(url);
-
     modal.classList.remove('active');
+  }
+
+  // Open modal
+  document.getElementById('save_btn').addEventListener('click', () => {
+    input.value = '';
+    modal.classList.add('active');
+    setTimeout(() => input.focus(), 100);
+  });
+
+  // Close modal
+  document.getElementById('modal_cancel').addEventListener('click', () => modal.classList.remove('active'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+
+  // Save on button click
+  saveBtn.addEventListener('click', doSavePreset);
+
+  // Save on Enter key in input field
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      doSavePreset();
+    }
+    if (e.key === 'Escape') {
+      modal.classList.remove('active');
+    }
   });
 }
 
@@ -1245,6 +1728,20 @@ function bindParams(Juce) {
       }
     } catch(e) {}
   });
+}
+
+// Toast notification
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;padding:10px 24px;border-radius:6px;font-size:12px;font-weight:600;opacity:0;transition:opacity 0.3s;z-index:9999;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 2000);
 }
 
 // Start

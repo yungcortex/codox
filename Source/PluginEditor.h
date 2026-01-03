@@ -234,5 +234,12 @@ private:
     // Helper for resource serving
     std::optional<juce::WebBrowserComponent::Resource> getResource(const juce::String& url);
 
+    // Native preset file handling
+    void savePresetToFile(const juce::String& jsonData, const juce::String& presetName);
+    void loadPresetFromFile();
+
+    // Invoke JS callback with loaded preset data
+    void sendPresetToWebView(const juce::String& jsonData);
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CodoxAudioProcessorEditor)
 };

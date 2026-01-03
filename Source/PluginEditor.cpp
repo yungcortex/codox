@@ -91,6 +91,18 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
     , webView(juce::WebBrowserComponent::Options{}
         .withNativeIntegrationEnabled()
         .withResourceProvider([this](const auto& url) { return getResource(url); })
+        // Native preset file handling functions
+        .withNativeFunction("savePresetToFile", [this](const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion completion) {
+            if (args.size() >= 2) {
+                savePresetToFile(args[0].toString(), args[1].toString());
+            }
+            completion({});
+        })
+        .withNativeFunction("loadPresetFromFile", [this](const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion completion) {
+            (void)args; // unused
+            loadPresetFromFile();
+            completion({});
+        })
         .withOptionsFrom(masterVolumeRelay)
         .withOptionsFrom(oscAWavetableRelay)
         .withOptionsFrom(oscAPositionRelay)
@@ -245,7 +257,8 @@ CodoxAudioProcessorEditor::CodoxAudioProcessorEditor (CodoxAudioProcessor& p)
     , fxCompressorMixAttachment(*audioProcessor.parameters.getParameter("fx_compressor_mix"), fxCompressorMixRelay, nullptr)
 {
     // Set editor size (matches CSS plugin-frame dimensions - Serum-style)
-    setSize (1000, 700);
+    // CRITICAL: Must match .plugin CSS dimensions exactly or right side gets cut off
+    setSize (1100, 720);
 
     // Make WebView opaque to prevent transparency issues
     webView.setOpaque(true);
@@ -366,4 +379,65 @@ CodoxAudioProcessorEditor::getResource(const juce::String& url)
     // Resource not found
     juce::Logger::writeToLog("Resource not found: " + url);
     return std::nullopt;
+}
+
+//==============================================================================
+// Preset File Handling
+//==============================================================================
+void CodoxAudioProcessorEditor::savePresetToFile(const juce::String& jsonData, const juce::String& presetName)
+{
+    // Get default preset directory (user's Documents/Codox Presets)
+    auto presetsDir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
+                          .getChildFile("Codox Presets");
+    presetsDir.createDirectory();
+
+    // Sanitize filename (remove problematic characters)
+    auto safeName = presetName.replaceCharacters("/\\:*?\"<>|", "---------");
+    if (safeName.isEmpty())
+        safeName = "Untitled";
+
+    // Save directly to preset folder (no dialog - more reliable in DAW plugin context)
+    auto file = presetsDir.getChildFile(safeName + ".codox");
+    file.replaceWithText(jsonData);
+
+    juce::Logger::writeToLog("Preset saved to: " + file.getFullPathName());
+}
+
+void CodoxAudioProcessorEditor::loadPresetFromFile()
+{
+    // Get default preset directory
+    auto presetsDir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
+                          .getChildFile("Codox Presets");
+    if (!presetsDir.exists())
+        presetsDir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory);
+
+    // Create file chooser for loading
+    auto chooser = std::make_shared<juce::FileChooser>(
+        "Load Preset",
+        presetsDir,
+        "*.codox;*.json"
+    );
+
+    chooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
+        [this, chooser](const juce::FileChooser& fc) {
+            auto file = fc.getResult();
+            if (file != juce::File{} && file.existsAsFile()) {
+                auto jsonData = file.loadFileAsString();
+                if (jsonData.isNotEmpty()) {
+                    sendPresetToWebView(jsonData);
+                }
+            }
+        });
+}
+
+void CodoxAudioProcessorEditor::sendPresetToWebView(const juce::String& jsonData)
+{
+    // Escape the JSON for JavaScript string
+    auto escaped = jsonData.replace("\\", "\\\\")
+                           .replace("'", "\\'")
+                           .replace("\n", "\\n")
+                           .replace("\r", "\\r");
+
+    // Call JavaScript function to apply the preset
+    webView.evaluateJavascript("if (typeof applyPresetFromFile === 'function') applyPresetFromFile('" + escaped + "');");
 }
